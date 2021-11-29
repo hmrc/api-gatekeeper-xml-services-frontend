@@ -34,7 +34,7 @@ class HelloWorldControllerSpec extends AnyWordSpec with Matchers with GuiceOneAp
       )
       .build()
 
-  private val fakeRequest = FakeRequest("GET", "/")
+  private val fakeRequest = FakeRequest("GET", "/hello-world")
 
   private val controller = app.injector.instanceOf[HelloWorldController]
 
