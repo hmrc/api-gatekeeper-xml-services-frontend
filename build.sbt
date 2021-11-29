@@ -25,6 +25,8 @@ lazy val microservice = Project(appName, file("."))
   .settings(publishingSettings, scoverageSettings)
   .configs(IntegrationTest)
   .settings(integrationTestSettings(): _*)
+  .settings(inConfig(IntegrationTest)(BloopDefaults.configSettings))
+  .settings(integrationTestSettings(): _*)
   .settings(resolvers += Resolver.jcenterRepo)
   .disablePlugins(sbt.plugins.JUnitXmlReportPlugin)
 
@@ -33,7 +35,7 @@ lazy val microservice = Project(appName, file("."))
   Seq(
     // Semicolon-separated list of regexs matching classes to exclude
     ScoverageKeys.coverageExcludedPackages := ";.*\\.domain\\.models\\..*;uk\\.gov\\.hmrc\\.BuildInfo;.*\\.Routes;.*\\.RoutesPrefix;;Module;GraphiteStartUp;.*\\.Reverse[^.]*",
-    ScoverageKeys.coverageMinimum := 30,
+    ScoverageKeys.coverageMinimum := 92,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true,
     parallelExecution in Test := false

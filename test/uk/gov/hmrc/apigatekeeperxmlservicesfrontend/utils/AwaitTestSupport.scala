@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +12,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils
 
-@this(layout: Layout)
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import scala.concurrent.Future
 
-
-@()(implicit request: Request[_], messages: Messages)
-
-@layout(pageTitle = Some("api-gatekeeper-xml-services-frontend")) {
-    <h1 id="page-heading" class="govuk-heading-xl">api-gatekeeper-xml-services-frontend</h1>
-    <p id="page-body" class="govuk-body">@{messages("service.text")}</p>
+trait AwaitTestSupport {
+  def await[A](future: Future[A], timeout: Duration = 5 seconds): A = Await.result(future, timeout)
 }
