@@ -22,16 +22,16 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 
 trait AppConfigMock extends MockitoSugar {
   implicit val mockConfig = mock[AppConfig]
-
-  when(mockConfig.title).thenReturn("Unit Test Title")
-
-  when(mockConfig.userRole).thenReturn(userRole)
-  when(mockConfig.adminRole).thenReturn(adminRole)
-  when(mockConfig.superUserRole).thenReturn(superUserRole)
-  when(mockConfig.superUsers).thenReturn(Seq("superUserName"))
-
-  when(mockConfig.gatekeeperSuccessUrl).thenReturn("http://mock-gatekeeper-frontend/api-gatekeeper/applications")
-  when(mockConfig.strideLoginUrl).thenReturn("https://loginUri")
-  when(mockConfig.appName).thenReturn("Gatekeeper app name")
+//
+//  when(mockConfig.title).thenReturn("Unit Test Title")
+//
+//  when(mockConfig.userRole).thenReturn(userRole)
+//  when(mockConfig.adminRole).thenReturn(adminRole)
+//  when(mockConfig.superUserRole).thenReturn(superUserRole)
+//  when(mockConfig.superUsers).thenReturn(Seq("superUserName"))
+//
+//  when(mockConfig.gatekeeperSuccessUrl).thenReturn("http://mock-gatekeeper-xml-services-frontend/api-gatekeeper-xml-services/hello-world")
+//  when(mockConfig.strideLoginUrl).thenReturn("https://loginUri")
+//  when(mockConfig.appName).thenReturn("Gatekeeper app name")
 
 }
