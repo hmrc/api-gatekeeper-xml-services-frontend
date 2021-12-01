@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +12,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
+package support
 
-@this(layout: Layout)
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.{Seconds, Span}
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.Application
 
+abstract class ServerBaseISpec
+  extends BaseISpec with GuiceOneServerPerSuite with TestApplication with ScalaFutures {
 
-@()(implicit request: Request[_], messages: Messages)
+  override implicit lazy val app: Application = appBuilder.build()
 
-@layout(pageTitle = Some("api-gatekeeper-xml-services-frontend")) {
-    <h1 id="page-heading" class="govuk-heading-xl">api-gatekeeper-xml-services-frontend</h1>
-    <p id="page-body" class="govuk-body">@{messages("service.text")}</p>
+  implicit override val patienceConfig: PatienceConfig =
+    PatienceConfig(timeout = Span(4, Seconds), interval = Span(1, Seconds))
+
 }

@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +12,29 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
-
-@this(layout: Layout)
+package support
 
 
-@()(implicit request: Request[_], messages: Messages)
+import com.kenshoo.play.metrics.Metrics
+import org.scalatest.Suite
+import play.api.Application
 
-@layout(pageTitle = Some("api-gatekeeper-xml-services-frontend")) {
-    <h1 id="page-heading" class="govuk-heading-xl">api-gatekeeper-xml-services-frontend</h1>
-    <p id="page-body" class="govuk-body">@{messages("service.text")}</p>
+import scala.collection.JavaConverters
+
+trait MetricsTestSupport {
+  self: Suite =>
+
+  def app: Application
+
+  def givenCleanMetricRegistry(): Unit = {
+    val registry = app.injector.instanceOf[Metrics].defaultRegistry
+    for (metric <- JavaConverters
+      .asScalaIterator[String](registry.getMetrics.keySet().iterator())) {
+      registry.remove(metric)
+    }
+  }
+
+
 }
