@@ -19,9 +19,32 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import com.google.inject.ImplementedBy
+
+@ImplementedBy(classOf[AppConfigImpl])
+trait AppConfig {
+
+  def welshLanguageSupportEnabled: Boolean
+
+  def title: String
+
+  def appName: String
+  def authBaseUrl: String
+  def strideLoginUrl: String
+
+  def gatekeeperSuccessUrl: String
+
+  def superUserRole: String
+  def userRole: String
+  def adminRole: String
+  def superUsers: Seq[String]
+
+}
 
 @Singleton
-class AppConfig @Inject() (config: Configuration) extends ServicesConfig(config) {
+class AppConfigImpl @Inject() (config: Configuration) extends ServicesConfig(config) with AppConfig {
+
+  def title = "HMRC API Gatekeeper"
 
   val welshLanguageSupportEnabled: Boolean = config.getOptional[Boolean]("features.welsh-language-support").getOrElse(false)
 
@@ -34,5 +57,11 @@ class AppConfig @Inject() (config: Configuration) extends ServicesConfig(config)
   val superUserRole = getString("roles.super-user")
   val userRole = getString("roles.user")
   val adminRole = getString("roles.admin")
+
+    def superUsers: Seq[String] = {
+    config
+      .getOptional[Seq[String]]("superUsers")
+      .getOrElse(Seq.empty)
+  }
 
 }
