@@ -45,6 +45,12 @@ class HelloWorldControllerSpec extends ControllerBaseSpec {
       status(result) shouldBe Status.OK
     }
 
+    "return forbidden view" in new Setup {
+      givenAUnsuccessfulLogin()
+      val result = controller.helloWorld(fakeRequest)
+      status(result) shouldBe Status.SEE_OTHER
+    }
+
     "return HTML" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       val result = controller.helloWorld(fakeRequest)

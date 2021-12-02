@@ -31,7 +31,6 @@ trait AuthConnectorMock extends TestRoles with MockitoSugar with ArgumentMatcher
   val userName = "userName"
   val superUserName = "superUserName"
   val adminName = "adminName"
-
   val mockAuthConnector = mock[AuthConnector]
 
     def givenAUnsuccessfulLogin(): Unit = {
