@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.config
 
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.TestRoles._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.TestRoles
 import org.mockito.MockitoSugar
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 

@@ -28,13 +28,13 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.{Name, ~}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.TestRoles._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.TestRoles
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
 
-class GatekeeperAuthWrapperSpec extends AsyncHmrcSpec with GuiceOneAppPerSuite {
+class GatekeeperAuthWrapperSpec extends AsyncHmrcSpec with GuiceOneAppPerSuite with TestRoles {
 
   trait Setup extends AppConfigMock {
     val ec = global

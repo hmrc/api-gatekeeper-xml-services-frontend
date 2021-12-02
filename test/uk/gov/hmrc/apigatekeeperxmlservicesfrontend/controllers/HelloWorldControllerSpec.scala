@@ -16,38 +16,40 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Application
 import play.api.http.Status
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import play.api.inject.guice.GuiceApplicationBuilder
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.HelloWorldPage
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class HelloWorldControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
-  override def fakeApplication(): Application =
-    new GuiceApplicationBuilder()
-      .configure(
-        "metrics.jvm"     -> false,
-        "metrics.enabled" -> false
-      )
-      .build()
+class HelloWorldControllerSpec extends ControllerBaseSpec {
 
-  private val fakeRequest = FakeRequest("GET", "/hello-world")
+  trait Setup extends ControllerSetupBase {
+    val fakeRequest = FakeRequest("GET", "/hello-world")
+    private lazy val forbiddenView = app.injector.instanceOf[ForbiddenView]
+    private lazy val helloWorldPage = app.injector.instanceOf[HelloWorldPage]
 
-  private val controller = app.injector.instanceOf[HelloWorldController]
+    val controller = new HelloWorldController(
+      mcc,
+      helloWorldPage,
+      mockAuthConnector,
+      forbiddenView
+    )
+  }
 
   "GET /" should {
-    "return 200" in {
+    "return 200" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
       val result = controller.helloWorld(fakeRequest)
       status(result) shouldBe Status.OK
     }
 
-    "return HTML" in {
+    "return HTML" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
       val result = controller.helloWorld(fakeRequest)
       contentType(result) shouldBe Some("text/html")
-      charset(result)     shouldBe Some("utf-8")
+      charset(result) shouldBe Some("utf-8")
     }
   }
 }
