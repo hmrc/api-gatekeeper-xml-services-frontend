@@ -19,17 +19,13 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.config
 import com.google.inject.Singleton
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfigImpl
 import javax.inject.Inject
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.TestRoles
 import play.api.Configuration
 
 @Singleton
 class FakeAppConfigImpl @Inject()(config: Configuration)
-  extends AppConfigImpl(config) with TestRoles {
+  extends AppConfigImpl(config) {
 
   override val strideLoginUrl = "https://loginUri"
   override val gatekeeperSuccessUrl = "http://mock-gatekeeper-frontend/api-gatekeeper/applications"
 
-  override val userRole = userRole
-  override val adminRole = adminRole
-  override val superUserRole = superUserRole
 }

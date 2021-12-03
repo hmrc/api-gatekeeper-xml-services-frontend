@@ -19,7 +19,6 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.AuthConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{GatekeeperRole, GatekeeperSessionKeys, LoggedInRequest}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._

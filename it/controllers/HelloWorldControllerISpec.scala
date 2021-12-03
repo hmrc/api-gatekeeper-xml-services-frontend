@@ -58,7 +58,7 @@ class HelloWorldControllerISpec extends ServerBaseISpec with BeforeAndAfterEach 
         primeAuthServiceSuccess
         val result = callGetEndpoint(s"$url/hello-world", List.empty)
         result.status mustBe OK
-        val content = Jsoup.parse(result.body) 
+        val content = Jsoup.parse(result.body)
         content.getElementById("page-heading").text() mustBe "api-gatekeeper-xml-services-frontend"
 
       }
@@ -67,7 +67,7 @@ class HelloWorldControllerISpec extends ServerBaseISpec with BeforeAndAfterEach 
         primeAuthServiceFail
         val result = callGetEndpoint(s"$url/hello-world", List.empty)
         result.status mustBe FORBIDDEN
-        val content = Jsoup.parse(result.body) 
+        val content = Jsoup.parse(result.body)
         content.getElementById("page-heading").text() mustBe "You do not have permission to access Gatekeeper"
 
       }
