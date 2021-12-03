@@ -38,5 +38,4 @@ class ErrorTemplateSpec extends CommonViewSpec {
        document.getElementById("page-body").text() shouldBe "Error message"
     }
   }
-
 }

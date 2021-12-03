@@ -26,8 +26,6 @@ trait AppConfig {
 
   def welshLanguageSupportEnabled: Boolean
 
-  def title: String
-
   def appName: String
   def authBaseUrl: String
   def strideLoginUrl: String
@@ -37,14 +35,11 @@ trait AppConfig {
   def superUserRole: String
   def userRole: String
   def adminRole: String
-  def superUsers: Seq[String]
 
 }
 
 @Singleton
 class AppConfigImpl @Inject() (config: Configuration) extends ServicesConfig(config) with AppConfig {
-
-  def title = "HMRC API Gatekeeper"
 
   val welshLanguageSupportEnabled: Boolean = config.getOptional[Boolean]("features.welsh-language-support").getOrElse(false)
 
@@ -57,11 +52,5 @@ class AppConfigImpl @Inject() (config: Configuration) extends ServicesConfig(con
   val superUserRole = getString("roles.super-user")
   val userRole = getString("roles.user")
   val adminRole = getString("roles.admin")
-
-    def superUsers: Seq[String] = {
-    config
-      .getOptional[Seq[String]]("superUsers")
-      .getOrElse(Seq.empty)
-  }
 
 }

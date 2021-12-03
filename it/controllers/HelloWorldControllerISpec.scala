@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package controllers
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
 import org.scalatest.BeforeAndAfterEach
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.{WSClient, WSResponse}
-import support.ServerBaseISpec
-import play.api.test.Helpers.{NOT_FOUND, OK}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
+import play.api.test.Helpers.{NOT_FOUND, OK, FORBIDDEN}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.AuthServiceStub
+import org.jsoup.Jsoup
 
-class HelloWorldControllerISpec extends ServerBaseISpec with BeforeAndAfterEach {
+class HelloWorldControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with AuthServiceStub {
 
 
   protected override def appBuilder: GuiceApplicationBuilder =
@@ -52,10 +54,21 @@ class HelloWorldControllerISpec extends ServerBaseISpec with BeforeAndAfterEach 
   "HelloWorldController" when {
 
     "GET /" should {
-      "respond with 200 and render correctly" in {
-
+      "respond with 200 and render hello world page" in {
+        primeAuthServiceSuccess
         val result = callGetEndpoint(s"$url/hello-world", List.empty)
         result.status mustBe OK
+        val content = Jsoup.parse(result.body) 
+        content.getElementById("page-heading").text() mustBe "api-gatekeeper-xml-services-frontend"
+
+      }
+
+      "respond with 403 and render the Forbidden view" in {
+        primeAuthServiceFail
+        val result = callGetEndpoint(s"$url/hello-world", List.empty)
+        result.status mustBe FORBIDDEN
+        val content = Jsoup.parse(result.body) 
+        content.getElementById("page-heading").text() mustBe "You do not have permission to access Gatekeeper"
 
       }
 
