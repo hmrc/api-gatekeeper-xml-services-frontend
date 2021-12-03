@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.config
 
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Seconds, Span}
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.Application
+import com.google.inject.Singleton
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfigImpl
+import javax.inject.Inject
+import play.api.Configuration
 
-abstract class ServerBaseISpec
-  extends BaseISpec with GuiceOneServerPerSuite with TestApplication with ScalaFutures {
+@Singleton
+class FakeAppConfigImpl @Inject()(config: Configuration)
+  extends AppConfigImpl(config) {
 
-  override implicit lazy val app: Application = appBuilder.build()
-
-  implicit override val patienceConfig: PatienceConfig =
-    PatienceConfig(timeout = Span(4, Seconds), interval = Span(1, Seconds))
+  override val strideLoginUrl = "https://loginUri"
+  override val gatekeeperSuccessUrl = "http://mock-gatekeeper-frontend/api-gatekeeper/applications"
 
 }

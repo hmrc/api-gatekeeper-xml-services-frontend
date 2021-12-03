@@ -14,19 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models
 
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Seconds, Span}
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.Application
+import uk.gov.hmrc.http.SessionKeys
 
-abstract class ServerBaseISpec
-  extends BaseISpec with GuiceOneServerPerSuite with TestApplication with ScalaFutures {
+object GatekeeperRole extends Enumeration {
+  type GatekeeperRole = Value
+  val USER,SUPERUSER,ADMIN = Value
+}
 
-  override implicit lazy val app: Application = appBuilder.build()
-
-  implicit override val patienceConfig: PatienceConfig =
-    PatienceConfig(timeout = Span(4, Seconds), interval = Span(1, Seconds))
-
+object GatekeeperSessionKeys {
+  val LoggedInUser = "LoggedInUser"
+  val AuthToken = SessionKeys.authToken
 }

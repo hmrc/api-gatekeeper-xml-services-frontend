@@ -14,19 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors
 
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Seconds, Span}
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.Application
+import javax.inject.{Inject, Singleton}
 
-abstract class ServerBaseISpec
-  extends BaseISpec with GuiceOneServerPerSuite with TestApplication with ScalaFutures {
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
+import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.http.HttpClient
 
-  override implicit lazy val app: Application = appBuilder.build()
-
-  implicit override val patienceConfig: PatienceConfig =
-    PatienceConfig(timeout = Span(4, Seconds), interval = Span(1, Seconds))
-
+@Singleton
+class AuthConnector @Inject()(val http: HttpClient, appConfig: AppConfig) extends PlayAuthConnector {
+  lazy val serviceUrl = appConfig.authBaseUrl
 }

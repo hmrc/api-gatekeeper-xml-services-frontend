@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package support
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support
 
 
 import java.net.URL
