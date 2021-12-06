@@ -24,8 +24,20 @@
 )
 @(pageTitle: Option[String] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
 
+@insideHeader = {
+    @layoutsHeaderNav(
+        navTitle = Option(appConfig.title),
+        navTitleLink = None,
+        showBetaLink = false,
+        navLinks = Option(include.headerNavLinks(StaticNavLinks()))
+    )
+    
+    <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/main.css")'>
+    }
+
 @hmrcLayout(
     pageTitle = pageTitle,
     nonce = CSPNonce.get,
-    isWelshTranslationAvailable = appConfig.welshLanguageSupportEnabled
+    isWelshTranslationAvailable = appConfig.welshLanguageSupportEnabled,
+    insideHeader = insideHeader
 )(contentBlock)
