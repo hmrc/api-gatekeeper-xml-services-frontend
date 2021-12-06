@@ -21,21 +21,22 @@ import org.jsoup.nodes.Document
 import play.api.test.FakeRequest
 import play.twirl.api.Html
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ErrorTemplate
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
 
-class ErrorTemplateSpec extends CommonViewSpec {
+class ForbiddenViewSpec extends CommonViewSpec {
 
   trait Setup {
-    val errorTemplate = app.injector.instanceOf[ErrorTemplate]
+    val forbiddenView = app.injector.instanceOf[ForbiddenView]
   }
 
-  "ErrorTemplate" should {
-
-    "render error template correctly" in new Setup {
-       val page : Html =    errorTemplate.render("Error Page", "Error Page","Error message", FakeRequest(), messagesProvider.messages)
+  "ForbiddenView" should {
+ 
+    "render Forbidden View correctly" in new Setup {
+       val page : Html =    forbiddenView.render(FakeRequest(), messagesProvider.messages)
        val document: Document = Jsoup.parse(page.body)
-       document.getElementById("page-heading").text() shouldBe "Error Page"
-       document.getElementById("page-body").text() shouldBe "Error message"
+       document.getElementById("page-heading").text() shouldBe "You do not have permission to access Gatekeeper"
+       document.getElementById("page-heading-2").text() shouldBe "Contact your administrator for access"
     }
   }
+
 }

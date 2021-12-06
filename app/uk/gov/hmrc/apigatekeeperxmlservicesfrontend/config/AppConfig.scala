@@ -18,12 +18,39 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config
 
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import com.google.inject.ImplementedBy
+
+@ImplementedBy(classOf[AppConfigImpl])
+trait AppConfig {
+
+  def welshLanguageSupportEnabled: Boolean
+
+  def appName: String
+  def authBaseUrl: String
+  def strideLoginUrl: String
+
+  def gatekeeperSuccessUrl: String
+
+  def superUserRole: String
+  def userRole: String
+  def adminRole: String
+
+}
 
 @Singleton
-class AppConfig @Inject()
-  (
-    config: Configuration
-  ) {
+class AppConfigImpl @Inject() (config: Configuration) extends ServicesConfig(config) with AppConfig {
+
   val welshLanguageSupportEnabled: Boolean = config.getOptional[Boolean]("features.welsh-language-support").getOrElse(false)
+
+  val appName = getString("appName")
+  val authBaseUrl: String = baseUrl("auth")
+  val strideLoginUrl = s"${baseUrl("stride-auth-frontend")}/stride/sign-in"
+
+  val gatekeeperSuccessUrl = getString("api-gatekeeper-frontend-success-url")
+
+  val superUserRole = getString("roles.super-user")
+  val userRole = getString("roles.user")
+  val adminRole = getString("roles.admin")
 
 }
