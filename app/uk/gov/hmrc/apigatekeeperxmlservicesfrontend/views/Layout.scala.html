@@ -14,41 +14,40 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html._
 
-@this( head: Head,
-        govukLayout: GovukLayout,
-        footer: GovukFooter,
-        appConfig: AppConfig
-)
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcLayout
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.siteHeader
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.Header
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.HeaderNavLinks
+@import views.html.helper.CSPNonce
+
+@this(  govukLayout: GovukLayout,
+        siteHeader: siteHeader,
+        headerNavLinks: HeaderNavLinks,
+        hmrcStandardHeader: HmrcStandardHeader,
+        hmrcStandardFooter: HmrcStandardFooter,
+        hmrcHead: HmrcHead,
+        appConfig: AppConfig)
 
 @(pageTitle: Option[String] = None,
-headBlock: Option[Html] = None,
-bodyEndBlock: Option[Html] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
+        scriptsBlock: Option[Html] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
 
-@footerBlock = {
-    @footer()
+
+@headerBlock = {
+@siteHeader()
 }
 
-@scripts = {
-    <script src='@controllers.routes.Assets.versioned("lib/govuk-frontend/govuk/all.js")'></script>
-    <script>window.GOVUKFrontend.initAll();</script>
-}
-
-@bodyEndDefault = {
-    @bodyEndBlock
-    @scripts
-}
 
 
 
 @govukLayout(
     pageTitle = pageTitle,
-    headBlock = Some(head(headBlock)),
-    headerBlock = None,
+    headBlock = Some(hmrcHead()),
+    headerBlock = Some(headerBlock),
     scriptsBlock = None,
-    footerBlock = Some(footerBlock),
     beforeContentBlock = None,
-    bodyEndBlock = Some(bodyEndDefault)
+    footerBlock = Some(hmrcStandardFooter()),
+    assetPath = None,
+    cspNonce = None
 )(contentBlock)
