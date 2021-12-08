@@ -15,40 +15,17 @@
  *@
 
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html._
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcLayout
+@import views.html.helper.CSPNonce
 
-@this( head: Head,
-        govukLayout: GovukLayout,
-        footer: GovukFooter,
-        appConfig: AppConfig
+@this(
+        appConfig: AppConfig,
+        hmrcLayout: HmrcLayout
 )
+@(pageTitle: Option[String] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
 
-@(pageTitle: Option[String] = None,
-headBlock: Option[Html] = None,
-bodyEndBlock: Option[Html] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
-
-@footerBlock = {
-    @footer()
-}
-
-@scripts = {
-    <script src='@controllers.routes.Assets.versioned("lib/govuk-frontend/govuk/all.js")'></script>
-    <script>window.GOVUKFrontend.initAll();</script>
-}
-
-@bodyEndDefault = {
-    @bodyEndBlock
-    @scripts
-}
-
-
-
-@govukLayout(
+@hmrcLayout(
     pageTitle = pageTitle,
-    headBlock = Some(head(headBlock)),
-    headerBlock = None,
-    scriptsBlock = None,
-    footerBlock = Some(footerBlock),
-    beforeContentBlock = None,
-    bodyEndBlock = Some(bodyEndDefault)
+    nonce = CSPNonce.get,
+    isWelshTranslationAvailable = appConfig.welshLanguageSupportEnabled
 )(contentBlock)

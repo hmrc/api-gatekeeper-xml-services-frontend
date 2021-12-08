@@ -10,13 +10,6 @@ lazy val microservice = Project(appName, file("."))
     majorVersion                     := 0,
     scalaVersion                     := "2.12.13",
     libraryDependencies              ++= AppDependencies.compile ++ AppDependencies.test,
-        TwirlKeys.templateImports ++= Seq(
-      "play.twirl.api.HtmlFormat",
-      "uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig",
-      "uk.gov.hmrc.govukfrontend.views.html.components._",
-      "uk.gov.hmrc.govukfrontend.views.html.helpers._",
-      "uk.gov.hmrc.hmrcfrontend.views.html.components._"
-    ),
     pipelineStages in Assets := Seq(gzip),
   )
   .settings(publishingSettings, scoverageSettings)
