@@ -15,23 +15,6 @@
  *@
 
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
-<<<<<<< HEAD
-@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcLayout
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.siteHeader
-@import uk.gov.hmrc.hmrcfrontend.views.html.components.Header
-@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.footer.Footer
-@import views.html.helper.CSPNonce
-
-@this(  govukLayout: GovukLayout,
-        siteHeader: siteHeader,
-        hmrcStandardHeader: HmrcStandardHeader,
-        hmrcFooter: HmrcFooter,
-        hmrcHead: HmrcHead,
-appConfig: AppConfig)
-
-@(pageTitle: Option[String] = None,
-        scriptsBlock: Option[Html] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
-=======
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html._
 
 @this( head: Head,
@@ -58,21 +41,10 @@ bodyEndBlock: Option[Html] = None)(contentBlock: Html)(implicit request: Request
     @scripts
 }
 
->>>>>>> 6a915d8... API-5196 - updated Layout to use GovukLayout
 
 
 @govukLayout(
     pageTitle = pageTitle,
-<<<<<<< HEAD
-    headBlock = Some(hmrcHead()),
-    headerBlock = Some(siteHeader()),
-    scriptsBlock = None,
-    beforeContentBlock = None,
-    footerBlock = Some(hmrcFooter(new Footer(meta= None, language = En))),
-    assetPath = None,
-    cspNonce = None
-)(contentBlock)
-=======
     headBlock = Some(head(headBlock)),
     headerBlock = None,
     scriptsBlock = None,
@@ -80,4 +52,3 @@ bodyEndBlock: Option[Html] = None)(contentBlock: Html)(implicit request: Request
     beforeContentBlock = None,
     bodyEndBlock = Some(bodyEndDefault)
 )(contentBlock)
->>>>>>> 6a915d8... API-5196 - updated Layout to use GovukLayout

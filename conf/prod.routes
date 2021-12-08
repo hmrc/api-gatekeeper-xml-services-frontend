@@ -1,9 +1,5 @@
 # Add all the application routes to the app.routes file
 ->         /api-gatekeeper-xml-services             app.Routes
 ->         /                                        health.Routes
-->         /api-gatekeeper-xml-services/govuk-frontend            govuk.Routes
-->         /api-gatekeeper-xml-services/hmrc-frontend             hmrcfrontend.Routes
 
 GET        /admin/metrics                           com.kenshoo.play.metrics.MetricsController.metrics
-
-GET        /api-gatekeeper-xml-services/assets/*file              controllers.Assets.versioned(path = "/public", file: Asset)

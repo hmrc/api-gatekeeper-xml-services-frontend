@@ -56,12 +56,12 @@
     .govuk-sub-nav-link--active a:link, .govuk-sub-nav-link--active a:hover, .govuk-sub-nav-link--active a:visited {
       color: #1d8feb ;
     }
-    
+
     .govuk-sub-nav-link--active a:focus {
       color: #0b0c0c;
     }
   }
-  
+
   @media (min-width: 40.0625em) {
     .govuk-sub-nav {
       &-bar {
@@ -85,7 +85,7 @@
       }
     }
   }
-  
+
 =======
 $govuk-assets-path: "/api-gatekeeper-xml-services/assets/lib/govuk-frontend/govuk/assets/";
 $hmrc-assets-path: "/api-gatekeeper-xml-services/assets/lib/hmrc-frontend/hmrc/";
