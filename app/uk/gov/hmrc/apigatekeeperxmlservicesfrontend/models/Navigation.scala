@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package model
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models
 
-import controllers.routes
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes
 import play.api.libs.json.Json
 
 case class NavLink(label: String, href: Option[String])
@@ -29,10 +29,7 @@ case object StaticNavLinks {
 
   def apply(): Seq[NavLink] = {
     Seq(
-      NavLink("Applications", Some(routes.ApplicationController.applicationsPage(None).url)),
-      NavLink("Developers", Some(routes.Developers2Controller.blankDevelopersPage().url)),
-      NavLink("Email", Some(routes.EmailsController.landing().url)),
-      NavLink("API Approvals", Some(routes.DeploymentApprovalController.pendingPage().url))
+      NavLink("XML", Some(routes.OrganisationController.organisationsPage.url))
     )
   }
 }

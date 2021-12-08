@@ -29,66 +29,20 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.GatekeeperRole
 import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationSearchView
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
-
-import java.{util => ju}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.VendorId
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
-import play.api.libs.json.Json
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ErrorTemplate
-import uk.gov.hmrc.http.UpstreamErrorResponse
-import scala.util.Try
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInRequest
 
 @Singleton
-class OrganisationController @Inject() (
-    mcc: MessagesControllerComponents,
-    organisationSearchView: OrganisationSearchView,
-    override val authConnector: AuthConnector,
-    val forbiddenView: ForbiddenView,
-    errorTemplate: ErrorTemplate,
-    xmlServicesConnector: XmlServicesConnector
-  )(implicit val ec: ExecutionContext,
-    appConfig: AppConfig)
+class OrganisationController @Inject()(
+                                        mcc: MessagesControllerComponents,
+                                        organisationSearchView: OrganisationSearchView,
+                                        override val authConnector: AuthConnector,
+                                        val forbiddenView: ForbiddenView)
+                                      (implicit val ec: ExecutionContext, appConfig: AppConfig)
     extends FrontendController(mcc)
     with GatekeeperAuthWrapper {
 
   val organisationsPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
-    implicit request =>
-      Future.successful(Ok(organisationSearchView(List.empty, false)))
+   implicit request =>
+    Future.successful(Ok(organisationSearchView()))
   }
 
-  private def toVendorIdOrNone(txtVal: Option[String]): Option[VendorId] = {
-    txtVal.flatMap(x => Try(x.toLong).toOption.map(VendorId(_)))
-  }
-    
-  private def isValidVendorId(txtVal: Option[String]): Boolean = {
-    if(txtVal.nonEmpty && txtVal.head.isEmpty) true
-    else toVendorIdOrNone(txtVal).nonEmpty
-  }
-
-  def organisationsSearchAction(searchType: String, maybeSearchText: Option[String]): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
-    implicit request =>
-      (searchType, maybeSearchText) match {
-        case (vendorIdParameterName, _) if isValidVendorId(maybeSearchText) => xmlServicesConnector.findOrganisationsByParams(toVendorIdOrNone(maybeSearchText)).map {
-            case Right(orgs: List[Organisation])                 => Ok(organisationSearchView(orgs))
-            case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) => Ok(organisationSearchView(List.empty))
-            case Left(_)                                         => {
-              InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
-            }
-          }
-
-        case _                                   => {
-          Future.successful(Ok(organisationSearchView(List.empty)))
-        }
-      }
-
-  }
-
-}
-
-object OrganisationController {
-  val vendorIdParameterName = "vendor-id"
 }
