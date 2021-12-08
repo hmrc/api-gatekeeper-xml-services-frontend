@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 @import "lib/govuk-frontend/govuk/base";
 
 
@@ -85,3 +86,11 @@
     }
   }
   
+=======
+$govuk-assets-path: "/api-gatekeeper-xml-services/assets/lib/govuk-frontend/govuk/assets/";
+$hmrc-assets-path: "/api-gatekeeper-xml-services/assets/lib/hmrc-frontend/hmrc/";
+
+@import "lib/govuk-frontend/govuk/all";
+@import "lib/hmrc-frontend/hmrc/all";
+
+>>>>>>> 6a915d8... API-5196 - updated Layout to use GovukLayout

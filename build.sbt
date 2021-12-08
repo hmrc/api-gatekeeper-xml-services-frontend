@@ -10,12 +10,21 @@ lazy val microservice = Project(appName, file("."))
     majorVersion                     := 0,
     scalaVersion                     := "2.12.13",
     libraryDependencies              ++= AppDependencies.compile ++ AppDependencies.test,
+<<<<<<< HEAD
     TwirlKeys.templateImports ++= Seq(
       "views.html.helper.CSPNonce",
       "uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig",
       "uk.gov.hmrc.govukfrontend.views.html.components._",
       "uk.gov.hmrc.hmrcfrontend.views.html.components._",
       "uk.gov.hmrc.hmrcfrontend.views.html.helpers._"
+=======
+        TwirlKeys.templateImports ++= Seq(
+      "play.twirl.api.HtmlFormat",
+      "uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig",
+      "uk.gov.hmrc.govukfrontend.views.html.components._",
+      "uk.gov.hmrc.govukfrontend.views.html.helpers._",
+      "uk.gov.hmrc.hmrcfrontend.views.html.components._"
+>>>>>>> 6a915d8... API-5196 - updated Layout to use GovukLayout
     ),
     pipelineStages in Assets := Seq(gzip),
   )
