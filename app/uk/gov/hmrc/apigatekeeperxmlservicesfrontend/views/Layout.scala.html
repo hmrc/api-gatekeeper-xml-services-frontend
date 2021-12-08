@@ -16,16 +16,20 @@
 
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 @import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcLayout
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.HeaderNavLinks
 @import views.html.helper.CSPNonce
 
-@this(
-        appConfig: AppConfig,
-        hmrcLayout: HmrcLayout
-)
-@(pageTitle: Option[String] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
+@this(hmrcLayout: HmrcLayout,
+headerNavLinks: HeaderNavLinks,
+appConfig: AppConfig)
+
+@(pageTitle: Option[String] = None,
+        scriptsBlock: Option[Html] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
 
 @hmrcLayout(
     pageTitle = pageTitle,
-    nonce = CSPNonce.get,
-    isWelshTranslationAvailable = appConfig.welshLanguageSupportEnabled
+    additionalHeadBlock = Some(headerNavLinks()),
+    additionalScriptsBlock = scriptsBlock,
+    isWelshTranslationAvailable = false,
+    nonce = CSPNonce.get
 )(contentBlock)

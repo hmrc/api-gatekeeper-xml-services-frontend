@@ -19,9 +19,9 @@
 @this(layout: Layout)
 
 
-@()(implicit request: Request[_], messages: Messages)
+@()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@layout(pageTitle = Some("api-gatekeeper-xml-services-frontend")) {
+@layout(pageTitle = Some("HMRC API Gatekeeper")) {
     <h1 id="page-heading" class="govuk-heading-xl">Manage XML Organisations - HMRC API Gatekeeper</h1>
     <p id="page-body" class="govuk-body">@{messages("service.text")}</p>
 }

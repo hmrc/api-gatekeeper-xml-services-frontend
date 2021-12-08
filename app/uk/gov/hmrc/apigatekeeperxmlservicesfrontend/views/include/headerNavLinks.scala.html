@@ -14,15 +14,27 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.NavLink
-@(navLinks: Seq[NavLink], anchorClass: Option[String] = None)
+@this()
 
-@for(link <- navLinks) {
-<li @if(link == navLinks.last) {class="hard--right"}>
-   @if(link.href.isDefined) {
-      <a class="align--middle inline-block @anchorClass.getOrElse("")" href="@{link.href}">@{link.label}</a>
-   } else {
-      <span class="align--middle inline-block">@{link.label}</span>
-   }
-</li>
-}
+ @()
+ <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/application.css")'>
+
+ <div role="navigation" class="govuk-sub-nav-bar">
+     <div class="govuk-width-container govuk-sub-nav-container">
+      
+
+             <ul id="navigation" class="govuk-sub-nav-links" aria-label="Navigation links">
+                 <li class='govuk-sub-nav-link'>
+                     <a id="nav-get-started-link" href="#" class="govuk-header__link">Applications</a>
+                 </li>
+               
+             </ul>
+
+             <ul id="navigation" class="govuk-sub-nav-links" aria-label="Navigation links">
+               <li class='govuk-sub-nav-link govuk-sub-nav-link--active'>
+                   <a id="nav-get-started-link" href="#" class="govuk-header__link">Xml</a>
+               </li>
+             
+           </ul>
+     </div>
+ </div>
