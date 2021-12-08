@@ -16,20 +16,37 @@
 
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 @import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcLayout
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.siteHeader
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.Header
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.HeaderNavLinks
 @import views.html.helper.CSPNonce
 
-@this(hmrcLayout: HmrcLayout,
-headerNavLinks: HeaderNavLinks,
+@this(  govukLayout: GovukLayout,
+        siteHeader: siteHeader,
+        headerNavLinks: HeaderNavLinks,
+        hmrcStandardHeader: HmrcStandardHeader,
+        hmrcStandardFooter: HmrcStandardFooter,
+        hmrcHead: HmrcHead,
 appConfig: AppConfig)
 
 @(pageTitle: Option[String] = None,
         scriptsBlock: Option[Html] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
 
-@hmrcLayout(
+
+@headerBlock = {
+@siteHeader()
+}
+
+
+
+
+@govukLayout(
     pageTitle = pageTitle,
-    additionalHeadBlock = Some(headerNavLinks()),
-    additionalScriptsBlock = scriptsBlock,
-    isWelshTranslationAvailable = false,
-    nonce = CSPNonce.get
+    headBlock = Some(hmrcHead()),
+    headerBlock = Some(headerBlock),
+    scriptsBlock = None,
+    beforeContentBlock = None,
+    footerBlock = Some(hmrcStandardFooter()),
+    assetPath = None,
+    cspNonce = None
 )(contentBlock)
