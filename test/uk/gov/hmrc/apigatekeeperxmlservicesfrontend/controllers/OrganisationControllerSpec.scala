@@ -19,20 +19,21 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 import play.api.http.Status
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.HelloWorldPage
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationSearchView
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class HelloWorldControllerSpec extends ControllerBaseSpec {
+class OrganisationControllerSpec extends ControllerBaseSpec {
 
   trait Setup extends ControllerSetupBase {
-    val fakeRequest = FakeRequest("GET", "/hello-world")
+    val fakeRequest = FakeRequest("GET", "/organisations")
     private lazy val forbiddenView = app.injector.instanceOf[ForbiddenView]
-    private lazy val helloWorldPage = app.injector.instanceOf[HelloWorldPage]
+    private lazy val organisationSearchView = app.injector.instanceOf[OrganisationSearchView]
 
-    val controller = new HelloWorldController(
+    val controller = new OrganisationController(
       mcc,
-      helloWorldPage,
+      organisationSearchView,
       mockAuthConnector,
       forbiddenView
     )
@@ -41,19 +42,19 @@ class HelloWorldControllerSpec extends ControllerBaseSpec {
   "GET /" should {
     "return 200" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-      val result = controller.helloWorld(fakeRequest)
+      val result = controller.organisationsPage(fakeRequest)
       status(result) shouldBe Status.OK
     }
 
     "return forbidden view" in new Setup {
       givenAUnsuccessfulLogin()
-      val result = controller.helloWorld(fakeRequest)
+      val result = controller.organisationsPage(fakeRequest)
       status(result) shouldBe Status.SEE_OTHER
     }
 
     "return HTML" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-      val result = controller.helloWorld(fakeRequest)
+      val result = controller.organisationsPage(fakeRequest)
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
     }

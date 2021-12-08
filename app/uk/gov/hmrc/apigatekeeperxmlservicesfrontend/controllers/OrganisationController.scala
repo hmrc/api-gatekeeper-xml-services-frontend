@@ -16,31 +16,33 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.HelloWorldPage
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.AuthConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.GatekeeperRole
+
 import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationSearchView
 
 @Singleton
-class HelloWorldController @Inject()(
-  mcc: MessagesControllerComponents,
-  helloWorldPage: HelloWorldPage,
-  override val authConnector: AuthConnector,
-  val forbiddenView: ForbiddenView)
-  (implicit val ec: ExecutionContext, appConfig: AppConfig)
-    extends FrontendController(mcc) 
+class OrganisationController @Inject()(
+                                        mcc: MessagesControllerComponents,
+                                        organisationSearchView: OrganisationSearchView,
+                                        override val authConnector: AuthConnector,
+                                        val forbiddenView: ForbiddenView)
+                                      (implicit val ec: ExecutionContext, appConfig: AppConfig)
+    extends FrontendController(mcc)
     with GatekeeperAuthWrapper {
 
-  val helloWorld: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  val organisationsPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
    implicit request =>
-    Future.successful(Ok(helloWorldPage()))
+    Future.successful(Ok(organisationSearchView()))
   }
 
 }

@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
+package controllers
 
 import org.scalatest.BeforeAndAfterEach
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.{WSClient, WSResponse}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
 import play.api.test.Helpers.{NOT_FOUND, OK, FORBIDDEN}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.AuthServiceStub
+import support.AuthServiceStub
 import org.jsoup.Jsoup
 
-class HelloWorldControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with AuthServiceStub {
+class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with AuthServiceStub {
 
 
   protected override def appBuilder: GuiceApplicationBuilder =
@@ -51,21 +51,21 @@ class HelloWorldControllerISpec extends ServerBaseISpec with BeforeAndAfterEach 
       .futureValue
 
 
-  "HelloWorldController" when {
+  "OrganisationController" when {
 
     "GET /" should {
-      "respond with 200 and render hello world page" in {
+      "respond with 200 and render organisation search page" in {
         primeAuthServiceSuccess
-        val result = callGetEndpoint(s"$url/hello-world", List.empty)
+        val result = callGetEndpoint(s"$url/organisations", List.empty)
         result.status mustBe OK
         val content = Jsoup.parse(result.body)
-        content.getElementById("page-heading").text() mustBe "api-gatekeeper-xml-services-frontend"
+        content.getElementById("page-heading").text() mustBe "Manage XML Organisations - HMRC API Gatekeeper"
 
       }
 
       "respond with 403 and render the Forbidden view" in {
         primeAuthServiceFail
-        val result = callGetEndpoint(s"$url/hello-world", List.empty)
+        val result = callGetEndpoint(s"$url/organisations", List.empty)
         result.status mustBe FORBIDDEN
         val content = Jsoup.parse(result.body)
         content.getElementById("page-heading").text() mustBe "You do not have permission to access Gatekeeper"
