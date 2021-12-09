@@ -34,27 +34,29 @@
 
         </legend>
 
+        @helper.form(action = uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsSearchAction("", "")) {
+            
 
         <div id="search-by-hint" class="govuk-hint">
             Choose to search by vendor ID, email address or organisation.
         </div>
             <div class="govuk-radios govuk-radios govuk-radios--small">
             <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="vendor-id" name="vendor-id" type="radio"
+                <input class="govuk-radios__input" id="vendor-id" name="searchType" type="radio"
                     value="vendor-id">
                 <label class="govuk-label govuk-radios__label" for="vendor-id">
                     Vendor ID
                 </label>
             </div>
             <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="email-address" name="email-address" type="radio"
+                <input class="govuk-radios__input" id="email-address" name="searchType" type="radio"
                     value="email-address">
                 <label class="govuk-label govuk-radios__label" for="email-address">
                     Email address
                 </label>
             </div>
             <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="organisation" name="organisation" type="radio"
+                <input class="govuk-radios__input" id="organisation" name="searchType" type="radio"
                     value="organisation">
                 <label class="govuk-label govuk-radios__label" for="organisation">
                     Organisation
@@ -65,4 +67,16 @@
 
     </fieldset>
 </div>
+
+    <div class="govuk-form-group">
+        <label class="govuk-label govuk-visually-hidden" for="width-20">
+        Search
+        </label>
+        <input id="search-organisation-input" class="govuk-input govuk-input--width-20" id="width-20" name="searchText" type="text">
+
+        <button id="search-organisation-button" class="govuk-button" data-module="govuk-button" type="submit">
+        Search
+        </button>
+    </div>
+}
 }

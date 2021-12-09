@@ -31,18 +31,24 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationSearchView
 
 @Singleton
-class OrganisationController @Inject()(
-                                        mcc: MessagesControllerComponents,
-                                        organisationSearchView: OrganisationSearchView,
-                                        override val authConnector: AuthConnector,
-                                        val forbiddenView: ForbiddenView)
-                                      (implicit val ec: ExecutionContext, appConfig: AppConfig)
+class OrganisationController @Inject() (
+    mcc: MessagesControllerComponents,
+    organisationSearchView: OrganisationSearchView,
+    override val authConnector: AuthConnector,
+    val forbiddenView: ForbiddenView
+  )(implicit val ec: ExecutionContext,
+    appConfig: AppConfig)
     extends FrontendController(mcc)
     with GatekeeperAuthWrapper {
 
   val organisationsPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
-   implicit request =>
-    Future.successful(Ok(organisationSearchView()))
+    implicit request =>
+      Future.successful(Ok(organisationSearchView()))
+  }
+
+  def organisationsSearchAction(searchType: String, searchText: String): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+    implicit request =>
+      Future.successful(Ok("HELLO!!!"))
   }
 
 }
