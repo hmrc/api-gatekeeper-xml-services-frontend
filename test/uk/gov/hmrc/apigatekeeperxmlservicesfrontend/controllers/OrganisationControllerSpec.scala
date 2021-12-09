@@ -28,6 +28,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
 
   trait Setup extends ControllerSetupBase {
     val fakeRequest = FakeRequest("GET", "/organisations")
+    val organisationSearchRequest = FakeRequest("GET", "/organisations-search")
     private lazy val forbiddenView = app.injector.instanceOf[ForbiddenView]
     private lazy val organisationSearchView = app.injector.instanceOf[OrganisationSearchView]
 
@@ -39,11 +40,14 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
     )
   }
 
-  "GET /" should {
+  "GET /organisations" should {
     "return 200" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       val result = controller.organisationsPage(fakeRequest)
       status(result) shouldBe Status.OK
+      contentType(result) shouldBe Some("text/html")
+      charset(result) shouldBe Some("utf-8")
+      contentAsString(result) contains "Search for XML organisations"
     }
 
     "return forbidden view" in new Setup {
@@ -51,12 +55,17 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
       val result = controller.organisationsPage(fakeRequest)
       status(result) shouldBe Status.SEE_OTHER
     }
+  }
 
-    "return HTML" in new Setup {
+  "GET /organisations-search" should {
+    "return 200" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-      val result = controller.organisationsPage(fakeRequest)
+
+      val result = controller.organisationsSearchAction("vendorId", "searchString")(organisationSearchRequest)
+      status(result) shouldBe Status.OK
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
+      contentAsString(result) contains "Search for XML organisations"
     }
   }
 }
