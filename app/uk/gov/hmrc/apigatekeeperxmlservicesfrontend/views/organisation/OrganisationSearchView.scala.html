@@ -22,6 +22,47 @@
 @()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @layout(pageTitle = Some("HMRC API Gatekeeper")) {
-    <h1 id="page-heading" class="govuk-heading-xl">Manage XML Organisations - HMRC API Gatekeeper</h1>
-    <p id="page-body" class="govuk-body">@{messages("service.text")}</p>
+<div class="govuk-form-group">
+
+    <fieldset class="govuk-fieldset" aria-describedby="search-by-hint">
+
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+
+            <h1 class="govuk-fieldset__heading">
+                Search for XML organisations
+            </h1>
+
+        </legend>
+
+
+        <div id="search-by-hint" class="govuk-hint">
+            Choose to search by vendor ID, email address or organisation.
+        </div>
+            <div class="govuk-radios govuk-radios govuk-radios--small">
+            <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="vendor-id" name="vendor-id" type="radio"
+                    value="vendor-id">
+                <label class="govuk-label govuk-radios__label" for="vendor-id">
+                    Vendor ID
+                </label>
+            </div>
+            <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="email-address" name="email-address" type="radio"
+                    value="email-address">
+                <label class="govuk-label govuk-radios__label" for="email-address">
+                    Email address
+                </label>
+            </div>
+            <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="organisation" name="organisation" type="radio"
+                    value="organisation">
+                <label class="govuk-label govuk-radios__label" for="organisation">
+                    Organisation
+                </label>
+            </div>
+          
+        </div>
+
+    </fieldset>
+</div>
 }
