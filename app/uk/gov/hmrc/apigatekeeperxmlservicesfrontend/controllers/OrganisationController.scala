@@ -29,7 +29,11 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.GatekeeperRole
 import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationSearchView
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
 
+import java.{util => ju}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.VendorId
 @Singleton
 class OrganisationController @Inject() (
     mcc: MessagesControllerComponents,
@@ -43,12 +47,15 @@ class OrganisationController @Inject() (
 
   val organisationsPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request =>
-      Future.successful(Ok(organisationSearchView()))
+      Future.successful(Ok(organisationSearchView(List.empty)))
   }
 
   def organisationsSearchAction(searchType: String, searchText: String): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request =>
-      Future.successful(Ok("HELLO!!!"))
+      val org1 = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = VendorId(1), name = "Org 1")
+      val org2 = org1.copy(vendorId = VendorId(2), name = "Org 2")
+      val org3 = org1.copy(vendorId = VendorId(3), name = "Org 3")
+      Future.successful(Ok(organisationSearchView(List(org1, org2, org3))))
   }
 
 }

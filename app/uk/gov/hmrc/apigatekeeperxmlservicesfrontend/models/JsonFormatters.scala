@@ -16,21 +16,12 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models
 
-import uk.gov.hmrc.http.SessionKeys
-import java.{util => ju}
+import play.api.libs.json.Json
 
-object GatekeeperRole extends Enumeration {
-  type GatekeeperRole = Value
-  val USER,SUPERUSER,ADMIN = Value
+object JsonFormatters {
+
+  implicit val formatOrganisationId = Json.valueFormat[OrganisationId]
+  implicit val formatVendorId = Json.valueFormat[VendorId]
+  implicit val formatOrganisation = Json.format[Organisation]
+
 }
-
-object GatekeeperSessionKeys {
-  val LoggedInUser = "LoggedInUser"
-  val AuthToken = SessionKeys.authToken
-}
-
-case class OrganisationId(value: ju.UUID) extends AnyVal
-
-case class VendorId(value: Long) extends AnyVal
-
-case class Organisation(organisationId: OrganisationId, vendorId: VendorId, name: String)

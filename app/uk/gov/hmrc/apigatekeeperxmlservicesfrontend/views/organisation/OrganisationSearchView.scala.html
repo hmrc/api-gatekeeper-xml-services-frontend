@@ -15,20 +15,21 @@
  *@
 
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
 
 @this(layout: Layout)
 
 
-@()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@(organisations: List[Organisation])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@layout(pageTitle = Some("HMRC API Gatekeeper")) {
+@layout(pageTitle = Some("Manage XML Organisations - HMRC API Gatekeeper")) {
 <div class="govuk-form-group">
 
     <fieldset class="govuk-fieldset" aria-describedby="search-by-hint">
 
         <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
 
-            <h1 class="govuk-fieldset__heading">
+            <h1 id="page-heading" class="govuk-fieldset__heading">
                 Search for XML organisations
             </h1>
 
@@ -42,24 +43,10 @@
         </div>
             <div class="govuk-radios govuk-radios govuk-radios--small">
             <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="vendor-id" name="searchType" type="radio"
-                    value="vendor-id">
-                <label class="govuk-label govuk-radios__label" for="vendor-id">
+                <input class="govuk-radios__input" id="vendor-id-input" name="searchType" type="radio"
+                    value="vendor-id" checked>
+                <label id="vendor-id-label" class="govuk-label govuk-radios__label" for="vendor-id">
                     Vendor ID
-                </label>
-            </div>
-            <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="email-address" name="searchType" type="radio"
-                    value="email-address">
-                <label class="govuk-label govuk-radios__label" for="email-address">
-                    Email address
-                </label>
-            </div>
-            <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="organisation" name="searchType" type="radio"
-                    value="organisation">
-                <label class="govuk-label govuk-radios__label" for="organisation">
-                    Organisation
                 </label>
             </div>
           
@@ -72,11 +59,31 @@
         <label class="govuk-label govuk-visually-hidden" for="width-20">
         Search
         </label>
-        <input id="search-organisation-input" class="govuk-input govuk-input--width-20" id="width-20" name="searchText" type="text">
+        <input id="search-organisation-input" class="govuk-input govuk-input--width-20" name="searchText" type="text">
 
         <button id="search-organisation-button" class="govuk-button" data-module="govuk-button" type="submit">
         Search
         </button>
     </div>
 }
+@if(!organisations.isEmpty) {
+<table id="results-table" class="govuk-table">
+    <caption class="govuk-table__caption govuk-visually-hidden">Search results</caption>
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Vendor ID</th>
+        <th scope="col" class="govuk-table__header">Organisation</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+        @for(org <- organisations.zipWithIndex) {
+      <tr class="govuk-table__row">
+        <th id="vendor-id-@org._2" scope="row" class="govuk-table__cell">@org._1.vendorId.value</th>
+        <td id="name-@org._2" class="govuk-table__cell">@org._1.name</td>
+      </tr>
+    }
+    </tbody>
+  </table>
+}
+
 }
