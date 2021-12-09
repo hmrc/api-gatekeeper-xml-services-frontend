@@ -18,14 +18,13 @@
 @import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcLayout
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.siteHeader
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.Header
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.HeaderNavLinks
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.footer.Footer
 @import views.html.helper.CSPNonce
 
 @this(  govukLayout: GovukLayout,
         siteHeader: siteHeader,
-        headerNavLinks: HeaderNavLinks,
         hmrcStandardHeader: HmrcStandardHeader,
-        hmrcStandardFooter: HmrcStandardFooter,
+        hmrcFooter: HmrcFooter,
         hmrcHead: HmrcHead,
 appConfig: AppConfig)
 
@@ -33,20 +32,13 @@ appConfig: AppConfig)
         scriptsBlock: Option[Html] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
 
 
-@headerBlock = {
-@siteHeader()
-}
-
-
-
-
 @govukLayout(
     pageTitle = pageTitle,
     headBlock = Some(hmrcHead()),
-    headerBlock = Some(headerBlock),
+    headerBlock = Some(siteHeader()),
     scriptsBlock = None,
     beforeContentBlock = None,
-    footerBlock = Some(hmrcStandardFooter()),
+    footerBlock = Some(hmrcFooter(new Footer(meta= None, language = En))),
     assetPath = None,
     cspNonce = None
 )(contentBlock)

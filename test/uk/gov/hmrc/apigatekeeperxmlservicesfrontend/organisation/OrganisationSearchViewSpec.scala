@@ -22,18 +22,20 @@ import play.api.test.FakeRequest
 import play.twirl.api.Html
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationSearchView
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 
 
 class OrganisationSearchViewSpec extends CommonViewSpec {
 
   trait Setup {
+    val mockAppConfig = mock[AppConfig]
     val organisationSearchView = app.injector.instanceOf[OrganisationSearchView]
   }
 
   "Organisation Search View" should {
 
     "render page correctly" in new Setup {
-       val page : Html =    organisationSearchView.render(FakeRequest(), messagesProvider.messages)
+       val page : Html =    organisationSearchView.render(FakeRequest(), messagesProvider.messages, mockAppConfig)
        val document: Document = Jsoup.parse(page.body)
        document.getElementById("page-heading").text() shouldBe "Manage XML Organisations - HMRC API Gatekeeper"
        document.getElementById("page-body").text() shouldBe "This is your new service"
