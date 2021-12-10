@@ -32,6 +32,7 @@ import uk.gov.hmrc.http.BadRequestException
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
 import java.{util => ju}
 import play.api.libs.json.Json
+import uk.gov.hmrc.http.NotFoundException
 
 class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach {
 
@@ -61,8 +62,8 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
   "findOrganisationByVendorId" should {
 
     "return Left when back end returns Bad Request" in new Setup {
-      findOrganisationByVendorIdReturnsError(vendorId.value.toString, BAD_REQUEST)
-      val result = await(objInTest.findOrganisationByVendorId(vendorId))
+      findOrganisationByVendorIdReturnsError(Some(vendorId.value.toString), BAD_REQUEST)
+      val result = await(objInTest.findOrganisationsByParams(Some(vendorId)))
 
       result match {
         case Left(e: BadRequestException) => e.responseCode mustBe BAD_REQUEST
@@ -71,22 +72,42 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
     }
 
-    "return Right(None) when back end returns Not Found" in new Setup {
-      findOrganisationByVendorIdReturnsError(vendorId.value.toString, NOT_FOUND)
-      val result = await(objInTest.findOrganisationByVendorId(vendorId))
+    "return Left when back end returns Not Found" in new Setup {
+      findOrganisationByVendorIdReturnsError(Some(vendorId.value.toString), NOT_FOUND)
+      val result = await(objInTest.findOrganisationsByParams(Some(vendorId)))
 
       result match {
-        case Right(organisation) => organisation mustBe None
+        case Left(e: NotFoundException) => e.responseCode mustBe NOT_FOUND
         case _ => fail
       }
     }
 
-    "return Right(Organisation) when back end returns Organisation" in new Setup {
-      findOrganisationByVendorIdReturnsResponseWithBody(vendorId.value.toString, OK, Json.toJson(organisation).toString)
-      val result = await(objInTest.findOrganisationByVendorId(vendorId))
+    "return Left when back end returns Internal Server Error" in new Setup {
+      findOrganisationByVendorIdReturnsError(Some(vendorId.value.toString), INTERNAL_SERVER_ERROR)
+      val result = await(objInTest.findOrganisationsByParams(Some(vendorId)))
 
       result match {
-        case Right(org) => org mustBe Some(organisation)
+        case Left(e: UpstreamErrorResponse) => e.statusCode mustBe INTERNAL_SERVER_ERROR
+        case _ => fail
+      }
+    }
+
+    "return Right(List(Organisation)) when back end returns a List of Organisations" in new Setup {
+      findOrganisationByVendorIdReturnsResponseWithBody(Some(vendorId.value.toString), OK, Json.toJson(List(organisation)).toString)
+      val result = await(objInTest.findOrganisationsByParams(Some(vendorId)))
+
+      result match {
+        case Right(org) => org mustBe List(organisation)
+        case _ => fail
+      }
+    }
+
+    "return Right(List(Organisation)) when no vendorId is passed in and the back end returns a List of Organisations" in new Setup {
+      findOrganisationByVendorIdReturnsResponseWithBody(None, OK, Json.toJson(List(organisation)).toString)
+      val result = await(objInTest.findOrganisationsByParams(None))
+
+      result match {
+        case Right(org) => org mustBe List(organisation)
         case _ => fail
       }
     }

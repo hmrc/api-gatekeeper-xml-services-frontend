@@ -22,9 +22,12 @@ trait XmlServicesStub {
 
   val baseUrl = "/api-platform-xml-services"
 
-  def findOrganisationByVendorIdUrl(vendorId: String) = s"$baseUrl/organisations?vendorId=$vendorId"
-
-  def findOrganisationByVendorIdReturnsError(vendorId: String, status: Int) = {
+  private def findOrganisationByVendorIdUrl(vendorId: Option[String]) = vendorId match {
+    case None => s"$baseUrl/organisations"
+    case Some(v) => s"$baseUrl/organisations?vendorId=$v"
+  }
+    
+  def findOrganisationByVendorIdReturnsError(vendorId: Option[String], status: Int) = {
 
     stubFor(get(urlEqualTo(findOrganisationByVendorIdUrl(vendorId)))
       .willReturn(
@@ -34,7 +37,7 @@ trait XmlServicesStub {
       ))
   }
 
-  def findOrganisationByVendorIdReturnsResponseWithBody(vendorId: String, status: Int, responseBody: String) = {
+  def findOrganisationByVendorIdReturnsResponseWithBody(vendorId: Option[String], status: Int, responseBody: String) = {
 
     stubFor(get(urlEqualTo(findOrganisationByVendorIdUrl(vendorId)))
       .willReturn(

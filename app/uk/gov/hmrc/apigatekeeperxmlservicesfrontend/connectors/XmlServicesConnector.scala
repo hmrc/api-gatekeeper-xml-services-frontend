@@ -34,10 +34,10 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
 
   val baseUrl: String = s"${config.serviceBaseUrl}/api-platform-xml-services"
 
-  def findOrganisationByVendorId(vendorId: VendorId)(implicit hc: HeaderCarrier): Future[Either[Throwable, Option[Organisation]]] = {
+  def findOrganisationsByParams(vendorId: Option[VendorId])(implicit hc: HeaderCarrier): Future[Either[Throwable, List[Organisation]]] = {
+    val params = vendorId.map(v => Seq(("vendorId" -> v.value.toString))).getOrElse(Seq.empty)
 
-    handleResult(http.GET[Option[Organisation]](url = s"${baseUrl}/organisations", queryParams = Seq(("vendorId" -> vendorId.value.toString))))
-
+    handleResult(http.GET[List[Organisation]](url = s"${baseUrl}/organisations", queryParams = params))
   }
 
   private def handleResult[A](result: Future[A]): Future[Either[Throwable, A]] = {
