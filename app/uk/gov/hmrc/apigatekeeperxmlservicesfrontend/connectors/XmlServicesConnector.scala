@@ -62,11 +62,11 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
           Left(e)
       }
   }
+  
+} 
 
-}
-
-object XmlServicesConnector {
-
-  case class Config(
-      serviceBaseUrl: String)
+object XmlServicesConnector{
+    case class Config(
+      serviceBaseUrl: String
+  )
 }
