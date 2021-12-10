@@ -26,22 +26,32 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import scala.concurrent.Future
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector._
 import uk.gov.hmrc.http.HeaderCarrier
+import scala.util.control.NonFatal
+import play.api.Logging
 
 @Singleton
-class XmlServicesConnector @Inject()(val http: HttpClient,  val config: Config)(implicit ec: ExecutionContext) {
+class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(implicit ec: ExecutionContext) extends Logging {
 
-   val serviceBaseUrl: String = config.serviceBaseUrl
+  val baseUrl: String = s"${config.serviceBaseUrl}/api-platform-xml-services"
 
-  def findOrganisationByVendorId(vendorId: VendorId)(implicit hc: HeaderCarrier): Future[Option[Organisation]] = {
+  def findOrganisationByVendorId(vendorId: VendorId)(implicit hc: HeaderCarrier): Future[Either[Throwable, Option[Organisation]]] = {
 
-    http.GET[Option[Organisation]](url = s"${serviceBaseUrl}/organisations" , queryParams = Seq(("vendorId" -> vendorId.value.toString)))
+    handleResult(http.GET[Option[Organisation]](url = s"${baseUrl}/organisations", queryParams = Seq(("vendorId" -> vendorId.value.toString))))
 
   }
-  
-} 
 
-object XmlServicesConnector{
-    case class Config(
-      serviceBaseUrl: String
-  )
+  private def handleResult[A](result: Future[A]): Future[Either[Throwable, A]] = {
+    result.map(x => Right(x))
+      .recover {
+        case NonFatal(e) => logger.error(e.getMessage)
+          Left(e)
+      }
+  }
+
+}
+
+object XmlServicesConnector {
+
+  case class Config(
+      serviceBaseUrl: String)
 }
