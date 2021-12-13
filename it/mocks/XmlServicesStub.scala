@@ -17,16 +17,27 @@
 package mocks
 
 import com.github.tomakehurst.wiremock.client.WireMock._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
+import play.api.libs.json.Json
 
 trait XmlServicesStub {
 
   val baseUrl = "/api-platform-xml-services"
 
-  private def findOrganisationByVendorIdUrl(vendorId: Option[String]) = vendorId match {
-    case None => s"$baseUrl/organisations"
+  val organisationUrl = s"$baseUrl/organisations"
+
+  def findOrganisationByVendorIdUrl(vendorId: Option[String]) = vendorId match {
+    case None    => s"$baseUrl/organisations"
     case Some(v) => s"$baseUrl/organisations?vendorId=$v"
   }
-    
+
+  def createOrganisationRequestAsString(organisationName: String): String = {
+    val body = Json.toJson(CreateOrganisationRequest(organisationName = organisationName)).toString
+    println(s"****** $body")
+    body
+  }
+
   def findOrganisationByVendorIdReturnsError(vendorId: Option[String], status: Int) = {
 
     stubFor(get(urlEqualTo(findOrganisationByVendorIdUrl(vendorId)))
@@ -45,6 +56,16 @@ trait XmlServicesStub {
           .withStatus(status)
           .withHeader("Content-Type", "application/json")
           .withBody(responseBody)
+      ))
+  }
+
+  def addOrganisationReturnsResponse(organisationName: String, status: Int) = {
+
+    stubFor(post(urlEqualTo(organisationUrl))
+      .withRequestBody(equalToJson(createOrganisationRequestAsString(organisationName).toString()))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
       ))
   }
 }

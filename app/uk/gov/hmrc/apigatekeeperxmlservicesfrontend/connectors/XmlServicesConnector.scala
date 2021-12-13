@@ -20,14 +20,16 @@ import javax.inject.{Inject, Singleton}
 
 import uk.gov.hmrc.http.HttpClient
 import scala.concurrent.ExecutionContext
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.VendorId
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
+
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import scala.concurrent.Future
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector._
 import uk.gov.hmrc.http.HeaderCarrier
 import scala.util.control.NonFatal
 import play.api.Logging
+import uk.gov.hmrc.http.UpstreamErrorResponse
+import uk.gov.hmrc.http.HttpReads.Implicits._
 
 @Singleton
 class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(implicit ec: ExecutionContext) extends Logging {
@@ -38,6 +40,19 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
     val params = vendorId.map(v => Seq(("vendorId" -> v.value.toString))).getOrElse(Seq.empty)
 
     handleResult(http.GET[List[Organisation]](url = s"${baseUrl}/organisations", queryParams = params))
+  }
+  
+  def addOrganisation(organisationName: String)(implicit hc: HeaderCarrier): Future[Either[Throwable, CreateOrganisationResult]] = {
+    val createOrganisationRequest: CreateOrganisationRequest = CreateOrganisationRequest(organisationName = organisationName)
+
+    http.POST[CreateOrganisationRequest, Either[UpstreamErrorResponse, Unit]](
+      url = s"${baseUrl}/organisations",
+      body = createOrganisationRequest
+    )
+    .map(_ match {
+      case Right(_) => Right(CreateOrganisationSuccessResult)
+      case Left(err) => throw err
+    })
   }
 
   private def handleResult[A](result: Future[A]): Future[Either[Throwable, A]] = {

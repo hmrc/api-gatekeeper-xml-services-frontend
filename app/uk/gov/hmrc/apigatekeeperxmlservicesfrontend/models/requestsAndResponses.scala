@@ -16,13 +16,8 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models
 
-import play.api.libs.json.Json
+case class CreateOrganisationRequest(organisationName: String)
 
-object JsonFormatters {
-
-  implicit val formatOrganisationId = Json.valueFormat[OrganisationId]
-  implicit val formatVendorId = Json.valueFormat[VendorId]
-  implicit val formatOrganisation = Json.format[Organisation]
-  implicit val formatCreateOrganisationRequest = Json.format[CreateOrganisationRequest]
-
-}
+sealed trait CreateOrganisationResult
+case object CreateOrganisationSuccessResult extends CreateOrganisationResult
+case object CreateOrganisationFailureResult extends CreateOrganisationResult

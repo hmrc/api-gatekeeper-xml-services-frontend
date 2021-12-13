@@ -28,13 +28,17 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import play.api.test.Helpers._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
 import uk.gov.hmrc.http.UpstreamErrorResponse
-import uk.gov.hmrc.http.BadRequestException
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
 import java.{util => ju}
 import play.api.libs.json.Json
-import uk.gov.hmrc.http.NotFoundException
+import uk.gov.hmrc.http.Upstream4xxResponse
+import uk.gov.hmrc.http.HttpReads.Implicits._
 
 class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach {
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+  }
 
   protected override def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
@@ -59,15 +63,15 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     val organisation = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = vendorId, name = "Org name")
   }
 
-  "findOrganisationByVendorId" should {
+  /* "findOrganisationByVendorId" should {
 
     "return Left when back end returns Bad Request" in new Setup {
       findOrganisationByVendorIdReturnsError(Some(vendorId.value.toString), BAD_REQUEST)
       val result = await(objInTest.findOrganisationsByParams(Some(vendorId)))
 
       result match {
-        case Left(e: BadRequestException) => e.responseCode mustBe BAD_REQUEST
-        case _ => fail
+        case Left(e: Upstream4xxResponse) => e.statusCode mustBe BAD_REQUEST
+        case _                            => fail
       }
 
     }
@@ -77,8 +81,8 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       val result = await(objInTest.findOrganisationsByParams(Some(vendorId)))
 
       result match {
-        case Left(e: NotFoundException) => e.responseCode mustBe NOT_FOUND
-        case _ => fail
+        case Left(e: Upstream4xxResponse) => e.statusCode mustBe NOT_FOUND
+        case _                            => fail
       }
     }
 
@@ -88,7 +92,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case Left(e: UpstreamErrorResponse) => e.statusCode mustBe INTERNAL_SERVER_ERROR
-        case _ => fail
+        case _                              => fail
       }
     }
 
@@ -98,7 +102,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case Right(org) => org mustBe List(organisation)
-        case _ => fail
+        case _          => fail
       }
     }
 
@@ -108,8 +112,24 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case Right(org) => org mustBe List(organisation)
-        case _ => fail
+        case _          => fail
       }
+    }
+  } */
+
+  "addOrganisation" should {
+
+    "return Left when back end returns Bad Request NEW" in new Setup {
+      addOrganisationReturnsResponse(organisation.name, BAD_REQUEST)
+      val result = await(objInTest.addOrganisation(organisation.name))
+
+      println(s"***** $result")
+
+      result match {
+        case Left(e: Upstream4xxResponse) => e.statusCode mustBe BAD_REQUEST
+        case _                            => fail
+      }
+
     }
   }
 
