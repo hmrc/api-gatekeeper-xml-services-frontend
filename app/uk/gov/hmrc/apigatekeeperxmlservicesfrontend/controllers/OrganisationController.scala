@@ -57,17 +57,16 @@ class OrganisationController @Inject() (
 
   val organisationsPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request =>
-      Future.successful(Ok(organisationSearchView(List.empty)))
+      Future.successful(Ok(organisationSearchView(List.empty, false)))
   }
-
-
 
   private def toVendorIdOrNone(txtVal: Option[String]): Option[VendorId] = {
     txtVal.flatMap(x => Try(x.toLong).toOption.map(VendorId(_)))
   }
     
   private def isValidVendorId(txtVal: Option[String]): Boolean = {
-   toVendorIdOrNone(txtVal).nonEmpty
+    if(txtVal.nonEmpty && txtVal.head.isEmpty) true
+    else toVendorIdOrNone(txtVal).nonEmpty
   }
 
   def organisationsSearchAction(searchType: String, maybeSearchText: Option[String]): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
@@ -77,13 +76,11 @@ class OrganisationController @Inject() (
             case Right(orgs: List[Organisation])                 => Ok(organisationSearchView(orgs))
             case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) => Ok(organisationSearchView(List.empty))
             case Left(_)                                         => {
-              println(s"*********** 1st internal server error")
               InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
             }
           }
 
         case _                                   => {
-          println(s"****** catch all at bottom $searchType $maybeSearchText")
           Future.successful(Ok(organisationSearchView(List.empty)))
         }
       }

@@ -22,6 +22,8 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationSearchView
 
+import scala.concurrent.Future
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.VendorId
 import scala.concurrent.ExecutionContext.Implicits.global
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ErrorTemplate
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
@@ -64,10 +66,19 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
   }
 
   "GET /organisations-search" should {
-    "return 200" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+    // to test :-
+    // invalid search type
+    // vendor id search type empty search text
+    /// vendor id  search type non long vendor
+    // vendor id search type with valid vendor id
 
-      val result = controller.organisationsSearchAction("vendorId", Some("searchString"))(organisationSearchRequest)
+    "return 200 when vendor-id search type and valid vendor id" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      val vendorId = 9001L
+      when(mockXmlServiceConnector.findOrganisationsByParams(eqTo(Some(VendorId(vendorId)))))
+      .thenReturn(Future.successful(Right(List.empty)))
+
+      val result = controller.organisationsSearchAction("vendor-id", Some(vendorId.toString))(organisationSearchRequest)
       status(result) shouldBe Status.OK
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
