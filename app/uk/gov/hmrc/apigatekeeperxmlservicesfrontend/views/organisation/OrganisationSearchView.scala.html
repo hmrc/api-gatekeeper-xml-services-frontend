@@ -20,7 +20,7 @@
 @this(layout: Layout)
 
 
-@(organisations: List[Organisation])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@(organisations: List[Organisation], showTable: Boolean = true)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @layout(pageTitle = Some("Manage XML Organisations - HMRC API Gatekeeper")) {
 <div class="govuk-form-group">
@@ -66,13 +66,13 @@
         </button>
     </div>
 }
-@if(!organisations.isEmpty) {
+@if(showTable) {
 <table id="results-table" class="govuk-table">
     <caption class="govuk-table__caption govuk-visually-hidden">Search results</caption>
     <thead class="govuk-table__head">
       <tr class="govuk-table__row">
-        <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Vendor ID</th>
-        <th scope="col" class="govuk-table__header">Organisation</th>
+        <th id="vendor-head" scope="col" class="govuk-table__header govuk-!-width-one-quarter">Vendor ID</th>
+        <th id="organisation-head" scope="col" class="govuk-table__header">Organisation</th>
       </tr>
     </thead>
     <tbody class="govuk-table__body">
