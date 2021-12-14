@@ -32,14 +32,24 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.Orga
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
 
 import java.{util => ju}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.VendorId
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
+import play.api.libs.json.Json
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ErrorTemplate
+import uk.gov.hmrc.http.UpstreamErrorResponse
+import scala.util.Try
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInRequest
+
 @Singleton
 class OrganisationController @Inject() (
     mcc: MessagesControllerComponents,
     organisationSearchView: OrganisationSearchView,
     override val authConnector: AuthConnector,
-    val forbiddenView: ForbiddenView
+    val forbiddenView: ForbiddenView,
+    errorTemplate: ErrorTemplate,
+    xmlServicesConnector: XmlServicesConnector
   )(implicit val ec: ExecutionContext,
     appConfig: AppConfig)
     extends FrontendController(mcc)
@@ -50,12 +60,34 @@ class OrganisationController @Inject() (
       Future.successful(Ok(organisationSearchView(List.empty)))
   }
 
-  def organisationsSearchAction(searchType: String, searchText: String): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+
+
+  private def toVendorIdOrNone(txtVal: Option[String]): Option[VendorId] = {
+    txtVal.flatMap(x => Try(x.toLong).toOption.map(VendorId(_)))
+  }
+    
+  private def isValidVendorId(txtVal: Option[String]): Boolean = {
+   toVendorIdOrNone(txtVal).nonEmpty
+  }
+
+  def organisationsSearchAction(searchType: String, maybeSearchText: Option[String]): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request =>
-      val org1 = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = VendorId(1), name = "Org 1")
-      val org2 = org1.copy(vendorId = VendorId(2), name = "Org 2")
-      val org3 = org1.copy(vendorId = VendorId(3), name = "Org 3")
-      Future.successful(Ok(organisationSearchView(List(org1, org2, org3))))
+      (searchType, maybeSearchText) match {
+        case ("vendor-id", _) if isValidVendorId(maybeSearchText) => xmlServicesConnector.findOrganisationsByParams(toVendorIdOrNone(maybeSearchText)).map {
+            case Right(orgs: List[Organisation])                 => Ok(organisationSearchView(orgs))
+            case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) => Ok(organisationSearchView(List.empty))
+            case Left(_)                                         => {
+              println(s"*********** 1st internal server error")
+              InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+            }
+          }
+
+        case _                                   => {
+          println(s"****** catch all at bottom $searchType $maybeSearchText")
+          Future.successful(Ok(organisationSearchView(List.empty)))
+        }
+      }
+
   }
 
 }
