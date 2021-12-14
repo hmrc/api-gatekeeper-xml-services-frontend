@@ -23,6 +23,8 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationSearchView
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ErrorTemplate
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 
 class OrganisationControllerSpec extends ControllerBaseSpec {
 
@@ -30,13 +32,17 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
     val fakeRequest = FakeRequest("GET", "/organisations")
     val organisationSearchRequest = FakeRequest("GET", "/organisations-search")
     private lazy val forbiddenView = app.injector.instanceOf[ForbiddenView]
+    private lazy val errorTemplate = app.injector.instanceOf[ErrorTemplate]
     private lazy val organisationSearchView = app.injector.instanceOf[OrganisationSearchView]
+    val mockXmlServiceConnector = mock[XmlServicesConnector]
 
     val controller = new OrganisationController(
       mcc,
       organisationSearchView,
       mockAuthConnector,
-      forbiddenView
+      forbiddenView,
+      errorTemplate,
+      mockXmlServiceConnector
     )
   }
 
@@ -61,7 +67,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
     "return 200" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
-      val result = controller.organisationsSearchAction("vendorId", "searchString")(organisationSearchRequest)
+      val result = controller.organisationsSearchAction("vendorId", Some("searchString"))(organisationSearchRequest)
       status(result) shouldBe Status.OK
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
