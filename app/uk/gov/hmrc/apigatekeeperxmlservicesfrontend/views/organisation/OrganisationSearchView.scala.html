@@ -35,7 +35,7 @@
 
         </legend>
 
-        @helper.form(action = uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsSearchAction("", "")) {
+        @helper.form(action = uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsSearchAction("", None)) {
             
 
         <div id="search-by-hint" class="govuk-hint">
@@ -59,7 +59,7 @@
         <label class="govuk-label govuk-visually-hidden" for="width-20">
         Search
         </label>
-        <input id="search-organisation-input" class="govuk-input govuk-input--width-20" name="searchText" type="text">
+        <input id="search-organisation-input" class="govuk-input govuk-input--width-20" name="maybeSearchText" type="text">
 
         <button id="search-organisation-button" class="govuk-button" data-module="govuk-button" type="submit">
         Search
