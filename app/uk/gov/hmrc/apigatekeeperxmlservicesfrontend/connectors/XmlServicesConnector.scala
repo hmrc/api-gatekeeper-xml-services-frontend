@@ -54,18 +54,20 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
     }
 
   }
-  
-  def addOrganisation(organisationName: String)(implicit hc: HeaderCarrier): Future[Either[Throwable, CreateOrganisationResult]] = {
+
+  def addOrganisation(organisationName: String)(implicit hc: HeaderCarrier): Future[CreateOrganisationResult] = {
     val createOrganisationRequest: CreateOrganisationRequest = CreateOrganisationRequest(organisationName = organisationName)
 
-    http.POST[CreateOrganisationRequest, Either[UpstreamErrorResponse, Unit]](
+    http.POST[CreateOrganisationRequest, Either[UpstreamErrorResponse, Organisation]](
       url = s"${baseUrl}/organisations",
       body = createOrganisationRequest
+    ).map(r =>
+      r match {
+        case Right(x: Organisation) => CreateOrganisationSuccessResult(x)
+        case Left(err)              => CreateOrganisationFailureResult(err)
+      }
     )
-    .map(_ match {
-      case Right(_) => Right(CreateOrganisationSuccessResult)
-      case Left(err) => throw err
-    })
+
   }
 
   private def handleResult[A](result: Future[A]): Future[Either[Throwable, A]] = {
