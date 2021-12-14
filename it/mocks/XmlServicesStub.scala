@@ -33,9 +33,7 @@ trait XmlServicesStub {
   }
 
   def createOrganisationRequestAsString(organisationName: String): String = {
-    val body = Json.toJson(CreateOrganisationRequest(organisationName = organisationName)).toString
-    println(s"****** $body")
-    body
+    Json.toJson(CreateOrganisationRequest(organisationName = organisationName)).toString
   }
 
   def findOrganisationByVendorIdReturnsError(vendorId: Option[String], status: Int) = {
@@ -59,10 +57,21 @@ trait XmlServicesStub {
       ))
   }
 
-  def addOrganisationReturnsResponse(organisationName: String, status: Int) = {
+  def addOrganisationReturnsResponse(organisationName: String, status: Int, response: Organisation) = {
 
     stubFor(post(urlEqualTo(organisationUrl))
-      .withRequestBody(equalToJson(createOrganisationRequestAsString(organisationName).toString()))
+      .withRequestBody(equalToJson(createOrganisationRequestAsString(organisationName)))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withBody(Json.toJson(response).toString)
+      ))
+  }
+
+  def addOrganisationReturnsError(organisationName: String, status: Int) = {
+
+    stubFor(post(urlEqualTo(organisationUrl))
+      .withRequestBody(equalToJson(createOrganisationRequestAsString(organisationName)))
       .willReturn(
         aResponse()
           .withStatus(status)

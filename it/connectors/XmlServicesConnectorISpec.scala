@@ -33,6 +33,8 @@ import java.{util => ju}
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.Upstream4xxResponse
 import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.CreateOrganisationSuccessResult
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.CreateOrganisationFailureResult
 
 class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach {
 
@@ -63,7 +65,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     val organisation = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = vendorId, name = "Org name")
   }
 
-  /* "findOrganisationByVendorId" should {
+  "findOrganisationByVendorId" should {
 
     "return Left when back end returns Bad Request" in new Setup {
       findOrganisationByVendorIdReturnsError(Some(vendorId.value.toString), BAD_REQUEST)
@@ -115,22 +117,26 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
         case _          => fail
       }
     }
-  } */
+  } 
 
   "addOrganisation" should {
 
-    "return Left when back end returns Bad Request NEW" in new Setup {
-      addOrganisationReturnsResponse(organisation.name, BAD_REQUEST)
+    "return CreateOrganisationSuccessResult when back end returns Organisation" in new Setup {
+      addOrganisationReturnsResponse(organisation.name, OK, organisation)
       val result = await(objInTest.addOrganisation(organisation.name))
 
-      println(s"***** $result")
-
-      result match {
-        case Left(e: Upstream4xxResponse) => e.statusCode mustBe BAD_REQUEST
-        case _                            => fail
-      }
+      result mustBe CreateOrganisationSuccessResult(organisation)
 
     }
-  }
 
+    "return CreateOrganisationFailureResult when back end returns error" in new Setup {
+      addOrganisationReturnsError(organisation.name, INTERNAL_SERVER_ERROR)
+      val result = await(objInTest.addOrganisation(organisation.name))
+
+      result match {
+        case CreateOrganisationFailureResult(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed
+        case _                                                                                      => fail()
+      }
+    }
+  }
 }
