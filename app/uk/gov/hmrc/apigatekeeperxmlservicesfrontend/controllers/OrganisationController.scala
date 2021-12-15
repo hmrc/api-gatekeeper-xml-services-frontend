@@ -28,7 +28,7 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.GatekeeperRole
 
 import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationSearchView
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
 
 import java.{util => ju}
@@ -41,11 +41,14 @@ import uk.gov.hmrc.http.UpstreamErrorResponse
 import scala.util.Try
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInRequest
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
+import uk.gov.hmrc.auth.core.AffinityGroup
 
 @Singleton
 class OrganisationController @Inject() (
     mcc: MessagesControllerComponents,
     organisationSearchView: OrganisationSearchView,
+    organisationDetailsView: OrganisationDetailsView,
     override val authConnector: AuthConnector,
     val forbiddenView: ForbiddenView,
     errorTemplate: ErrorTemplate,
@@ -85,6 +88,14 @@ class OrganisationController @Inject() (
         }
       }
 
+  }
+
+
+  def manageOrganisation(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+    implicit request => 
+      
+      val org = Organisation(organisationId, VendorId(22222L), "Some Org Ltd")
+      Future.successful(Ok(organisationDetailsView(org)))
   }
 
 }

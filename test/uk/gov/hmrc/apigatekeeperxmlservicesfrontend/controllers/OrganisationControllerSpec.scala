@@ -35,6 +35,7 @@ import uk.gov.hmrc.http.Upstream4xxResponse
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.http.HeaderCarrier
 import org.jsoup.Jsoup
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationDetailsView
 
 class OrganisationControllerSpec extends ControllerBaseSpec {
 
@@ -44,12 +45,14 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
     private lazy val forbiddenView = app.injector.instanceOf[ForbiddenView]
     private lazy val errorTemplate = app.injector.instanceOf[ErrorTemplate]
     private lazy val organisationSearchView = app.injector.instanceOf[OrganisationSearchView]
+    private lazy val organisationDetailsView = app.injector.instanceOf[OrganisationDetailsView]
 
     val mockXmlServiceConnector = mock[XmlServicesConnector]
 
     val controller = new OrganisationController(
       mcc,
       organisationSearchView,
+      organisationDetailsView,
       mockAuthConnector,
       forbiddenView,
       errorTemplate,
