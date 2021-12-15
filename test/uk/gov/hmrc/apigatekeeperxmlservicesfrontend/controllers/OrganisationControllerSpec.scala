@@ -161,5 +161,35 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
       verifyNoMoreInteractions(mockXmlServiceConnector)
     }
 
+    "return forbidden view" in new Setup {
+      givenAUnsuccessfulLogin()
+      val result = controller.organisationsSearchAction("unknown", Some(vendorId.toString))(organisationSearchRequest)
+
+      status(result) shouldBe Status.SEE_OTHER
+    }
+  }
+
+  "GET /organisations/orgId" should {
+
+    "return 200 and display details view page" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+      val result = controller.manageOrganisation(org1.organisationId)(fakeRequest)
+      status(result) shouldBe Status.OK
+
+      val document = Jsoup.parse(contentAsString(result))
+      document.getElementById("org-name-heading").text() shouldBe "Name"
+      document.getElementById("org-name-value").text() shouldBe "Some Org Ltd"//org1.name
+
+      document.getElementById("vendor-id-heading").text() shouldBe "Vendor ID"
+      document.getElementById("vendor-id-value").text() shouldBe "22222"//org1.vendorId.value.toString
+    }
+
+
+     "return forbidden view" in new Setup {
+      givenAUnsuccessfulLogin()
+      val result = controller.manageOrganisation(org1.organisationId)(fakeRequest)
+      status(result) shouldBe Status.SEE_OTHER
+    }
   }
 }
