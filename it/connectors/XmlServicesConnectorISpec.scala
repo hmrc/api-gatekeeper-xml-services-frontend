@@ -65,10 +65,10 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     val organisation = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = vendorId, name = "Org name")
   }
 
-  "findOrganisationByVendorId" should {
+  "findOrganisationsByParams" should {
 
     "return Left when back end returns Bad Request" in new Setup {
-      findOrganisationByVendorIdReturnsError(Some(vendorId.value.toString), BAD_REQUEST)
+      findOrganisationByParamsReturnsError(Some(vendorId.value.toString), BAD_REQUEST)
       val result = await(objInTest.findOrganisationsByParams(Some(vendorId)))
 
       result match {
@@ -79,7 +79,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     }
 
     "return Left when back end returns Not Found" in new Setup {
-      findOrganisationByVendorIdReturnsError(Some(vendorId.value.toString), NOT_FOUND)
+      findOrganisationByParamsReturnsError(Some(vendorId.value.toString), NOT_FOUND)
       val result = await(objInTest.findOrganisationsByParams(Some(vendorId)))
 
       result match {
@@ -89,7 +89,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     }
 
     "return Left when back end returns Internal Server Error" in new Setup {
-      findOrganisationByVendorIdReturnsError(Some(vendorId.value.toString), INTERNAL_SERVER_ERROR)
+      findOrganisationByParamsReturnsError(Some(vendorId.value.toString), INTERNAL_SERVER_ERROR)
       val result = await(objInTest.findOrganisationsByParams(Some(vendorId)))
 
       result match {
@@ -99,7 +99,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     }
 
     "return Right(List(Organisation)) when back end returns a List of Organisations" in new Setup {
-      findOrganisationByVendorIdReturnsResponseWithBody(Some(vendorId.value.toString), OK, Json.toJson(List(organisation)).toString)
+      findOrganisationByParamsReturnsResponseWithBody(Some(vendorId.value.toString), OK, Json.toJson(List(organisation)).toString)
       val result = await(objInTest.findOrganisationsByParams(Some(vendorId)))
 
       result match {
@@ -109,7 +109,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     }
 
     "return Right(List(Organisation)) when no vendorId is passed in and the back end returns a List of Organisations" in new Setup {
-      findOrganisationByVendorIdReturnsResponseWithBody(None, OK, Json.toJson(List(organisation)).toString)
+      findOrganisationByParamsReturnsResponseWithBody(None, OK, Json.toJson(List(organisation)).toString)
       val result = await(objInTest.findOrganisationsByParams(None))
 
       result match {
@@ -117,7 +117,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
         case _          => fail
       }
     }
-  } 
+  }
 
   "addOrganisation" should {
 

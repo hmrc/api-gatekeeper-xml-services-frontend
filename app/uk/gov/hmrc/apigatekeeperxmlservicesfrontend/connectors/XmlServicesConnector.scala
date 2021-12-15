@@ -37,9 +37,9 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
   val baseUrl: String = s"${config.serviceBaseUrl}/api-platform-xml-services"
 
   def findOrganisationsByParams(vendorId: Option[VendorId])(implicit hc: HeaderCarrier): Future[Either[Throwable, List[Organisation]]] = {
-    val params = vendorId.map(v => Seq(("vendorId" -> v.value.toString))).getOrElse(Seq.empty)
+    val params = vendorId.map(v => Seq("vendorId" -> v.value.toString)).getOrElse(Seq.empty)
 
-    handleResult(http.GET[List[Organisation]](url = s"${baseUrl}/organisations", queryParams = params))
+    handleResult(http.GET[List[Organisation]](url = s"$baseUrl/organisations", queryParams = params))
   }
 
   def addOrganisation(organisationName: String)(implicit hc: HeaderCarrier): Future[CreateOrganisationResult] = {
@@ -48,12 +48,10 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
     http.POST[CreateOrganisationRequest, Either[UpstreamErrorResponse, Organisation]](
       url = s"${baseUrl}/organisations",
       body = createOrganisationRequest
-    ).map(r =>
-      r match {
-        case Right(x: Organisation) => CreateOrganisationSuccessResult(x)
-        case Left(err)              => CreateOrganisationFailureResult(err)
-      }
-    )
+    ).map {
+      case Right(x: Organisation) => CreateOrganisationSuccessResult(x)
+      case Left(err) => CreateOrganisationFailureResult(err)
+    }
 
   }
 
