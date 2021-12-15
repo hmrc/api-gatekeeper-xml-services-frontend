@@ -87,13 +87,13 @@ class OrganisationController @Inject() (
 
   def manageOrganisation(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request =>
-      
+
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
       .map {
         case Right(org: Organisation) => Ok(organisationDetailsView(org))
         // in theory this error
         case Left(_)  => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
-            
+
       }
   }
 
