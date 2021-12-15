@@ -10,6 +10,13 @@ lazy val microservice = Project(appName, file("."))
     majorVersion                     := 0,
     scalaVersion                     := "2.12.13",
     libraryDependencies              ++= AppDependencies.compile ++ AppDependencies.test,
+    TwirlKeys.templateImports ++= Seq(
+      "views.html.helper.CSPNonce",
+      "uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig",
+      "uk.gov.hmrc.govukfrontend.views.html.components._",
+      "uk.gov.hmrc.hmrcfrontend.views.html.components._",
+      "uk.gov.hmrc.hmrcfrontend.views.html.helpers._"
+    ),
     pipelineStages in Assets := Seq(gzip),
   )
   .settings(publishingSettings, scoverageSettings)
@@ -25,7 +32,7 @@ lazy val microservice = Project(appName, file("."))
   Seq(
     // Semicolon-separated list of regexs matching classes to exclude
     ScoverageKeys.coverageExcludedPackages := ";.*\\.domain\\.models\\..*;uk\\.gov\\.hmrc\\.BuildInfo;.*\\.Routes;.*\\.RoutesPrefix;;Module;GraphiteStartUp;.*\\.Reverse[^.]*",
-    ScoverageKeys.coverageMinimum := 95,
+    ScoverageKeys.coverageMinimum := 97,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true,
     parallelExecution in Test := false

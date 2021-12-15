@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,14 +12,20 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import uk.gov.hmrc.govukfrontend.views.html.components.Text
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config
 
-@this(layout: Layout)
+import play.api.inject.Module
+import play.api.{Configuration, Environment}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 
-@(pageTitle: String, heading: String, message: String)(implicit request: Request[_], messages: Messages)
-@layout(pageTitle = Some(pageTitle)) {
-    <h1 id="page-heading" class="govuk-heading-xl">@{Text(heading).asHtml}</h1>
-    <p id="page-body" class="govuk-body">@{Text(message).asHtml}</p>
+class ConfigurationModule extends Module {
+
+  override def bindings(environment: Environment, configuration: Configuration) = {
+    Seq (
+      bind[XmlServicesConnector.Config].toProvider[XmlServicesConnectorProvider]
+    )
+  }
+
 }

@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +12,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config
 
-@this(layout: Layout)
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import com.google.inject.{Provider, Inject, Singleton}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 
+@Singleton
+class XmlServicesConnectorProvider @Inject()(config: ServicesConfig) extends Provider[XmlServicesConnector.Config] {
 
-@()(implicit request: Request[_], messages: Messages)
+  override def get(): XmlServicesConnector.Config =
+    XmlServicesConnector.Config(serviceBaseUrl = config.baseUrl("api-platform-xml-services"))
 
-@layout(pageTitle = Some("api-gatekeeper-xml-services-frontend")) {
-    <h1 id="page-heading" class="govuk-heading-xl">api-gatekeeper-xml-services-frontend</h1>
-    <p id="page-body" class="govuk-body">@{messages("service.text")}</p>
 }

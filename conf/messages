@@ -1,2 +1,2 @@
-service.name = api-gatekeeper-xml-services-frontend
+service.name = HMRC API Gatekeeper
 service.text = This is your new service
