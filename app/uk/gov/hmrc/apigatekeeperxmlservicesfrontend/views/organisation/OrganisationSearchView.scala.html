@@ -21,6 +21,10 @@
 
 @(organisations: List[Organisation], showTable: Boolean = true)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
+@buildManageOrgPath(org: Organisation) = @{
+    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.manageOrganisation(org.organisationId).url
+}
+
 @layout(pageTitle = Some("Manage XML Organisations - HMRC API Gatekeeper")) {
 <div class="govuk-form-group">
 
@@ -75,10 +79,12 @@
       </tr>
     </thead>
     <tbody class="govuk-table__body">
-        @for(org <- organisations.zipWithIndex) {
+        @for(orgs <- organisations.zipWithIndex) {
       <tr class="govuk-table__row">
-        <th id="vendor-id-@org._2" scope="row" class="govuk-table__cell">@org._1.vendorId.value</th>
-        <td id="name-@org._2" class="govuk-table__cell">@org._1.name</td>
+        <th id="vendor-id-@orgs._2" scope="row" class="govuk-table__cell">@orgs._1.vendorId.value</th>
+        <td id="name-@orgs._2" class="govuk-table__cell">
+            <a id="manage-org-@orgs._2-link" href=@buildManageOrgPath(orgs._1)>@orgs._1.name</a>
+        </td>
       </tr>
     }
     </tbody>
