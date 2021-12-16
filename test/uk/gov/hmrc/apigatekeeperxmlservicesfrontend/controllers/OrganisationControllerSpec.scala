@@ -173,16 +173,36 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
 
     "return 200 and display details view page" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(*))
+      .thenReturn(Future.successful(Right(org1)))
 
       val result = controller.manageOrganisation(org1.organisationId)(fakeRequest)
       status(result) shouldBe Status.OK
 
       val document = Jsoup.parse(contentAsString(result))
       document.getElementById("org-name-heading").text() shouldBe "Name"
-      document.getElementById("org-name-value").text() shouldBe "Some Org Ltd"//org1.name
+      document.getElementById("org-name-value").text() shouldBe org1.name
 
       document.getElementById("vendor-id-heading").text() shouldBe "Vendor ID"
-      document.getElementById("vendor-id-value").text() shouldBe "22222"//org1.vendorId.value.toString
+      document.getElementById("vendor-id-value").text() shouldBe org1.vendorId.value.toString
+    }
+
+      "return 500 and render error page when connector returns any error other than 404" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+     when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(*))
+      .thenReturn(Future.successful(Left(UpstreamErrorResponse("", 500, 500))))
+
+      val result = controller.manageOrganisation(org1.organisationId)(fakeRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+      contentType(result) shouldBe Some("text/html")
+      charset(result) shouldBe Some("utf-8")
+
+      val document = Jsoup.parse(contentAsString(result))
+      document.getElementById("page-heading").text() shouldBe "Internal Server Error"
+      document.getElementById("page-body").text() shouldBe "Internal Server Error"
+
+      verifyNoMoreInteractions(mockXmlServiceConnector)
     }
 
 

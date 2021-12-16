@@ -16,33 +16,28 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.Future
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.AuthConnector
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.GatekeeperRole
-
-import scala.concurrent.ExecutionContext
+import play.api.mvc.Action
+import play.api.mvc.AnyContent
+import play.api.mvc.MessagesControllerComponents
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
-
-import java.{util => ju}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.VendorId
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.AuthConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
-import play.api.libs.json.Json
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ErrorTemplate
-import uk.gov.hmrc.http.UpstreamErrorResponse
-import scala.util.Try
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInRequest
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.GatekeeperRole
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
-import uk.gov.hmrc.auth.core.AffinityGroup
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.VendorId
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ErrorTemplate
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation._
+import uk.gov.hmrc.http.UpstreamErrorResponse
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+
+import javax.inject.Inject
+import javax.inject.Singleton
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.util.Try
 
 @Singleton
 class OrganisationController @Inject() (
@@ -66,9 +61,9 @@ class OrganisationController @Inject() (
   private def toVendorIdOrNone(txtVal: Option[String]): Option[VendorId] = {
     txtVal.flatMap(x => Try(x.toLong).toOption.map(VendorId(_)))
   }
-    
+
   private def isValidVendorId(txtVal: Option[String]): Boolean = {
-    if(txtVal.nonEmpty && txtVal.head.isEmpty) true
+    if (txtVal.nonEmpty && txtVal.head.isEmpty) true
     else toVendorIdOrNone(txtVal).nonEmpty
   }
 
@@ -83,19 +78,23 @@ class OrganisationController @Inject() (
             }
           }
 
-        case _                                   => {
+        case _                                                              => {
           Future.successful(Ok(organisationSearchView(List.empty)))
         }
       }
 
   }
 
-
   def manageOrganisation(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
-    implicit request => 
+    implicit request =>
       
-      val org = Organisation(organisationId, VendorId(22222L), "Some Org Ltd")
-      Future.successful(Ok(organisationDetailsView(org)))
+      xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
+      .map {
+        case Right(org: Organisation) => Ok(organisationDetailsView(org))
+        // in theory this error
+        case Left(_)  => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+            
+      }
   }
 
 }
