@@ -16,31 +16,43 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.include
 
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.SiteHeader
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.SiteHeader
 
 import scala.collection.JavaConverters._
+
 class SiteHeaderSpec extends CommonViewSpec {
 
   trait Setup {
     val mockAppConfig = mock[AppConfig]
     val siteHeader = app.injector.instanceOf[SiteHeader]
-    val expectedMenuItems =  List("Applications", "Developers","Email", "API Approvals", "XML")
+
+    val expectedMenuItems = Map(
+      "Applications" -> "#",
+      "Developers" -> "#",
+      "Email" -> "#",
+      "API Approvals" -> "#",
+      "XML" -> "/api-gatekeeper-xml-services/organisations"
+    )
   }
 
   "SiteHeader" should {
 
     "render correctly" in new Setup {
-       val component = siteHeader.render(messagesProvider.messages)
-       val document = Jsoup.parse(component.body)
-       val navigation: Element = document.getElementById("navigation")
-       val navigationTextItems =  navigation.children().eachText()
-       navigationTextItems.asScala.filterNot(expectedMenuItems.contains(_)).isEmpty shouldBe true
-        // check the links somehow
+      val component = siteHeader.render(messagesProvider.messages)
+      val document = Jsoup.parse(component.body)
+      val navigation = document.getElementById("navigation")
 
+      val actualMenuItems = navigation.select("a")
+        .asScala
+        .map(i => (i.text(), i.attr("href"))).toMap
+
+      withClue("navigation items did not match expected") {
+        actualMenuItems.equals(expectedMenuItems) shouldBe true
+      }
     }
   }
 
