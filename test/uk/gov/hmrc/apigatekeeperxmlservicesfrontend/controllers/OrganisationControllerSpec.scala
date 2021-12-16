@@ -35,6 +35,7 @@ import uk.gov.hmrc.http.Upstream4xxResponse
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.http.HeaderCarrier
 import org.jsoup.Jsoup
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationDetailsView
 
 class OrganisationControllerSpec extends ControllerBaseSpec {
 
@@ -44,12 +45,14 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
     private lazy val forbiddenView = app.injector.instanceOf[ForbiddenView]
     private lazy val errorTemplate = app.injector.instanceOf[ErrorTemplate]
     private lazy val organisationSearchView = app.injector.instanceOf[OrganisationSearchView]
+    private lazy val organisationDetailsView = app.injector.instanceOf[OrganisationDetailsView]
 
     val mockXmlServiceConnector = mock[XmlServicesConnector]
 
     val controller = new OrganisationController(
       mcc,
       organisationSearchView,
+      organisationDetailsView,
       mockAuthConnector,
       forbiddenView,
       errorTemplate,
@@ -158,5 +161,55 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
       verifyNoMoreInteractions(mockXmlServiceConnector)
     }
 
+    "return forbidden view" in new Setup {
+      givenAUnsuccessfulLogin()
+      val result = controller.organisationsSearchAction("unknown", Some(vendorId.toString))(organisationSearchRequest)
+
+      status(result) shouldBe Status.SEE_OTHER
+    }
+  }
+
+  "GET /organisations/orgId" should {
+
+    "return 200 and display details view page" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(*))
+      .thenReturn(Future.successful(Right(org1)))
+
+      val result = controller.manageOrganisation(org1.organisationId)(fakeRequest)
+      status(result) shouldBe Status.OK
+
+      val document = Jsoup.parse(contentAsString(result))
+      document.getElementById("org-name-heading").text() shouldBe "Name"
+      document.getElementById("org-name-value").text() shouldBe org1.name
+
+      document.getElementById("vendor-id-heading").text() shouldBe "Vendor ID"
+      document.getElementById("vendor-id-value").text() shouldBe org1.vendorId.value.toString
+    }
+
+      "return 500 and render error page when connector returns any error other than 404" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+     when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(*))
+      .thenReturn(Future.successful(Left(UpstreamErrorResponse("", 500, 500))))
+
+      val result = controller.manageOrganisation(org1.organisationId)(fakeRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+      contentType(result) shouldBe Some("text/html")
+      charset(result) shouldBe Some("utf-8")
+
+      val document = Jsoup.parse(contentAsString(result))
+      document.getElementById("page-heading").text() shouldBe "Internal Server Error"
+      document.getElementById("page-body").text() shouldBe "Internal Server Error"
+
+      verifyNoMoreInteractions(mockXmlServiceConnector)
+    }
+
+
+     "return forbidden view" in new Setup {
+      givenAUnsuccessfulLogin()
+      val result = controller.manageOrganisation(org1.organisationId)(fakeRequest)
+      status(result) shouldBe Status.SEE_OTHER
+    }
   }
 }

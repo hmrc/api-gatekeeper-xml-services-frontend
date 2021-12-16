@@ -26,6 +26,7 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationSearchView
 
 import scala.collection.JavaConverters._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
 
 class OrganisationSearchViewSpec extends CommonViewSpec {
 
@@ -53,6 +54,12 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
 
   "Organisation Search View" should {
 
+    def validateOrganisationRow(rowId: Int, org: Organisation, document: Document) = {
+      document.getElementById(s"vendor-id-$rowId").text() shouldBe org.vendorId.value.toString
+      document.getElementById(s"name-$rowId").text() shouldBe org.name
+      document.getElementById(s"manage-org-$rowId-link").attr("href") shouldBe s"/api-gatekeeper-xml-services/organisations/${org.organisationId.value.toString}"
+    }
+
     "render page correctly on initial load when organisations list is empty" in new Setup {
       val page: Html = organisationSearchView.render(List.empty, showTable = false, FakeRequest(), messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
@@ -62,7 +69,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
       document.getElementById("search-organisation-button").text() shouldBe "Search"
 
       Option(document.getElementById("results-table")).isDefined shouldBe false
-         Option(document.getElementById("vendor-head")).isDefined shouldBe false
+      Option(document.getElementById("vendor-head")).isDefined shouldBe false
       Option(document.getElementById("organisation-head")).isDefined shouldBe false
     }
 
@@ -75,12 +82,10 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
       document.getElementById("search-organisation-button").text() shouldBe "Search"
 
       Option(document.getElementById("results-table")).isDefined shouldBe true
-      document.getElementById("vendor-id-0").text() shouldBe org1.vendorId.value.toString
-      document.getElementById("name-0").text() shouldBe org1.name
-      document.getElementById("vendor-id-1").text() shouldBe org2.vendorId.value.toString
-      document.getElementById("name-1").text() shouldBe org2.name
-      document.getElementById("vendor-id-2").text() shouldBe org3.vendorId.value.toString
-      document.getElementById("name-2").text() shouldBe org3.name
+      validateOrganisationRow(0, org1, document)
+      validateOrganisationRow(1, org2, document)
+      validateOrganisationRow(2, org3, document)
+
     }
 
     "render page correctly when organisations list is empty" in new Setup {

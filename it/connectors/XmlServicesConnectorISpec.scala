@@ -119,6 +119,38 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     }
   }
 
+  "getOrganisationByOrganisationId" should {
+    "return right with some organisation when back end call successful" in new Setup {
+      val orgId = organisation.organisationId
+      getOrganisationByOrganisationIdReturnsResponseWithBody(orgId, 200, Json.toJson(organisation).toString())
+      val result = await(objInTest.getOrganisationByOrganisationId(orgId))
+      result match {
+        case Right(org) => org mustBe organisation
+        case _                => fail()
+      }
+    }
+
+    "return Right None with when back end returns 404" in new Setup {
+      val orgId = organisation.organisationId
+      getOrganisationByOrganisationIdReturnsError(orgId, 404)
+      val result = await(objInTest.getOrganisationByOrganisationId(orgId))
+      result match {
+       case Left(e: UpstreamErrorResponse) => e.statusCode mustBe 404
+        case _           => fail()
+      }
+    }
+
+    "return Left with when back end returns 404" in new Setup {
+      val orgId = organisation.organisationId
+      getOrganisationByOrganisationIdReturnsError(orgId, 500)
+      val result = await(objInTest.getOrganisationByOrganisationId(orgId))
+      result match {
+       case Left(e: UpstreamErrorResponse) => e.statusCode mustBe INTERNAL_SERVER_ERROR
+        case _           => fail()
+      }
+    }
+
+  }
   "addOrganisation" should {
 
     "return CreateOrganisationSuccessResult when back end returns Organisation" in new Setup {
