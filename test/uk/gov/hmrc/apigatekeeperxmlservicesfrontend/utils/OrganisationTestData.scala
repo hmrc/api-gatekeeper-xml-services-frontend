@@ -20,13 +20,14 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.VendorId
 import java.util.UUID
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationName
 
 
 trait OrganisationTestData {
     val vendorId = 9001L
-    val org1 = Organisation(organisationId = OrganisationId(UUID.randomUUID()), vendorId = VendorId(1), name = "Org 1")
-    val org2 = org1.copy(vendorId = VendorId(2), name = "Org 2")
-    val org3 = org1.copy(vendorId = VendorId(3), name = "Org 3")
+    val org1 = Organisation(organisationId = OrganisationId(UUID.randomUUID()), vendorId = VendorId(1), name = OrganisationName("Org 1"))
+    val org2 = org1.copy(vendorId = VendorId(2), name = OrganisationName("Org 2"))
+    val org3 = org1.copy(vendorId = VendorId(3), name = OrganisationName("Org 3"))
 
     val organisations = List(org1, org2, org3)
 

@@ -70,7 +70,7 @@ class OrganisationController @Inject() (
   def organisationsSearchAction(searchType: String, maybeSearchText: Option[String]): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request =>
       (searchType, maybeSearchText) match {
-        case (vendorIdParameterName, _) if isValidVendorId(maybeSearchText) => xmlServicesConnector.findOrganisationsByParams(toVendorIdOrNone(maybeSearchText)).map {
+        case (vendorIdParameterName, _) if isValidVendorId(maybeSearchText) => xmlServicesConnector.findOrganisationsByParams(toVendorIdOrNone(maybeSearchText), None).map {
             case Right(orgs: List[Organisation])                 => Ok(organisationSearchView(orgs))
             case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) => Ok(organisationSearchView(List.empty))
             case Left(_)                                         => {

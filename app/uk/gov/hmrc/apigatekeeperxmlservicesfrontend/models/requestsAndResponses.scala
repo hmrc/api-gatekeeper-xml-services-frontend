@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models
 
-case class CreateOrganisationRequest(organisationName: String)
+case class CreateOrganisationRequest(organisationName: OrganisationName)
 
 sealed trait CreateOrganisationResult
 case class CreateOrganisationSuccessResult(organisation: Organisation) extends CreateOrganisationResult

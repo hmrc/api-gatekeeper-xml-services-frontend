@@ -36,6 +36,7 @@ import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.http.HeaderCarrier
 import org.jsoup.Jsoup
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationDetailsView
+import akka.stream.TLSClientAuth
 
 class OrganisationControllerSpec extends ControllerBaseSpec {
 
@@ -85,13 +86,13 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
     "return 200 and render search page when vendor-id search type and valid vendor id" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
-      when(mockXmlServiceConnector.findOrganisationsByParams(eqTo(Some(VendorId(vendorId))))(*))
+      when(mockXmlServiceConnector.findOrganisationsByParams(eqTo(Some(VendorId(vendorId))), eqTo(None))(*))
         .thenReturn(Future.successful(Right(organisations)))
 
       val result = controller.organisationsSearchAction(vendorIdParameterName, Some(vendorId.toString))(organisationSearchRequest)
       validatePageIsRendered(result)
 
-      verify(mockXmlServiceConnector).findOrganisationsByParams(eqTo(Some(VendorId(vendorId))))(*)
+      verify(mockXmlServiceConnector).findOrganisationsByParams(eqTo(Some(VendorId(vendorId))), eqTo(None))(*)
     }
 
     "return 200 and render search page  when vendor-id search type and invalid (non numeric) vendor id" in new Setup {
@@ -105,31 +106,31 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
 
     "return 200 and render search page  when vendor-id search type and empty string provided for vendor id" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-      when(mockXmlServiceConnector.findOrganisationsByParams(eqTo(None))(*))
+      when(mockXmlServiceConnector.findOrganisationsByParams(eqTo(None), eqTo(None))(*))
         .thenReturn(Future.successful(Right(organisations)))
 
       val result = controller.organisationsSearchAction(vendorIdParameterName, Some(""))(organisationSearchRequest)
       validatePageIsRendered(result)
 
-      verify(mockXmlServiceConnector).findOrganisationsByParams(eqTo(None))(*)
+      verify(mockXmlServiceConnector).findOrganisationsByParams(eqTo(None), eqTo(None))(*)
     }
 
     "return 200 and render search page when invalid search type provided and valid vendor id" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
-      when(mockXmlServiceConnector.findOrganisationsByParams(eqTo(Some(VendorId(vendorId))))(*))
+      when(mockXmlServiceConnector.findOrganisationsByParams(eqTo(Some(VendorId(vendorId))), eqTo(None))(*))
         .thenReturn(Future.successful(Right(organisations)))
 
       val result = controller.organisationsSearchAction("unknown", Some(vendorId.toString))(organisationSearchRequest)
       validatePageIsRendered(result)
 
-      verify(mockXmlServiceConnector).findOrganisationsByParams(eqTo(Some(VendorId(vendorId))))(*)
+      verify(mockXmlServiceConnector).findOrganisationsByParams(eqTo(Some(VendorId(vendorId))), *)(*)
     }
 
     "return 200 and render search page and empty table when connector returns not found error " in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
-      when(mockXmlServiceConnector.findOrganisationsByParams(eqTo(Some(VendorId(vendorId))))(*))
+      when(mockXmlServiceConnector.findOrganisationsByParams(eqTo(Some(VendorId(vendorId))), eqTo(None))(*))
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", 404, 404, Map.empty))))
 
       val result = controller.organisationsSearchAction("unknown", Some(vendorId.toString))(organisationSearchRequest)
@@ -140,13 +141,13 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
       Option(document.getElementById("vendor-head")).isDefined shouldBe true
       Option(document.getElementById("organisation-head")).isDefined shouldBe true
 
-      verify(mockXmlServiceConnector).findOrganisationsByParams(eqTo(Some(VendorId(vendorId))))(*)
+      verify(mockXmlServiceConnector).findOrganisationsByParams(eqTo(Some(VendorId(vendorId))), *)(*)
     }
 
     "return 500 and render error page when connector returns any error other than 404" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
-      when(mockXmlServiceConnector.findOrganisationsByParams(eqTo(Some(VendorId(vendorId))))(*))
+      when(mockXmlServiceConnector.findOrganisationsByParams(eqTo(Some(VendorId(vendorId))), eqTo(None))(*))
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", 500, 500))))
 
       val result = controller.organisationsSearchAction("unknown", Some(vendorId.toString))(organisationSearchRequest)
@@ -181,7 +182,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
 
       val document = Jsoup.parse(contentAsString(result))
       document.getElementById("org-name-heading").text() shouldBe "Name"
-      document.getElementById("org-name-value").text() shouldBe org1.name
+      document.getElementById("org-name-value").text() shouldBe org1.name.value
 
       document.getElementById("vendor-id-heading").text() shouldBe "Vendor ID"
       document.getElementById("vendor-id-value").text() shouldBe org1.vendorId.value.toString

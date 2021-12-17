@@ -56,7 +56,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
 
     def validateOrganisationRow(rowId: Int, org: Organisation, document: Document) = {
       document.getElementById(s"vendor-id-$rowId").text() shouldBe org.vendorId.value.toString
-      document.getElementById(s"name-$rowId").text() shouldBe org.name
+      document.getElementById(s"name-$rowId").text() shouldBe org.name.value
       document.getElementById(s"manage-org-$rowId-link").attr("href") shouldBe s"/api-gatekeeper-xml-services/organisations/${org.organisationId.value.toString}"
     }
 

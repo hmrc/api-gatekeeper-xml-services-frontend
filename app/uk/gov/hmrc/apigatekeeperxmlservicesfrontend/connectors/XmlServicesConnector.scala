@@ -36,9 +36,10 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
 
   val baseUrl: String = s"${config.serviceBaseUrl}/api-platform-xml-services"
 
-  def findOrganisationsByParams(vendorId: Option[VendorId])(implicit hc: HeaderCarrier): Future[Either[Throwable, List[Organisation]]] = {
-    val params = vendorId.map(v => Seq("vendorId" -> v.value.toString)).getOrElse(Seq.empty)
-
+  def findOrganisationsByParams(vendorId: Option[VendorId], organisationName: Option[OrganisationName])(implicit hc: HeaderCarrier): Future[Either[Throwable, List[Organisation]]] = {
+    val vendorIdParams = vendorId.map(v => Seq("vendorId" -> v.value.toString)).getOrElse(Seq.empty)
+    val orgNameParams = organisationName.map(o => Seq("organisationName" -> o.value.toString)).getOrElse(Seq.empty)
+    val params = vendorIdParams ++ orgNameParams
     handleResult(http.GET[List[Organisation]](url = s"$baseUrl/organisations", queryParams = params))
   }
 
@@ -46,8 +47,8 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
     handleResult(http.GET[Organisation](url = s"$baseUrl/organisations/${organisationId.value}"))
   }
 
-  def addOrganisation(organisationName: String)(implicit hc: HeaderCarrier): Future[CreateOrganisationResult] = {
-    val createOrganisationRequest: CreateOrganisationRequest = CreateOrganisationRequest(organisationName = organisationName)
+  def addOrganisation(organisationName: OrganisationName)(implicit hc: HeaderCarrier): Future[CreateOrganisationResult] = {
+    val createOrganisationRequest: CreateOrganisationRequest = CreateOrganisationRequest(organisationName)
 
     http.POST[CreateOrganisationRequest, Either[UpstreamErrorResponse, Organisation]](
       url = s"${baseUrl}/organisations",
@@ -69,8 +70,8 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
 
 }
 
-object XmlServicesConnector{
-    case class Config(
-      serviceBaseUrl: String
-  )
+object XmlServicesConnector {
+
+  case class Config(
+      serviceBaseUrl: String)
 }

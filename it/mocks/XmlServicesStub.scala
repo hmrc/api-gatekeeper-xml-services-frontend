@@ -27,18 +27,20 @@ trait XmlServicesStub {
 
   val organisationUrl = s"$baseUrl/organisations"
 
-  def findOrganisationByParamsUrl(vendorId: Option[String]) = vendorId match {
-    case None    => s"$baseUrl/organisations"
-    case Some(v) => s"$baseUrl/organisations?vendorId=$v"
-  }
+  def findOrganisationByParamsUrl(vendorId: Option[String], organisationName: Option[String]) =
+    (vendorId, organisationName) match {
+      case (Some(v), None)       => s"$baseUrl/organisations?vendorId=$v"
+      case (None, Some(orgName)) => s"$baseUrl/organisations?organisationName=${orgName.replaceAll(" ", "+")}"
+      case _                     => s"$baseUrl/organisations"
+    }
 
   def createOrganisationRequestAsString(organisationName: String): String = {
-    Json.toJson(CreateOrganisationRequest(organisationName = organisationName)).toString
+    Json.toJson(CreateOrganisationRequest(organisationName = OrganisationName(organisationName))).toString
   }
 
-  def findOrganisationByParamsReturnsError(vendorId: Option[String], status: Int) = {
+  def findOrganisationByParamsReturnsError(vendorId: Option[String], organisationName: Option[String], status: Int) = {
 
-    stubFor(get(urlEqualTo(findOrganisationByParamsUrl(vendorId)))
+    stubFor(get(urlEqualTo(findOrganisationByParamsUrl(vendorId, organisationName)))
       .willReturn(
         aResponse()
           .withStatus(status)
@@ -46,9 +48,9 @@ trait XmlServicesStub {
       ))
   }
 
-  def findOrganisationByParamsReturnsResponseWithBody(vendorId: Option[String], status: Int, responseBody: String) = {
+  def findOrganisationByParamsReturnsResponseWithBody(vendorId: Option[String], organisationName: Option[String], status: Int, responseBody: String) = {
 
-    stubFor(get(urlEqualTo(findOrganisationByParamsUrl(vendorId)))
+    stubFor(get(urlEqualTo(findOrganisationByParamsUrl(vendorId, organisationName)))
       .willReturn(
         aResponse()
           .withStatus(status)

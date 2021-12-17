@@ -28,6 +28,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Organisation, OrganisationId, VendorId}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationName
 
 class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with AuthServiceStub {
 
@@ -49,7 +50,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
     val objInTest: XmlServicesConnector = app.injector.instanceOf[XmlServicesConnector]
     val vendorId: VendorId = VendorId(12)
 
-    val organisation = Organisation(organisationId = OrganisationId(java.util.UUID.randomUUID()), vendorId = vendorId, name = "Org name")
+    val organisation = Organisation(organisationId = OrganisationId(java.util.UUID.randomUUID()), vendorId = vendorId, name = OrganisationName("Org name"))
 
     def callGetEndpoint(url: String, headers: List[(String, String)] = List.empty): WSResponse =
       wsClient
@@ -107,14 +108,14 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
       "respond with 200 and render organisation search page when searchType query parameter is empty" in new Setup {
         primeAuthServiceSuccess()
-        findOrganisationByParamsReturnsResponseWithBody(None, OK, Json.toJson(organisation).toString)
+        findOrganisationByParamsReturnsResponseWithBody(None, None, OK, Json.toJson(organisation).toString)
         val result = callGetEndpoint(s"$url/organisations-search?searchType=")
         result.status mustBe OK
       }
 
       "respond with 200 and render organisation search page when searchType query parameter is populated" in new Setup {
         primeAuthServiceSuccess()
-        findOrganisationByParamsReturnsResponseWithBody(None, OK, Json.toJson(organisation).toString)
+        findOrganisationByParamsReturnsResponseWithBody(None, None,  OK, Json.toJson(organisation).toString)
         val result = callGetEndpoint(s"$url/organisations-search?searchType=vendor-id")
         result.status mustBe OK
       }

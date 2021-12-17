@@ -42,7 +42,7 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
       val document: Document = Jsoup.parse(page.body)
 
       document.getElementById("org-name-heading").text() shouldBe "Name"
-      document.getElementById("org-name-value").text() shouldBe org1.name
+      document.getElementById("org-name-value").text() shouldBe org1.name.value
 
       document.getElementById("vendor-id-heading").text() shouldBe "Vendor ID"
       document.getElementById("vendor-id-value").text() shouldBe org1.vendorId.value.toString
