@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils
 
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.VendorId
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Organisation, OrganisationId, VendorId}
+
 import java.util.UUID
 
 

@@ -21,12 +21,12 @@ import org.jsoup.nodes.Document
 import play.api.test.FakeRequest
 import play.twirl.api.Html
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationSearchView
 
 import scala.collection.JavaConverters._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
 
 class OrganisationSearchViewSpec extends CommonViewSpec {
 
@@ -46,8 +46,6 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
       document.title() shouldBe "Manage XML Organisations - HMRC API Gatekeeper"
       document.getElementById("page-heading").text() shouldBe "Search for XML organisations"
       document.getElementById("search-by-hint").text() shouldBe "Choose to search by vendor ID, email address or organisation."
-
-      testRadioButton(document, "vendor-id-input", isChecked = true)
       document.getElementById("vendor-id-label").text() shouldBe "Vendor ID"
     }
   }
@@ -61,9 +59,11 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
     }
 
     "render page correctly on initial load when organisations list is empty" in new Setup {
-      val page: Html = organisationSearchView.render(List.empty, showTable = false, FakeRequest(), messagesProvider.messages, mockAppConfig)
+      val page: Html = organisationSearchView.render(List.empty, showTable = false, isVendorIdSearch = true, FakeRequest(), messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       testStandardComponents(document)
+      testRadioButton(document, "vendor-id-input", true)
+      testRadioButton(document, "organisation-name-input", false)
 
       Option(document.getElementById("search-organisation-input")).isEmpty shouldBe false
       document.getElementById("search-organisation-button").text() shouldBe "Search"
@@ -74,7 +74,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
     }
 
     "render page correctly when organisations list is populated" in new Setup {
-      val page: Html = organisationSearchView.render(organisations, showTable = true, FakeRequest(), messagesProvider.messages, mockAppConfig)
+      val page: Html = organisationSearchView.render(organisations, showTable = true, isVendorIdSearch = true, FakeRequest(), messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       testStandardComponents(document)
 
@@ -85,13 +85,14 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
       validateOrganisationRow(0, org1, document)
       validateOrganisationRow(1, org2, document)
       validateOrganisationRow(2, org3, document)
-
     }
 
     "render page correctly when organisations list is empty" in new Setup {
-      val page: Html = organisationSearchView.render(List.empty, showTable = true, FakeRequest(), messagesProvider.messages, mockAppConfig)
+      val page: Html = organisationSearchView.render(List.empty, showTable = true, isVendorIdSearch = false, FakeRequest(), messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       testStandardComponents(document)
+      testRadioButton(document, "vendor-id-input", false)
+      testRadioButton(document, "organisation-name-input", true)
 
       Option(document.getElementById("search-organisation-input")).isEmpty shouldBe false
       document.getElementById("search-organisation-button").text() shouldBe "Search"
@@ -100,6 +101,5 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
       Option(document.getElementById("vendor-head")).isDefined shouldBe true
       Option(document.getElementById("organisation-head")).isDefined shouldBe true
     }
-
   }
 }
