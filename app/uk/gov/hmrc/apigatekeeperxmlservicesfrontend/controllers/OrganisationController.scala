@@ -57,19 +57,19 @@ class OrganisationController @Inject()(mcc: MessagesControllerComponents,
         else toVendorIdOrNone(txtVal).nonEmpty
       }
 
-      def handleResults(result: Either[Throwable, List[Organisation]]) = {
+      def handleResults(result: Either[Throwable, List[Organisation]], isVendorIdSearch: Boolean) = {
         result match {
-          case Right(orgs: List[Organisation]) => Ok(organisationSearchView(orgs))
-          case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) => Ok(organisationSearchView(List.empty))
+          case Right(orgs: List[Organisation]) => Ok(organisationSearchView(orgs, isVendorIdSearch = isVendorIdSearch))
+          case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) => Ok(organisationSearchView(List.empty, isVendorIdSearch = isVendorIdSearch))
           case Left(_) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
         }
       }
 
       searchType match {
         case x: String if isValidVendorId(searchText) && (x == vendorIdParameterName) =>
-          xmlServicesConnector.findOrganisationsByParams(toVendorIdOrNone(searchText), None).map(handleResults)
+          xmlServicesConnector.findOrganisationsByParams(toVendorIdOrNone(searchText), None).map(handleResults(_, isVendorIdSearch = true))
         case x: String if x == organisationNameParamName =>
-          xmlServicesConnector.findOrganisationsByParams(None, searchText).map(handleResults)
+          xmlServicesConnector.findOrganisationsByParams(None, searchText).map(handleResults(_, isVendorIdSearch = false))
         case _ => Future.successful(Ok(organisationSearchView(List.empty)))
       }
   }
