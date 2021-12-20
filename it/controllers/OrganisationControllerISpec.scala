@@ -27,7 +27,7 @@ import play.api.test.Helpers.{BAD_REQUEST, FORBIDDEN, NOT_FOUND, OK}
 import support.AuthServiceStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Organisation, OrganisationId,  VendorId}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Organisation, OrganisationId, VendorId}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
 
 class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with AuthServiceStub {
@@ -51,7 +51,6 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
     val objInTest: XmlServicesConnector = app.injector.instanceOf[XmlServicesConnector]
     val vendorId: VendorId = VendorId(12)
-
     val organisation = Organisation(organisationId = OrganisationId(java.util.UUID.randomUUID()), vendorId = vendorId, name = "Org name")
 
     def callGetEndpoint(url: String, headers: List[(String, String)] = List.empty): WSResponse =
@@ -63,7 +62,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         .futureValue
 
     def validateOrganisationRow(rowId: Int, org: Organisation, document: Document) = {
-      document.getElementById(s"vendor-id-$rowId").text() mustBe  org.vendorId.value.toString
+      document.getElementById(s"vendor-id-$rowId").text() mustBe org.vendorId.value.toString
       document.getElementById(s"name-$rowId").text() mustBe org.name
       document.getElementById(s"manage-org-$rowId-link").attr("href") mustBe s"/api-gatekeeper-xml-services/organisations/${org.organisationId.value.toString}"
     }
@@ -78,7 +77,6 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         result.status mustBe OK
         val content = Jsoup.parse(result.body)
         content.getElementById("page-heading").text() mustBe "Search for XML organisations"
-
       }
 
       "respond with 403 and render the Forbidden view" in new Setup {
@@ -87,13 +85,11 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         result.status mustBe FORBIDDEN
         val content = Jsoup.parse(result.body)
         content.getElementById("page-heading").text() mustBe "You do not have permission to access Gatekeeper"
-
       }
 
       "respond with 404 and render errorTemplate Correctly when path invalid" in new Setup {
         val result = callGetEndpoint(s"$url/unknown-path")
         result.status mustBe NOT_FOUND
-
       }
     }
 
@@ -105,7 +101,6 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         result.status mustBe FORBIDDEN
         val content = Jsoup.parse(result.body)
         content.getElementById("page-heading").text() mustBe "You do not have permission to access Gatekeeper"
-
       }
 
       "respond with 200 and render organisation search page correctly when no params provided" in new Setup {
@@ -130,7 +125,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
       "respond with 200 and render organisation search page when organisation-name searchType and searchText query parameters are populated" in new Setup {
         primeAuthServiceSuccess()
-        val jsonToReturn =  Json.toJson(List(organisation)).toString
+        val jsonToReturn = Json.toJson(List(organisation)).toString
 
         findOrganisationByParamsReturnsResponseWithBody(None, Some("hello"), OK, jsonToReturn)
 

@@ -22,8 +22,8 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{AuthConnector, X
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{GatekeeperRole, Organisation, OrganisationId, VendorId}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
@@ -32,22 +32,18 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 @Singleton
-class OrganisationController @Inject() (
-    mcc: MessagesControllerComponents,
-    organisationSearchView: OrganisationSearchView,
-    organisationDetailsView: OrganisationDetailsView,
-    override val authConnector: AuthConnector,
-    val forbiddenView: ForbiddenView,
-    errorTemplate: ErrorTemplate,
-    xmlServicesConnector: XmlServicesConnector
-  )(implicit val ec: ExecutionContext,
-    appConfig: AppConfig)
-    extends FrontendController(mcc)
-    with GatekeeperAuthWrapper {
+class OrganisationController @Inject()(mcc: MessagesControllerComponents,
+                                       organisationSearchView: OrganisationSearchView,
+                                       organisationDetailsView: OrganisationDetailsView,
+                                       override val authConnector: AuthConnector,
+                                       val forbiddenView: ForbiddenView,
+                                       errorTemplate: ErrorTemplate,
+                                       xmlServicesConnector: XmlServicesConnector)
+                                      (implicit val ec: ExecutionContext, appConfig: AppConfig)
+  extends FrontendController(mcc) with GatekeeperAuthWrapper {
 
   val organisationsPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
-    implicit request =>
-      Future.successful(Ok(organisationSearchView(List.empty, showTable = false)))
+    implicit request => Future.successful(Ok(organisationSearchView(List.empty, showTable = false)))
   }
 
   def organisationsSearchAction(searchType: String, searchText: Option[String]): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
@@ -60,6 +56,7 @@ class OrganisationController @Inject() (
         if (txtVal.nonEmpty && txtVal.head.isEmpty) true
         else toVendorIdOrNone(txtVal).nonEmpty
       }
+
       def handleResults(result: Either[Throwable, List[Organisation]]) = {
         result match {
           case Right(orgs: List[Organisation]) => Ok(organisationSearchView(orgs))
@@ -67,17 +64,14 @@ class OrganisationController @Inject() (
           case Left(_) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
         }
       }
+
       searchType match {
-        case x: String  if isValidVendorId(searchText) && (x == vendorIdParameterName) =>
+        case x: String if isValidVendorId(searchText) && (x == vendorIdParameterName) =>
           xmlServicesConnector.findOrganisationsByParams(toVendorIdOrNone(searchText), None).map(handleResults)
-        case x: String  if x == organisationNameParamName                                   =>
+        case x: String if x == organisationNameParamName =>
           xmlServicesConnector.findOrganisationsByParams(None, searchText).map(handleResults)
-        case _   => Future.successful(Ok(organisationSearchView(List.empty)))
-
+        case _ => Future.successful(Ok(organisationSearchView(List.empty)))
       }
-
-
-
   }
 
   def manageOrganisation(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
@@ -86,11 +80,9 @@ class OrganisationController @Inject() (
         .map {
           case Right(org: Organisation) => Ok(organisationDetailsView(org))
           // in theory this error
-          case Left(_)                  => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
-
+          case Left(_) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
         }
   }
-
 }
 
 object OrganisationController {

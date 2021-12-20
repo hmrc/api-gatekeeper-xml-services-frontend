@@ -16,33 +16,29 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors
 
-import javax.inject.{Inject, Singleton}
-
-import uk.gov.hmrc.http.HttpClient
-import scala.concurrent.ExecutionContext
-
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
-import scala.concurrent.Future
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector._
-import uk.gov.hmrc.http.HeaderCarrier
-import scala.util.control.NonFatal
 import play.api.Logging
-import uk.gov.hmrc.http.UpstreamErrorResponse
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, UpstreamErrorResponse}
+
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 @Singleton
-class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(implicit ec: ExecutionContext) extends Logging {
+class XmlServicesConnector @Inject()(val http: HttpClient, val config: Config)(implicit ec: ExecutionContext) extends Logging {
 
   val baseUrl: String = s"${config.serviceBaseUrl}/api-platform-xml-services"
 
-  def findOrganisationsByParams(vendorId: Option[VendorId], organisationName: Option[String])(implicit hc: HeaderCarrier): Future[Either[Throwable, List[Organisation]]] = {
-    println(s"****$vendorId + ****$organisationName")
+  def findOrganisationsByParams(vendorId: Option[VendorId], organisationName: Option[String])
+                               (implicit hc: HeaderCarrier): Future[Either[Throwable, List[Organisation]]] = {
     val vendorIdParams = vendorId.map(v => Seq("vendorId" -> v.value.toString)).getOrElse(Seq.empty)
     val orgNameParams = organisationName.map(o => Seq("organisationName" -> o)).getOrElse(Seq.empty)
     val params = vendorIdParams ++ orgNameParams
-    val results = handleResult(http.GET[List[Organisation]](url = s"$baseUrl/organisations", queryParams = params))
-    results
+
+    handleResult(http.GET[List[Organisation]](url = s"$baseUrl/organisations", queryParams = params))
   }
 
   def getOrganisationByOrganisationId(organisationId: OrganisationId)(implicit hc: HeaderCarrier): Future[Either[Throwable, Organisation]] = {
@@ -57,7 +53,7 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
       body = createOrganisationRequest
     ).map {
       case Right(x: Organisation) => CreateOrganisationSuccessResult(x)
-      case Left(err)              => CreateOrganisationFailureResult(err)
+      case Left(err) => CreateOrganisationFailureResult(err)
     }
 
   }
@@ -75,5 +71,5 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
 object XmlServicesConnector {
 
   case class Config(
-      serviceBaseUrl: String)
+                     serviceBaseUrl: String)
 }
