@@ -17,18 +17,18 @@
 package controllers
 
 import mocks.XmlServicesStub
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import org.scalatest.BeforeAndAfterEach
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
 import play.api.test.Helpers.{BAD_REQUEST, FORBIDDEN, NOT_FOUND, OK}
 import support.AuthServiceStub
-import org.jsoup.Jsoup
-import play.api.libs.json.Json
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Organisation, OrganisationId, VendorId}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationName
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Organisation, OrganisationId,  VendorId}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
 
 class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with AuthServiceStub {
 
@@ -39,7 +39,9 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         "metrics.enabled" -> true,
         "auditing.enabled" -> false,
         "auditing.consumer.baseUri.host" -> wireMockHost,
-        "auditing.consumer.baseUri.port" -> wireMockPort
+        "auditing.consumer.baseUri.port" -> wireMockPort,
+        "microservice.services.api-platform-xml-services.host" -> wireMockHost,
+        "microservice.services.api-platform-xml-services.port" -> wireMockPort
       )
 
   val url = s"http://localhost:$port/api-gatekeeper-xml-services"
@@ -50,7 +52,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
     val objInTest: XmlServicesConnector = app.injector.instanceOf[XmlServicesConnector]
     val vendorId: VendorId = VendorId(12)
 
-    val organisation = Organisation(organisationId = OrganisationId(java.util.UUID.randomUUID()), vendorId = vendorId, name = OrganisationName("Org name"))
+    val organisation = Organisation(organisationId = OrganisationId(java.util.UUID.randomUUID()), vendorId = vendorId, name = "Org name")
 
     def callGetEndpoint(url: String, headers: List[(String, String)] = List.empty): WSResponse =
       wsClient
@@ -59,6 +61,12 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         .withFollowRedirects(false)
         .get()
         .futureValue
+
+    def validateOrganisationRow(rowId: Int, org: Organisation, document: Document) = {
+      document.getElementById(s"vendor-id-$rowId").text() mustBe  org.vendorId.value.toString
+      document.getElementById(s"name-$rowId").text() mustBe org.name
+      document.getElementById(s"manage-org-$rowId-link").attr("href") mustBe s"/api-gatekeeper-xml-services/organisations/${org.organisationId.value.toString}"
+    }
   }
 
   "OrganisationController" when {
@@ -91,7 +99,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
     "GET /organisations-search" should {
 
-      "respond with 403 and render the Forbidden view" in new Setup {
+      "respond with 403 and render the Forbidden view when auth fails" in new Setup {
         primeAuthServiceFail()
         val result = callGetEndpoint(s"$url/organisations-search?searchType=vendorId&searchText=hello")
         result.status mustBe FORBIDDEN
@@ -100,13 +108,13 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
       }
 
-      "respond with 200 and render organisation search page without query parameters" in new Setup {
+      "respond with 200 and render organisation search page correctly when no params provided" in new Setup {
         primeAuthServiceSuccess()
         val result = callGetEndpoint(s"$url/organisations-search")
         result.status mustBe BAD_REQUEST
       }
 
-      "respond with 200 and render organisation search page when searchType query parameter is empty" in new Setup {
+      "respond with 200 and render organisation search page when searchType is empty" in new Setup {
         primeAuthServiceSuccess()
         findOrganisationByParamsReturnsResponseWithBody(None, None, OK, Json.toJson(organisation).toString)
         val result = callGetEndpoint(s"$url/organisations-search?searchType=")
@@ -115,9 +123,24 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
       "respond with 200 and render organisation search page when searchType query parameter is populated" in new Setup {
         primeAuthServiceSuccess()
-        findOrganisationByParamsReturnsResponseWithBody(None, None,  OK, Json.toJson(organisation).toString)
+        findOrganisationByParamsReturnsResponseWithBody(None, None, OK, Json.toJson(organisation).toString)
         val result = callGetEndpoint(s"$url/organisations-search?searchType=vendor-id")
         result.status mustBe OK
+      }
+
+      "respond with 200 and render organisation search page when organisation-name searchType and searchText query parameters are populated" in new Setup {
+        primeAuthServiceSuccess()
+        val jsonToReturn =  Json.toJson(List(organisation)).toString
+
+        findOrganisationByParamsReturnsResponseWithBody(None, Some("hello"), OK, jsonToReturn)
+
+        val result = callGetEndpoint(s"$url/organisations-search?searchType=organisation-name&searchText=hello")
+        result.status mustBe OK
+        val content = Jsoup.parse(result.body)
+        content.getElementById("page-heading").text() mustBe "Search for XML organisations"
+        Option(content.getElementById("results-table")).isDefined mustBe true
+
+        validateOrganisationRow(0, organisation, content)
       }
 
       "respond with 400 when searchType query parameter is missing" in new Setup {
@@ -154,7 +177,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         Option(content.getElementById("results-table")).isDefined mustBe true
       }
 
-      "respond with 200 and render organisation search page when both searchType and searchText query parameters are populated" in new Setup {
+      "respond with 200 and render organisation search page when vendor-id searchType and searchText query parameters are populated" in new Setup {
         primeAuthServiceSuccess()
         val result = callGetEndpoint(s"$url/organisations-search?searchType=vendor-id&searchText=hello")
         result.status mustBe OK

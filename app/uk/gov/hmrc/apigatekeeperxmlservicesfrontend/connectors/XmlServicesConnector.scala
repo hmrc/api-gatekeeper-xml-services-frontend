@@ -36,18 +36,20 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
 
   val baseUrl: String = s"${config.serviceBaseUrl}/api-platform-xml-services"
 
-  def findOrganisationsByParams(vendorId: Option[VendorId], organisationName: Option[OrganisationName])(implicit hc: HeaderCarrier): Future[Either[Throwable, List[Organisation]]] = {
+  def findOrganisationsByParams(vendorId: Option[VendorId], organisationName: Option[String])(implicit hc: HeaderCarrier): Future[Either[Throwable, List[Organisation]]] = {
+    println(s"****$vendorId + ****$organisationName")
     val vendorIdParams = vendorId.map(v => Seq("vendorId" -> v.value.toString)).getOrElse(Seq.empty)
-    val orgNameParams = organisationName.map(o => Seq("organisationName" -> o.value.toString)).getOrElse(Seq.empty)
+    val orgNameParams = organisationName.map(o => Seq("organisationName" -> o)).getOrElse(Seq.empty)
     val params = vendorIdParams ++ orgNameParams
-    handleResult(http.GET[List[Organisation]](url = s"$baseUrl/organisations", queryParams = params))
+    val results = handleResult(http.GET[List[Organisation]](url = s"$baseUrl/organisations", queryParams = params))
+    results
   }
 
   def getOrganisationByOrganisationId(organisationId: OrganisationId)(implicit hc: HeaderCarrier): Future[Either[Throwable, Organisation]] = {
     handleResult(http.GET[Organisation](url = s"$baseUrl/organisations/${organisationId.value}"))
   }
 
-  def addOrganisation(organisationName: OrganisationName)(implicit hc: HeaderCarrier): Future[CreateOrganisationResult] = {
+  def addOrganisation(organisationName: String)(implicit hc: HeaderCarrier): Future[CreateOrganisationResult] = {
     val createOrganisationRequest: CreateOrganisationRequest = CreateOrganisationRequest(organisationName)
 
     http.POST[CreateOrganisationRequest, Either[UpstreamErrorResponse, Organisation]](

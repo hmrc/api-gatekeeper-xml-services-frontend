@@ -30,12 +30,12 @@ trait XmlServicesStub {
   def findOrganisationByParamsUrl(vendorId: Option[String], organisationName: Option[String]) =
     (vendorId, organisationName) match {
       case (Some(v), None)       => s"$baseUrl/organisations?vendorId=$v"
-      case (None, Some(orgName)) => s"$baseUrl/organisations?organisationName=${orgName.replaceAll(" ", "+")}"
+      case (None, Some(orgName)) => s"$baseUrl/organisations?organisationName=${java.net.URLEncoder.encode(orgName, "UTF-8")}"
       case _                     => s"$baseUrl/organisations"
     }
 
   def createOrganisationRequestAsString(organisationName: String): String = {
-    Json.toJson(CreateOrganisationRequest(organisationName = OrganisationName(organisationName))).toString
+    Json.toJson(CreateOrganisationRequest(organisationName)).toString
   }
 
   def findOrganisationByParamsReturnsError(vendorId: Option[String], organisationName: Option[String], status: Int) = {

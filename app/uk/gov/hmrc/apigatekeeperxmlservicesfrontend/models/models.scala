@@ -33,6 +33,4 @@ case class OrganisationId(value: ju.UUID) extends AnyVal
 
 case class VendorId(value: Long) extends AnyVal
 
-case class OrganisationName(value: String) extends AnyVal
-
-case class Organisation(organisationId: OrganisationId, vendorId: VendorId, name: OrganisationName)
+case class Organisation(organisationId: OrganisationId, vendorId: VendorId, name: String)

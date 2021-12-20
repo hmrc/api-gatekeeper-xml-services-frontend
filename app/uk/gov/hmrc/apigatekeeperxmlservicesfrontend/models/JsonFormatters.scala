@@ -22,7 +22,6 @@ object JsonFormatters {
 
   implicit val formatOrganisationId = Json.valueFormat[OrganisationId]
   implicit val formatVendorId = Json.valueFormat[VendorId]
-  implicit val formatOrganisationName = Json.valueFormat[OrganisationName]
   implicit val formatOrganisation = Json.format[Organisation]
   implicit val formatCreateOrganisationRequest = Json.format[CreateOrganisationRequest]
 

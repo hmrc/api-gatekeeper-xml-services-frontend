@@ -16,26 +16,19 @@
 
 package connectors
 
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
+import mocks.XmlServicesStub
 import org.scalatest.BeforeAndAfterEach
 import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.http.HeaderCarrier
-import play.api.libs.ws.WSClient
-import mocks.XmlServicesStub
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.VendorId
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
-import play.api.test.Helpers._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
-import uk.gov.hmrc.http.UpstreamErrorResponse
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
-import java.{util => ju}
 import play.api.libs.json.Json
-import uk.gov.hmrc.http.Upstream4xxResponse
-import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.CreateOrganisationSuccessResult
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.CreateOrganisationFailureResult
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationName
+import play.api.libs.ws.WSClient
+import play.api.test.Helpers._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
+import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse, UpstreamErrorResponse}
+
+import java.{util => ju}
 
 class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach {
 
@@ -63,7 +56,8 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     val objInTest: XmlServicesConnector = app.injector.instanceOf[XmlServicesConnector]
     val vendorId: VendorId = VendorId(12)
 
-    val organisation = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = vendorId, name = OrganisationName("Org name"))
+    val organisation = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = vendorId, name = "Org name")
+    val organisation2 = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = vendorId, name = "Org name2")
   }
 
   "findOrganisationsByParams" should {
@@ -79,7 +73,6 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
     }
 
-
     "return Right(List(Organisation)) when backend called with vendor id and organisations returned " in new Setup {
       findOrganisationByParamsReturnsResponseWithBody(Some(vendorId.value.toString), None, OK, Json.toJson(List(organisation)).toString)
       val result = await(objInTest.findOrganisationsByParams(Some(vendorId), None))
@@ -90,10 +83,9 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       }
     }
 
-
     "return Right(List(Organisation)) when backend called with organisationName and organisations returned " in new Setup {
       findOrganisationByParamsReturnsResponseWithBody(None, Some("I am a org name"), OK, Json.toJson(List(organisation)).toString)
-      val result = await(objInTest.findOrganisationsByParams(None, Some(OrganisationName("I am a org name"))))
+      val result = await(objInTest.findOrganisationsByParams(None, Some("I am a org name")))
 
       result match {
         case Right(org) => org mustBe List(organisation)
@@ -102,11 +94,11 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     }
 
     "return Right(List(Organisation)) when no query parameters provided and the back end returns a List of Organisations" in new Setup {
-      findOrganisationByParamsReturnsResponseWithBody(None, None, OK, Json.toJson(List(organisation)).toString)
+      findOrganisationByParamsReturnsResponseWithBody(None, None, OK, Json.toJson(List(organisation, organisation2)).toString)
       val result = await(objInTest.findOrganisationsByParams(None, None))
 
       result match {
-        case Right(org) => org mustBe List(organisation)
+        case Right(org) => org must contain allOf(organisation, organisation2)
         case _          => fail
       }
     }
@@ -119,7 +111,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       val result = await(objInTest.getOrganisationByOrganisationId(orgId))
       result match {
         case Right(org) => org mustBe organisation
-        case _                => fail()
+        case _          => fail()
       }
     }
 
@@ -128,8 +120,8 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       getOrganisationByOrganisationIdReturnsError(orgId, 404)
       val result = await(objInTest.getOrganisationByOrganisationId(orgId))
       result match {
-       case Left(e: UpstreamErrorResponse) => e.statusCode mustBe 404
-        case _           => fail()
+        case Left(e: UpstreamErrorResponse) => e.statusCode mustBe 404
+        case _                              => fail()
       }
     }
 
@@ -138,8 +130,8 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       getOrganisationByOrganisationIdReturnsError(orgId, 500)
       val result = await(objInTest.getOrganisationByOrganisationId(orgId))
       result match {
-       case Left(e: UpstreamErrorResponse) => e.statusCode mustBe INTERNAL_SERVER_ERROR
-        case _           => fail()
+        case Left(e: UpstreamErrorResponse) => e.statusCode mustBe INTERNAL_SERVER_ERROR
+        case _                              => fail()
       }
     }
 
@@ -147,7 +139,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
   "addOrganisation" should {
 
     "return CreateOrganisationSuccessResult when back end returns Organisation" in new Setup {
-      addOrganisationReturnsResponse(organisation.name.value, OK, organisation)
+      addOrganisationReturnsResponse(organisation.name, OK, organisation)
       val result = await(objInTest.addOrganisation(organisation.name))
 
       result mustBe CreateOrganisationSuccessResult(organisation)
@@ -155,7 +147,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     }
 
     "return CreateOrganisationFailureResult when back end returns error" in new Setup {
-      addOrganisationReturnsError(organisation.name.value, INTERNAL_SERVER_ERROR)
+      addOrganisationReturnsError(organisation.name, INTERNAL_SERVER_ERROR)
       val result = await(objInTest.addOrganisation(organisation.name))
 
       result match {
