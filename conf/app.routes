@@ -3,6 +3,8 @@
 ->         /hmrc-frontend                 hmrcfrontend.Routes
 GET        /organisations                 uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.organisationsPage
 GET        /organisations-search          uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.organisationsSearchAction(searchType: String, searchText: Option[String])
+GET        /organisations-add             uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.organisationsAddPage
+POST       /organisations-add             uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.organisationsAddAction
 GET        /organisations/:organisationId uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.manageOrganisation(organisationId: uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId)
 
 GET        /assets/*file                  controllers.Assets.versioned(path = "/public", file: Asset)

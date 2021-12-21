@@ -31,6 +31,7 @@ import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationAddView
 
 class OrganisationControllerSpec extends ControllerBaseSpec {
 
@@ -41,6 +42,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
     private lazy val errorTemplate = app.injector.instanceOf[ErrorTemplate]
     private lazy val organisationSearchView = app.injector.instanceOf[OrganisationSearchView]
     private lazy val organisationDetailsView = app.injector.instanceOf[OrganisationDetailsView]
+    private lazy val organisationAddView = app.injector.instanceOf[OrganisationAddView]
 
     val mockXmlServiceConnector = mock[XmlServicesConnector]
 
@@ -48,6 +50,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
       mcc,
       organisationSearchView,
       organisationDetailsView,
+      organisationAddView,
       mockAuthConnector,
       forbiddenView,
       errorTemplate,
@@ -111,17 +114,17 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
 
     "return 200 and render search page when organisation-name search type and search text" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-        val orgName ="I am an Org Name"
+      val orgName = "I am an Org Name"
       when(mockXmlServiceConnector.findOrganisationsByParams(eqTo(None), eqTo(Some(orgName)))(*))
         .thenReturn(Future.successful(Right(organisations)))
 
       val result = controller.organisationsSearchAction(organisationNameParamName, Some(orgName))(organisationSearchRequest)
       validatePageIsRendered(result)
 
-      verify(mockXmlServiceConnector).findOrganisationsByParams(* , eqTo(Some(orgName)))(*)
+      verify(mockXmlServiceConnector).findOrganisationsByParams(*, eqTo(Some(orgName)))(*)
     }
 
-     "return 200 and render search page when organisation-name search type without search text" in new Setup {
+    "return 200 and render search page when organisation-name search type without search text" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
       when(mockXmlServiceConnector.findOrganisationsByParams(eqTo(None), eqTo(Some("")))(*))
@@ -130,7 +133,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
       val result = controller.organisationsSearchAction(organisationNameParamName, Some(""))(organisationSearchRequest)
       validatePageIsRendered(result)
 
-      verify(mockXmlServiceConnector).findOrganisationsByParams(* , eqTo(Some("")))(*)
+      verify(mockXmlServiceConnector).findOrganisationsByParams(*, eqTo(Some("")))(*)
     }
 
     "return 200 and render search page when invalid search type provided and valid vendor id" in new Setup {
@@ -212,6 +215,20 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
     "return forbidden view" in new Setup {
       givenAUnsuccessfulLogin()
       val result = controller.manageOrganisation(org1.organisationId)(fakeRequest)
+      status(result) shouldBe Status.SEE_OTHER
+    }
+  }
+
+  "organisationsAddPage" should {
+    "display add page when authorised" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser
+      val result = controller.organisationsAddPage()(fakeRequest)
+      status(result) shouldBe OK
+    }
+
+    "return forbidden view when not authorised" in new Setup {
+      givenAUnsuccessfulLogin()
+      val result = controller.organisationsAddPage()(fakeRequest)
       status(result) shouldBe Status.SEE_OTHER
     }
   }

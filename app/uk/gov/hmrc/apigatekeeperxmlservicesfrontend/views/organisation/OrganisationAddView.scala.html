@@ -1,0 +1,56 @@
+@*
+ * Copyright 2021 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.AddOrganisation
+
+@this(layout: Layout)
+
+
+@(form: Form[AddOrganisation])(implicit request:
+Request[_], messages: Messages,
+appConfig: AppConfig)
+
+@layout(pageTitle = Some("Manage XML Organisations - HMRC API Gatekeeper")) {
+<div class="govuk-form-group">
+
+    <h1 id="page-heading" class="govuk-heading-l">
+        Add organisation
+    </h1>
+    @helper.form(action =
+    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsAddAction()) {
+
+    <div class="govuk-form-group">
+        <label id="organisation-name-label" class="govuk-label govuk-label--m" for="name">
+            Organisation name
+        </label>
+        <input class="govuk-input govuk-input--width-20" id="organisation-name-input" name="name" type="text"
+            aria-describedby="name">
+    </div>
+    <div class="govuk-form-group">
+        <button id="continue-button" class="govuk-button" data-module="govuk-button">
+            Continue
+        </button>
+    </div>
+    }
+
+</div>
+
+
+
+
+}

@@ -71,6 +71,8 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
       Option(document.getElementById("results-table")).isDefined shouldBe false
       Option(document.getElementById("vendor-head")).isDefined shouldBe false
       Option(document.getElementById("organisation-head")).isDefined shouldBe false
+
+      Option(document.getElementById("add-organisation-link")).isDefined shouldBe false
     }
 
     "render page correctly when organisations list is populated" in new Setup {
@@ -85,6 +87,10 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
       validateOrganisationRow(0, org1, document)
       validateOrganisationRow(1, org2, document)
       validateOrganisationRow(2, org3, document)
+
+      Option(document.getElementById("add-organisation-link")).isDefined shouldBe true
+      document.getElementById("add-organisation-link").text shouldBe "Add organisation"
+      document.getElementById("add-organisation-link").attr("href") shouldBe "/api-gatekeeper-xml-services/organisations-add"
     }
 
     "render page correctly when organisations list is empty" in new Setup {
@@ -100,6 +106,10 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
       Option(document.getElementById("results-table")).isDefined shouldBe true
       Option(document.getElementById("vendor-head")).isDefined shouldBe true
       Option(document.getElementById("organisation-head")).isDefined shouldBe true
+
+      Option(document.getElementById("add-organisation-link")).isDefined shouldBe true
+      document.getElementById("add-organisation-link").text shouldBe "Add organisation"
+      document.getElementById("add-organisation-link").attr("href") shouldBe "/api-gatekeeper-xml-services/organisations-add"
     }
   }
 }
