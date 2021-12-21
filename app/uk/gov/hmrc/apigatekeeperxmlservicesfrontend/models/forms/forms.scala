@@ -20,13 +20,13 @@ import play.api.data.Form
 import play.api.data._
 import play.api.data.Forms._
 
-case class AddOrganisation(name: String)
+case class AddOrganisation(organisationname: Option[String] = Some(""))
 
 object AddOrganisation {
   
     val form = Form(
-      mapping(
-        "name" -> text
+      mapping( //organisation-name-input
+        "organisationname" -> optional(nonEmptyText).verifying("organisationname.error.required", x => x.isDefined)
       )(AddOrganisation.apply)(AddOrganisation.unapply)
     )
 

@@ -33,6 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.AddOrganisation
 import play.api.data.Form
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.CreateOrganisationSuccessResult
 
 @Singleton
 class OrganisationController @Inject() (
@@ -66,9 +67,13 @@ class OrganisationController @Inject() (
           // binding failure, you retrieve the form containing errors:
            Future.successful(BadRequest(organisationAddView(formWithErrors)))
         }, organisationAddData => {
-              /* binding success, you get the actual value. */
-           //call connector, and handle result
-           Future.successful(Ok("YEY!!!"))
+           xmlServicesConnector
+           .addOrganisation(organisationAddData.organisationname.getOrElse(""))
+           .map{
+             case CreateOrganisationSuccessResult(x: Organisation) =>  Ok(organisationDetailsView(x))
+             case _ =>  InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+           }
+               
         })
   }
 
