@@ -17,17 +17,15 @@
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.organisation
 
 import play.api.test.FakeRequest
-
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.{CommonViewSpec, WithCSRFAddToken}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.AddOrganisation
-
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationAddView
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 
-class OrganisationAddViewSpec extends CommonViewSpec {
+class OrganisationAddViewSpec extends CommonViewSpec with WithCSRFAddToken {
 
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
@@ -37,14 +35,45 @@ class OrganisationAddViewSpec extends CommonViewSpec {
 
   "Organisation Add View" should {
 
-    "render the organisation add page correctly" in new Setup {
+    def validateFormErrors(document: Document, isError: Boolean)={
+      Option(document.getElementById("error-summary-display")).isDefined shouldBe isError
+      if(isError){
+        document.getElementById("error-summary-title").text() shouldBe "There is a problem"
+        document.getElementById("error-list").children().eachText().contains("Enter an organistion name") shouldBe true
+      
+      }
+      
+      Option(document.getElementById("data-field-error-organisationname")).isDefined shouldBe isError
+      val formGroupElement = Option(document.getElementById("form-group"))
+      formGroupElement.isDefined shouldBe true
+      formGroupElement.head.classNames().contains("govuk-form-group--error") shouldBe isError
+
+
+    }
+
+    "render the organisation add page correctly when no errors" in new Setup {
   
-      val page = organisationAddView.render(AddOrganisation.form, FakeRequest(), messagesProvider.messages, mockAppConfig)
+      val page = organisationAddView.render(AddOrganisation.form, FakeRequest().withCSRFToken, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
+
+      validateFormErrors(document, false)
 
       document.getElementById("page-heading").text() shouldBe "Add organisation"
       document.getElementById("organisation-name-label").text() shouldBe "Organisation name"
-      Option(document.getElementById("organisation-name-input")).isDefined shouldBe true
+      Option(document.getElementById("organisationname")).isDefined shouldBe true
+      Option(document.getElementById("continue-button")).isDefined shouldBe true
+    }
+
+    "render the organisation add page correctly when errors exist" in new Setup {
+
+      val page = organisationAddView.render(AddOrganisation.form.withError("organisationname", "organisationname.error.required"), FakeRequest().withCSRFToken, messagesProvider.messages, mockAppConfig)
+      val document: Document = Jsoup.parse(page.body)
+
+      validateFormErrors(document, true)
+
+      document.getElementById("page-heading").text() shouldBe "Add organisation"
+      document.getElementById("organisation-name-label").text() shouldBe "Organisation name"
+      Option(document.getElementById("organisationname")).isDefined shouldBe true
       Option(document.getElementById("continue-button")).isDefined shouldBe true
     }
   }

@@ -32,8 +32,11 @@ import uk.gov.hmrc.http.UpstreamErrorResponse
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationAddView
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.CreateOrganisationSuccessResult
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.CreateOrganisationFailureResult
 
-class OrganisationControllerSpec extends ControllerBaseSpec {
+class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
 
   trait Setup extends ControllerSetupBase with OrganisationTestData {
     val fakeRequest = FakeRequest("GET", "/organisations")
@@ -222,14 +225,55 @@ class OrganisationControllerSpec extends ControllerBaseSpec {
   "organisationsAddPage" should {
     "display add page when authorised" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser
-      val result = controller.organisationsAddPage()(fakeRequest)
+      val result = controller.organisationsAddPage()(fakeRequest.withCSRFToken)
       status(result) shouldBe OK
     }
 
     "return forbidden view when not authorised" in new Setup {
       givenAUnsuccessfulLogin()
-      val result = controller.organisationsAddPage()(fakeRequest)
+      val result = controller.organisationsAddPage()(fakeRequest.withCSRFToken)
       status(result) shouldBe Status.SEE_OTHER
     }
   }
+
+  "organisationsAddAction" should {
+    "display organisation details page when create successful result returned from connector" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser
+      when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name))(*)).thenReturn(Future.successful(CreateOrganisationSuccessResult(org1)))
+
+      val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody(("organisationname" -> org1.name)))
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).getOrElse("") shouldBe s"/api-gatekeeper-xml-services/organisations/${org1.organisationId.value}"
+
+      verify(mockXmlServiceConnector).addOrganisation(eqTo(org1.name))(*)
+    }
+
+    "display internal server error when failure result returned from connector" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser
+      when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name))(*)).thenReturn(Future.successful(CreateOrganisationFailureResult(UpstreamErrorResponse("some error", 500, 500))))
+
+      val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody(("organisationname" -> org1.name)))
+      status(result) shouldBe INTERNAL_SERVER_ERROR
+
+      verify(mockXmlServiceConnector).addOrganisation(eqTo(org1.name))(*)
+    }
+
+    "display add page with error messages when invalid form provided" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser
+      
+      val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody(("organisationname" -> "")))
+      status(result) shouldBe BAD_REQUEST
+
+      verifyZeroInteractions(mockXmlServiceConnector)
+    }
+
+    "return forbidden view when not authorised" in new Setup {
+      givenAUnsuccessfulLogin()
+      val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody(("organisationname" -> org1.name)))
+
+      status(result) shouldBe Status.SEE_OTHER
+
+    }
+  }
+
 }

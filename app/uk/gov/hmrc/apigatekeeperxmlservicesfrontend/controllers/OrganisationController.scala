@@ -64,16 +64,14 @@ class OrganisationController @Inject() (
     implicit request =>
       addOrganisationForm.bindFromRequest.fold(
         formWithErrors => {
-          // binding failure, you retrieve the form containing errors:
            Future.successful(BadRequest(organisationAddView(formWithErrors)))
         }, organisationAddData => {
            xmlServicesConnector
            .addOrganisation(organisationAddData.organisationname.getOrElse(""))
            .map{
-             case CreateOrganisationSuccessResult(x: Organisation) =>  Ok(organisationDetailsView(x))
+             case CreateOrganisationSuccessResult(x: Organisation) =>  Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.manageOrganisation(x.organisationId))
              case _ =>  InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
-           }
-               
+           }          
         })
   }
 
