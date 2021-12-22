@@ -21,7 +21,6 @@ import org.jsoup.nodes.Element
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
 
-
 import scala.collection.JavaConverters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.FieldError
 import play.api.data.FormError
@@ -31,23 +30,40 @@ class FieldErrorSpec extends CommonViewSpec {
   trait Setup {
     val mockAppConfig = mock[AppConfig]
 
-   
   }
 
   "FieldError" should {
 
-    "render correctly" in new Setup {
-      val formErrors = Seq(FormError("organisationname", "organisationname.error.required"))
-     val view = FieldError.render(formErrors, "organisationname", messagesProvider.messages)
+    "render correctly when fieldname is in form errors, sigle error" in new Setup {
+      val formErrors = Seq(FormError("organisationname", "organisationname.error.required", Seq("one", "two")))
+      val view = FieldError.render(formErrors, "organisationname", messagesProvider.messages)
 
-     val document = Jsoup.parse(view.body) 
-     println(view.body)
+      val document = Jsoup.parse(view.body)
+      Option(document.getElementById("data-field-error-organisationname")).isDefined shouldBe true
+      Option(document.getElementById("link-error-organisationname")).isDefined shouldBe true
+
     }
 
-    // where key = fieldname
-    // key != fieldname
+    "render correctly when fieldname is in form errors, multiple errors" in new Setup {
+      val formErrors = Seq(FormError("organisationname", "organisationname.error.required"),FormError("someotherfieldname", "someotherfieldname.error.required"))
+      val view = FieldError.render(formErrors, "organisationname", messagesProvider.messages)
+
+      val document = Jsoup.parse(view.body)
+      Option(document.getElementById("data-field-error-organisationname")).isDefined shouldBe true
+      Option(document.getElementById("link-error-organisationname")).isDefined shouldBe false
+
+    }
+
+    "render correctly when fieldname is not in form errors" in new Setup {
+      val formErrors = Seq(FormError("organisationname", "organisationname.error.required"))
+      val view = FieldError.render(formErrors, "notamatchingfieldname", messagesProvider.messages)
+
+      val document = Jsoup.parse(view.body)
+      Option(document.getElementById("data-field-error-organisationname")).isDefined shouldBe false
+      Option(document.getElementById("link-error-organisationname")).isDefined shouldBe false
+
+    }
 
   }
 
 }
-

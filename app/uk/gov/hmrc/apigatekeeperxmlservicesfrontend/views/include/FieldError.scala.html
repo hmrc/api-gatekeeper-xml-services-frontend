@@ -38,7 +38,7 @@
     @defining(errors.filter(_.key == fieldName)) { errors =>
       @if(errors.nonEmpty) {
         @if(errors.last.args.nonEmpty) {
-          <a data-link-error-@fieldName href="@errors.last.args.head">
+          <a id="link-error-@fieldName" data-link-error-@fieldName href="@errors.last.args.head">
             @Messages(errors.last.message)
           </a>
         } else {
