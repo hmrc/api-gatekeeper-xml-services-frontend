@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +12,22 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms
 
-@this(layout: Layout)
+import play.api.data.Form
+import play.api.data._
+import play.api.data.Forms._
 
+case class AddOrganisation(organisationname: Option[String] = Some(""))
 
-@()(implicit request: Request[_], messages: Messages)
+object AddOrganisation {
+  
+    val form = Form(
+      mapping( //organisation-name-input
+        "organisationname" -> optional(nonEmptyText).verifying("organisationname.error.required", x => x.isDefined)
+      )(AddOrganisation.apply)(AddOrganisation.unapply)
+    )
 
-@layout(pageTitle = Some("api-gatekeeper-xml-services-frontend")) {
-    <h1 id="page-heading" class="govuk-heading-xl">api-gatekeeper-xml-services-frontend</h1>
-    <p id="page-body" class="govuk-body">@{messages("service.text")}</p>
 }

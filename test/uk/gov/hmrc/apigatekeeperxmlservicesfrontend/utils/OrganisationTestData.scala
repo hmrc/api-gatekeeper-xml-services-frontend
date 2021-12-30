@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,14 +12,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import uk.gov.hmrc.govukfrontend.views.html.components.Text
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils
 
-@this(layout: Layout)
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Organisation, OrganisationId, VendorId}
 
-@(pageTitle: String, heading: String, message: String)(implicit request: Request[_], messages: Messages)
-@layout(pageTitle = Some(pageTitle)) {
-    <h1 id="page-heading" class="govuk-heading-xl">@{Text(heading).asHtml}</h1>
-    <p id="page-body" class="govuk-body">@{Text(message).asHtml}</p>
+import java.util.UUID
+
+
+trait OrganisationTestData {
+    val vendorId = 9001L
+    val org1 = Organisation(organisationId = OrganisationId(UUID.randomUUID()), vendorId = VendorId(1), name = "Org 1")
+    val org2 = org1.copy(vendorId = VendorId(2), name = "Org 2")
+    val org3 = org1.copy(vendorId = VendorId(3), name = "Org 3")
+
+    val organisations = List(org1, org2, org3)
+
 }

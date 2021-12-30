@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,14 +12,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import uk.gov.hmrc.govukfrontend.views.html.components.Text
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models
 
-@this(layout: Layout)
+case class CreateOrganisationRequest(organisationName: String)
 
-@(pageTitle: String, heading: String, message: String)(implicit request: Request[_], messages: Messages)
-@layout(pageTitle = Some(pageTitle)) {
-    <h1 id="page-heading" class="govuk-heading-xl">@{Text(heading).asHtml}</h1>
-    <p id="page-body" class="govuk-body">@{Text(message).asHtml}</p>
-}
+sealed trait CreateOrganisationResult
+case class CreateOrganisationSuccessResult(organisation: Organisation) extends CreateOrganisationResult
+case class CreateOrganisationFailureResult(error: Throwable) extends CreateOrganisationResult

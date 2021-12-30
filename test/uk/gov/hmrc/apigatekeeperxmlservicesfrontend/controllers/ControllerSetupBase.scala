@@ -19,9 +19,11 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.GatekeeperSessionKeys
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.connectors.AuthConnectorMock
-
+import uk.gov.hmrc.http.HeaderCarrier
 
 trait ControllerSetupBase extends AuthConnectorMock {
+  
+  implicit val hc = HeaderCarrier()
 
   val authToken = GatekeeperSessionKeys.AuthToken -> "some-bearer-token"
   val userToken = GatekeeperSessionKeys.LoggedInUser -> userName
