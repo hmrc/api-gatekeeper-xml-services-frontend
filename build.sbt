@@ -32,8 +32,7 @@ lazy val microservice = Project(appName, file("."))
       "uk.gov.hmrc.govukfrontend.views.html.components._",
       "uk.gov.hmrc.hmrcfrontend.views.html.components._",
       "uk.gov.hmrc.hmrcfrontend.views.html.helpers._"
-    ),
-    pipelineStages in Assets := Seq(gzip)
+    )
   )
   .settings(publishingSettings, scoverageSettings)
   .configs(IntegrationTest)

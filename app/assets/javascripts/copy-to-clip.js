@@ -5,7 +5,7 @@
         return navigator.clipboard.writeText(textToCopy);
       } else {
         // text area method
-        let textArea = document.createElement("textarea");
+        var textArea = document.createElement("textarea");
         textArea.value = textToCopy;
         // make the textarea out of viewport
         textArea.style.position = "fixed";
@@ -14,10 +14,15 @@
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
-        return new Promise((res, rej) => {
-          // here the magic happens
-          document.execCommand('copy') ? res() : rej();
-          textArea.remove();
-        });
+
+        try {
+          var successful = document.execCommand('copy');
+        } catch (e) {
+          // allow failure - still want to remove textArea
+          // test if we should even display the button later
+        }
+  
+       textArea.remove();
+
       }
     }

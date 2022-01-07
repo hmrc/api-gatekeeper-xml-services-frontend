@@ -107,10 +107,15 @@ class OrganisationController @Inject() (
     implicit request =>
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
         .map {
-          case Right(org: Organisation) => Ok(organisationDetailsView(org, org.collaborators.map(_.email).mkString(";")))
+          case Right(org: Organisation) => Ok(organisationDetailsView(org, getEmailString(org)))
           // in theory this error
           case Left(_)                  => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
         }
+  }
+
+  private def getEmailString(org: Organisation): String = {
+    if(org.collaborators.isEmpty) ""
+    else org.collaborators.map(_.email).mkString("", ";", ";")
   }
 }
 
