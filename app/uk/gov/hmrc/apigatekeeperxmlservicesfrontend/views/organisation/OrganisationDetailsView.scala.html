@@ -19,56 +19,64 @@
 
 @this(layout: Layout)
 
-@(organisation: Organisation)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@(organisation: Organisation, emails: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @layout(pageTitle = Some("XML Organisation Details - HMRC API Gatekeeper")) {
 
 
 <h1 class="govuk-heading-l">
-    @organisation.name
+  @organisation.name
 </h1>
 <dl class="govuk-summary-list govuk-!-margin-bottom-9">
-    <div class="govuk-summary-list__row">
-      <dt id="org-name-heading" class="govuk-summary-list__key">
-        Name
-      </dt>
-      <dd id="org-name-value" class="govuk-summary-list__value">
-       @organisation.name
-      </dd>
-      <dd class="govuk-summary-list__actions">
-       <!-- <a href="#" class="govuk-link--no-visited-state">
+  <div class="govuk-summary-list__row">
+    <dt id="org-name-heading" class="govuk-summary-list__key">
+      Name
+    </dt>
+    <dd id="org-name-value" class="govuk-summary-list__value">
+      @organisation.name
+    </dd>
+    <dd class="govuk-summary-list__actions">
+      <!-- <a href="#" class="govuk-link--no-visited-state">
           Change
           <span class="govuk-visually-hidden"> name</span>
         </a>-->
-      </dd>
-    </div>
-    <div class="govuk-summary-list__row">
-      <dt id="vendor-id-heading" class="govuk-summary-list__key">
-        Vendor ID
-      </dt>
-      <dd id="vendor-id-value" class="govuk-summary-list__value">
-        @organisation.vendorId.value
-      </dd>
-      <dd  class="govuk-summary-list__actions">
-      </dd>
-    </div>
-    <div class="govuk-summary-list__row">
-        <dt id="team-members-heading" class="govuk-summary-list__key">
-            Team members
-        </dt>
-        <dd id="team-members-value" class="govuk-summary-list__value">
-            @for(member <- organisation.collaborators.zipWithIndex){
-                   @member._1.email <br/>
-            }
-        </dd>
-       <dd class="govuk-summary-list__actions">
-           <a href="#" class="govuk-link--no-visited-state">
-               Manage
-               <span class="govuk-visually-hidden"> contact information</span>
-           </a>
-       </dd>
-    </div>
+    </dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt id="vendor-id-heading" class="govuk-summary-list__key">
+      Vendor ID
+    </dt>
+    <dd id="vendor-id-value" class="govuk-summary-list__value">
+      @organisation.vendorId.value
+    </dd>
+    <dd class="govuk-summary-list__actions">
+    </dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt id="team-members-heading" class="govuk-summary-list__key">
+      Team members
+    </dt>
+    <dd id="team-members-value" class="govuk-summary-list__value">
+      @for(member
+      <- organisation.collaborators.zipWithIndex){ @member._1.email <br />
+      }
+    </dd>
+    <dd class="govuk-summary-list__actions">
+      <a href="#" class="govuk-link--no-visited-state">
+        Manage
+        <span class="govuk-visually-hidden"> contact information</span>
+      </a>
+    </dd>
+  </div>
+</dl>
 
-  </dl>
+<div class="govuk-button-group">
+  <button onclick="copyToClipboard('@emails');" class="govuk-button" data-module="govuk-button">
+    Copy email addresses to clipboard
+  </button>
+
+  <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+    Remove organisation</a>
+</div>
 
 }
