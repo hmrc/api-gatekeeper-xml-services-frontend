@@ -17,6 +17,7 @@
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models
 
 import uk.gov.hmrc.http.SessionKeys
+
 import java.{util => ju}
 
 object GatekeeperRole extends Enumeration {
@@ -33,4 +34,6 @@ case class OrganisationId(value: ju.UUID) extends AnyVal
 
 case class VendorId(value: Long) extends AnyVal
 
-case class Organisation(organisationId: OrganisationId, vendorId: VendorId, name: String)
+case class Collaborator(userId: String, email: String)
+
+case class Organisation(organisationId: OrganisationId, vendorId: VendorId, name: String, collaborators: List[Collaborator] = List.empty)

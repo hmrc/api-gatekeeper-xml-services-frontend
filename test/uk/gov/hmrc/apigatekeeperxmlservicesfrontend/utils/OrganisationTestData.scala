@@ -19,6 +19,7 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Organisation, OrganisationId, VendorId}
 
 import java.util.UUID
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Collaborator
 
 
 trait OrganisationTestData {
@@ -26,6 +27,8 @@ trait OrganisationTestData {
     val org1 = Organisation(organisationId = OrganisationId(UUID.randomUUID()), vendorId = VendorId(1), name = "Org 1")
     val org2 = org1.copy(vendorId = VendorId(2), name = "Org 2")
     val org3 = org1.copy(vendorId = VendorId(3), name = "Org 3")
+
+    val organisationWithCollaborators = org1.copy(collaborators = List(Collaborator("userId1", "email1"), Collaborator("userId2", "email2")))
 
     val organisations = List(org1, org2, org3)
 

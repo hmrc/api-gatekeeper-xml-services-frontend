@@ -19,10 +19,9 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models
 import play.api.libs.json.Json
 
 object JsonFormatters {
-
   implicit val formatOrganisationId = Json.valueFormat[OrganisationId]
   implicit val formatVendorId = Json.valueFormat[VendorId]
+  implicit val formatCollaborator = Json.format[Collaborator]
   implicit val formatOrganisation = Json.format[Organisation]
   implicit val formatCreateOrganisationRequest = Json.format[CreateOrganisationRequest]
-
 }

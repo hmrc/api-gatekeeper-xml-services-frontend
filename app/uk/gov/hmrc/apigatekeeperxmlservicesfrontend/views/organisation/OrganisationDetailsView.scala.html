@@ -52,7 +52,22 @@
       <dd  class="govuk-summary-list__actions">
       </dd>
     </div>
-   
+    <div class="govuk-summary-list__row">
+        <dt id="team-members-heading" class="govuk-summary-list__key">
+            Team members
+        </dt>
+        <dd id="team-members-value" class="govuk-summary-list__value">
+            @for(member <- organisation.collaborators.zipWithIndex){
+                   @member._1.email <br/>
+            }
+        </dd>
+       <dd class="govuk-summary-list__actions">
+           <a href="#" class="govuk-link--no-visited-state">
+               Manage
+               <span class="govuk-visually-hidden"> contact information</span>
+           </a>
+       </dd>
+    </div>
 
   </dl>
 

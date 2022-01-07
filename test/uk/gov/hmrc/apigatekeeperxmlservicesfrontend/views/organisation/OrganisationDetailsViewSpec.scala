@@ -36,9 +36,9 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
 
   "Organisation Details View" should {
 
-    "render the organisation details correctly" in new Setup {
+    "render the organisation details correctly and display the team member when present" in new Setup {
 
-      val page = organisationDetailsView.render(org1, FakeRequest(), messagesProvider.messages, mockAppConfig)
+      val page = organisationDetailsView.render(organisationWithCollaborators, FakeRequest(), messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
 
       document.getElementById("org-name-heading").text() shouldBe "Name"
@@ -46,6 +46,17 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
 
       document.getElementById("vendor-id-heading").text() shouldBe "Vendor ID"
       document.getElementById("vendor-id-value").text() shouldBe org1.vendorId.value.toString
+
+      document.getElementById("team-members-heading").text() shouldBe "Team members"
+      document.getElementById("team-members-value").text() shouldBe "email1 email2"
+    }
+
+      "render the organisation details correctly and display the team member when not present" in new Setup {
+
+      val page = organisationDetailsView.render(organisationWithCollaborators, FakeRequest(), messagesProvider.messages, mockAppConfig)
+      val document: Document = Jsoup.parse(page.body)
+
+      document.getElementById("team-members-value").text() shouldBe "email1 email2"
     }
 
   }
