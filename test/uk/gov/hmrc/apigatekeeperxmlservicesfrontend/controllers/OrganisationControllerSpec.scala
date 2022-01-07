@@ -23,7 +23,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.VendorId
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.{OrganisationDetailsView, OrganisationSearchView}
@@ -35,6 +35,7 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.Orga
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.CreateOrganisationSuccessResult
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.CreateOrganisationFailureResult
+import org.jsoup.nodes.Document
 
 class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
 
@@ -181,7 +182,35 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
 
   "GET /organisations/orgId" should {
 
-    "return 200 and display details view page" in new Setup {
+    def validatePageRender(document: Document, org: Organisation) = {
+
+      document.getElementById("org-name-heading").text() shouldBe "Name"
+      document.getElementById("org-name-value").text() shouldBe org.name
+
+      document.getElementById("vendor-id-heading").text() shouldBe "Vendor ID"
+      document.getElementById("vendor-id-value").text() shouldBe org.vendorId.value.toString
+
+      document.getElementById("team-members-heading").text() shouldBe "Team members"
+      
+      if (org.collaborators.nonEmpty) {
+        document.getElementById("team-members-value").text() shouldBe "email1 email2"
+        document.getElementById("copy-emails").attr("onClick") shouldBe "copyToClipboard('email1;email2;');"
+      }
+    }
+
+    "return 200 and display details view page when users in org" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(*))
+        .thenReturn(Future.successful(Right(org1)))
+
+      val result = controller.manageOrganisation(org1.organisationId)(fakeRequest)
+      status(result) shouldBe Status.OK
+      val document = Jsoup.parse(contentAsString(result))
+      validatePageRender(document, org1)
+
+    }
+
+    "return 200 and display details view page no users in org" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(*))
         .thenReturn(Future.successful(Right(org1)))
@@ -190,11 +219,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       status(result) shouldBe Status.OK
 
       val document = Jsoup.parse(contentAsString(result))
-      document.getElementById("org-name-heading").text() shouldBe "Name"
-      document.getElementById("org-name-value").text() shouldBe org1.name
-
-      document.getElementById("vendor-id-heading").text() shouldBe "Vendor ID"
-      document.getElementById("vendor-id-value").text() shouldBe org1.vendorId.value.toString
+      validatePageRender(document, org1)
     }
 
     "return 500 and render error page when connector returns any error other than 404" in new Setup {
@@ -260,7 +285,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
 
     "display add page with error messages when invalid form provided" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser
-      
+
       val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody(("organisationname" -> "")))
       status(result) shouldBe BAD_REQUEST
 
