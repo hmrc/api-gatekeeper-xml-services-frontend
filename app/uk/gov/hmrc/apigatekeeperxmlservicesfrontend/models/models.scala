@@ -20,6 +20,7 @@ import uk.gov.hmrc.http.SessionKeys
 
 import java.{util => ju}
 
+
 object GatekeeperRole extends Enumeration {
   type GatekeeperRole = Value
   val USER,SUPERUSER,ADMIN = Value
