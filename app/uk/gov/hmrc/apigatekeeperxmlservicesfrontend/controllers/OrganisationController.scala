@@ -27,13 +27,13 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, F
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
-
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.AddOrganisation
 import play.api.data.Form
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.CreateOrganisationSuccessResult
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.ManageTeamMembersView
 
 @Singleton
 class OrganisationController @Inject() (
@@ -41,6 +41,7 @@ class OrganisationController @Inject() (
     organisationSearchView: OrganisationSearchView,
     organisationDetailsView: OrganisationDetailsView,
     organisationAddView: OrganisationAddView,
+    manageTeamMembersView: ManageTeamMembersView,
     override val authConnector: AuthConnector,
     val forbiddenView: ForbiddenView,
     errorTemplate: ErrorTemplate,
@@ -50,7 +51,7 @@ class OrganisationController @Inject() (
     extends FrontendController(mcc)
     with GatekeeperAuthWrapper {
 
-        val addOrganisationForm: Form[AddOrganisation] = AddOrganisation.form
+  val addOrganisationForm: Form[AddOrganisation] = AddOrganisation.form
 
   val organisationsPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request => Future.successful(Ok(organisationSearchView(List.empty, showTable = false)))
@@ -64,15 +65,18 @@ class OrganisationController @Inject() (
     implicit request =>
       addOrganisationForm.bindFromRequest.fold(
         formWithErrors => {
-           Future.successful(BadRequest(organisationAddView(formWithErrors)))
-        }, organisationAddData => {
-           xmlServicesConnector
-           .addOrganisation(organisationAddData.organisationname.getOrElse(""))
-           .map{
-             case CreateOrganisationSuccessResult(x: Organisation) =>  Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.manageOrganisation(x.organisationId))
-             case _ =>  InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
-           }          
-        })
+          Future.successful(BadRequest(organisationAddView(formWithErrors)))
+        },
+        organisationAddData => {
+          xmlServicesConnector
+            .addOrganisation(organisationAddData.organisationname.getOrElse(""))
+            .map {
+              case CreateOrganisationSuccessResult(x: Organisation) =>
+                Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.manageOrganisation(x.organisationId))
+              case _                                                => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+            }
+        }
+      )
   }
 
   def organisationsSearchAction(searchType: String, searchText: Option[String]): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
@@ -113,8 +117,19 @@ class OrganisationController @Inject() (
         }
   }
 
+  def manageTeamMembers(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+    implicit request =>
+      {
+        xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
+          .map {
+            case Right(org: Organisation) => Ok(manageTeamMembersView(org))
+            case Left(_)                  => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+          }
+      }
+  }
+
   private def getEmailString(org: Organisation): String = {
-    if(org.collaborators.isEmpty) ""
+    if (org.collaborators.isEmpty) ""
     else org.collaborators.map(_.email).mkString("", ";", ";")
   }
 }
