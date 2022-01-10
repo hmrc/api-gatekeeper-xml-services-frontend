@@ -36,7 +36,13 @@ class XmlServicesConnector @Inject()(val http: HttpClient, val config: Config)(i
                                (implicit hc: HeaderCarrier): Future[Either[Throwable, List[Organisation]]] = {
     val vendorIdParams = vendorId.map(v => Seq("vendorId" -> v.value.toString)).getOrElse(Seq.empty)
     val orgNameParams = organisationName.map(o => Seq("organisationName" -> o)).getOrElse(Seq.empty)
-    val params = vendorIdParams ++ orgNameParams
+    val sortByParms = (vendorId , organisationName) match {
+      case (Some(_), None) => Seq("sortBy" ->  "VENDOR_ID")
+      case (None, Some(_)) => Seq("sortBy" ->  "ORGANISATION_NAME")
+      case _ => Seq.empty
+    }                            
+
+    val params = vendorIdParams ++ orgNameParams ++ sortByParms
 
     handleResult(http.GET[List[Organisation]](url = s"$baseUrl/organisations", queryParams = params))
   }

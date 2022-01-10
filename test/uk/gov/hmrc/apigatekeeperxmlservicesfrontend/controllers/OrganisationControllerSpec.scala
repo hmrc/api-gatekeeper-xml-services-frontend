@@ -140,6 +140,15 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       verify(mockXmlServiceConnector).findOrganisationsByParams(*, eqTo(Some("")))(*)
     }
 
+    "return 200 and render search page when no search type and without search text" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+      val result = controller.organisationsSearchAction("", Some(""))(organisationSearchRequest)
+      validatePageIsRendered(result)
+
+      verifyZeroInteractions(mockXmlServiceConnector)
+    }
+
     "return 200 and render search page when invalid search type provided and valid vendor id" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 

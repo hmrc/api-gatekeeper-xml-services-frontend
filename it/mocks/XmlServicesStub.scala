@@ -29,8 +29,8 @@ trait XmlServicesStub {
 
   def findOrganisationByParamsUrl(vendorId: Option[String], organisationName: Option[String]) =
     (vendorId, organisationName) match {
-      case (Some(v), None)       => s"$baseUrl/organisations?vendorId=$v"
-      case (None, Some(orgName)) => s"$baseUrl/organisations?organisationName=${java.net.URLEncoder.encode(orgName, "UTF-8")}"
+      case (Some(v), None)       => s"$baseUrl/organisations?vendorId=$v&sortBy=VENDOR_ID"
+      case (None, Some(orgName)) => s"$baseUrl/organisations?organisationName=${java.net.URLEncoder.encode(orgName, "UTF-8")}&sortBy=ORGANISATION_NAME"
       case _                     => s"$baseUrl/organisations"
     }
 
