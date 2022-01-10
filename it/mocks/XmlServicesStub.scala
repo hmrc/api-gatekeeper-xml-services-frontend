@@ -20,13 +20,16 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import play.api.libs.json.Json
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.RemoveCollaboratorRequest
 
 trait XmlServicesStub {
 
   val baseUrl = "/api-platform-xml-services"
 
   val organisationUrl = s"$baseUrl/organisations"
-
+  def  removeTeamMemberUrl(organisationId: OrganisationId) ={
+    s"$organisationUrl/${organisationId.value.toString}/remove-collaborator"
+  }
   def findOrganisationByParamsUrl(vendorId: Option[String], organisationName: Option[String]) =
     (vendorId, organisationName) match {
       case (Some(v), None)       => s"$baseUrl/organisations?vendorId=$v&sortBy=VENDOR_ID"
@@ -36,6 +39,10 @@ trait XmlServicesStub {
 
   def createOrganisationRequestAsString(organisationName: String): String = {
     Json.toJson(CreateOrganisationRequest(organisationName)).toString
+  }
+
+  def removeCollaboratorRequestAsString(email: String, gateKeeperId: String): String = {
+    Json.toJson(RemoveCollaboratorRequest(email, gateKeeperId)).toString
   }
 
   def findOrganisationByParamsReturnsError(vendorId: Option[String], organisationName: Option[String], status: Int) = {
@@ -100,4 +107,16 @@ trait XmlServicesStub {
           .withStatus(status)
       ))
   }
+
+  def removeTeamMemberReturnsResponse(organisationId: OrganisationId, email: String, gatekeeperId: String, status: Int, response: Organisation) = {
+
+    stubFor(post(urlEqualTo(removeTeamMemberUrl(organisationId)))
+      .withRequestBody(equalToJson(removeCollaboratorRequestAsString(email, gatekeeperId)))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withBody(Json.toJson(response).toString)
+      ))
+  }
+
 }

@@ -21,3 +21,8 @@ case class CreateOrganisationRequest(organisationName: String)
 sealed trait CreateOrganisationResult
 case class CreateOrganisationSuccessResult(organisation: Organisation) extends CreateOrganisationResult
 case class CreateOrganisationFailureResult(error: Throwable) extends CreateOrganisationResult
+
+
+sealed trait RemoveCollaboratorResult
+case class RemoveCollaboratorSuccessResult(organisation: Organisation) extends RemoveCollaboratorResult
+case class RemoveCollaboratorFailureResult(error: Throwable) extends RemoveCollaboratorResult

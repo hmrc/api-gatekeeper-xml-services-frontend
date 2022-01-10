@@ -57,7 +57,9 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     val vendorId: VendorId = VendorId(12)
 
     val organisation = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = vendorId, name = "Org name")
-    val organisation2 = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = vendorId, name = "Org name2")
+    val organisation2 = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = VendorId(13), name = "Org name2")
+
+    val organisationWithTeamMembers = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = VendorId(14), name = "Org name3", collaborators = List(Collaborator("userId", "collaborator1@mail.com")))
   }
 
   "findOrganisationsByParams" should {
@@ -154,6 +156,16 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
         case CreateOrganisationFailureResult(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed
         case _                                                                                      => fail()
       }
+    }
+  }
+
+  "removeTeamMember" should {
+    "return 200 when remove collaborator call is successful " in new Setup {
+      removeTeamMemberReturnsResponse(organisationWithTeamMembers.organisationId, organisationWithTeamMembers.collaborators.head.email, "somegatekeeperId", OK, organisationWithTeamMembers.copy(collaborators = List.empty))
+      val result = await(objInTest.removeTeamMember(organisationWithTeamMembers.organisationId, organisationWithTeamMembers.collaborators.head.email, "somegatekeeperId"))
+
+      result mustBe RemoveCollaboratorSuccessResult(organisationWithTeamMembers.copy(collaborators = List.empty))
+
     }
   }
 }
