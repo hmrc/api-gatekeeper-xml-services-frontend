@@ -36,7 +36,7 @@ class ManageTeamMembersViewSpec extends CommonViewSpec {
 
   "Manage Team Members View" should {
 
-    "render the team members correctly" in new Setup {
+    "render the team members correctly when " in new Setup {
 
       val page = manageTeamMembersView.render(organisationWithCollaborators, FakeRequest(), messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)

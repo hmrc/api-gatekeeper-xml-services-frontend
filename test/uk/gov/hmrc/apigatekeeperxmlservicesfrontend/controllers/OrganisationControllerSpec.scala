@@ -37,6 +37,8 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToke
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.CreateOrganisationSuccessResult
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.CreateOrganisationFailureResult
 import org.jsoup.nodes.Document
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.Upstream4xxResponse
 
 class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
 
@@ -203,7 +205,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       document.getElementById("vendor-id-value").text() shouldBe org.vendorId.value.toString
 
       document.getElementById("team-members-heading").text() shouldBe "Team members"
-      
+
       if (org.collaborators.nonEmpty) {
         document.getElementById("team-members-value").text() shouldBe "email1 email2"
         document.getElementById("copy-emails").attr("onClick") shouldBe "copyToClipboard('email1;email2;');"
@@ -313,4 +315,129 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
   }
 
+  "manageTeamMembers" should {
+
+    "return 200 and render the manage team member view when organisation exists" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser
+
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
+        .thenReturn(Future.successful(Right(organisationWithCollaborators)))
+
+      val result = controller.manageTeamMembers(organisationWithCollaborators.organisationId)(fakeRequest.withCSRFToken.withFormUrlEncodedBody(("organisationname" -> org1.name)))
+
+      status(result) shouldBe OK
+
+      val document = Jsoup.parse(contentAsString(result))
+      document.getElementById("org-name-caption").text() shouldBe org1.name
+      document.getElementById("team-member-heading").text() shouldBe "Manage team members"
+
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
+    }
+
+    "return 500 and render the error page when organisation doesn't exist" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser
+
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
+        .thenReturn(Future.successful(Left(UpstreamErrorResponse("", 500, 500))))
+
+      val result = controller.manageTeamMembers(organisationWithCollaborators.organisationId)(fakeRequest.withCSRFToken.withFormUrlEncodedBody(("organisationname" -> org1.name)))
+
+      status(result) shouldBe INTERNAL_SERVER_ERROR
+
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
+    }
+
+    "return forbidden view when not authorised" in new Setup {
+      givenAUnsuccessfulLogin()
+      val result = controller.manageTeamMembers(org1.organisationId)(fakeRequest.withCSRFToken.withFormUrlEncodedBody(("organisationname" -> org1.name)))
+
+      status(result) shouldBe Status.SEE_OTHER
+
+    }
+  }
+
+  "removeTeamMember" should {
+
+    "return 200 when organisation is retrieved and call to remove team member is successful" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser
+
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
+        .thenReturn(Future.successful(Right(organisationWithCollaborators)))
+
+      when(mockXmlServiceConnector.removeTeamMember(*[OrganisationId], *, *)(*))
+        .thenReturn(Future.successful(RemoveCollaboratorSuccessResult(organisationWithCollaborators)))
+      val collaborator = organisationWithCollaborators.collaborators.head
+      val result = controller.removeTeamMember(organisationWithCollaborators.organisationId, collaborator.userId)(
+        fakeRequest.withCSRFToken.withFormUrlEncodedBody(("organisationname" -> organisationWithCollaborators.name))
+      )
+
+      status(result) shouldBe Status.OK
+
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
+      verify(mockXmlServiceConnector).removeTeamMember(eqTo(organisationWithCollaborators.organisationId), eqTo(collaborator.email), *)(*)
+
+    }
+
+    "return 500 when organisation is retrieved and call to remove team member fails" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser
+
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
+        .thenReturn(Future.successful(Right(organisationWithCollaborators)))
+
+      when(mockXmlServiceConnector.removeTeamMember(*[OrganisationId], *, *)(*))
+        .thenReturn(Future.successful(RemoveCollaboratorFailureResult(new RuntimeException("some error"))))
+
+      val collaborator = organisationWithCollaborators.collaborators.head
+      val result = controller.removeTeamMember(organisationWithCollaborators.organisationId, collaborator.userId)(
+        fakeRequest.withCSRFToken.withFormUrlEncodedBody(("organisationname" -> organisationWithCollaborators.name))
+      )
+
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
+      verify(mockXmlServiceConnector).removeTeamMember(eqTo(organisationWithCollaborators.organisationId), eqTo(collaborator.email), *)(*)
+
+    }
+
+    "return 500 when organisation is retrieved but userId does not match any collaborator" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser
+
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
+        .thenReturn(Future.successful(Right(organisationWithCollaborators)))
+
+      val result = controller.removeTeamMember(organisationWithCollaborators.organisationId, "unmacthedUserId")(
+        fakeRequest.withCSRFToken.withFormUrlEncodedBody(("organisationname" -> organisationWithCollaborators.name))
+      )
+
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
+      verify(mockXmlServiceConnector, times(0)).removeTeamMember(*[OrganisationId], *, *)(*)
+
+    }
+
+    "return 500 when connector returns 500" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser
+
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
+        .thenReturn(Future.successful(Left(UpstreamErrorResponse("", 500, 500))))
+
+      val result = controller.removeTeamMember(organisationWithCollaborators.organisationId, "unmacthedUserId")(
+        fakeRequest.withCSRFToken.withFormUrlEncodedBody(("organisationname" -> organisationWithCollaborators.name))
+      )
+
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
+      verify(mockXmlServiceConnector, times(0)).removeTeamMember(*[OrganisationId], *, *)(*)
+
+    }
+
+    "return forbidden view when not authorised" in new Setup {
+      givenAUnsuccessfulLogin()
+      val result = controller.removeTeamMember(org1.organisationId, "")(fakeRequest.withCSRFToken.withFormUrlEncodedBody(("organisationname" -> org1.name)))
+
+      status(result) shouldBe Status.SEE_OTHER
+
+    }
+
+  }
 }
