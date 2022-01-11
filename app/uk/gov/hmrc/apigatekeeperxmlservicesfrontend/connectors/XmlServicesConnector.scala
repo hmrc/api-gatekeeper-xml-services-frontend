@@ -58,7 +58,10 @@ class XmlServicesConnector @Inject()(val http: HttpClient, val config: Config)(i
     ).map {
       case Right(x: Organisation) => RemoveCollaboratorSuccessResult(x)
       case Left(err) => RemoveCollaboratorFailureResult(err)
-    }
+    }.recover {
+        case NonFatal(e) => logger.error(e.getMessage)
+          RemoveCollaboratorFailureResult(e)
+      }
 
   }
 

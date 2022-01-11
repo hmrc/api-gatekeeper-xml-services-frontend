@@ -59,7 +59,12 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     val organisation = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = vendorId, name = "Org name")
     val organisation2 = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = VendorId(13), name = "Org name2")
 
-    val organisationWithTeamMembers = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = VendorId(14), name = "Org name3", collaborators = List(Collaborator("userId", "collaborator1@mail.com")))
+    val organisationWithTeamMembers = Organisation(
+      organisationId = OrganisationId(ju.UUID.randomUUID()),
+      vendorId = VendorId(14),
+      name = "Org name3",
+      collaborators = List(Collaborator("userId", "collaborator1@mail.com"))
+    )
   }
 
   "findOrganisationsByParams" should {
@@ -100,7 +105,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       val result = await(objInTest.findOrganisationsByParams(None, None))
 
       result match {
-        case Right(org) => org must contain allOf(organisation, organisation2)
+        case Right(org) => org must contain allOf (organisation, organisation2)
         case _          => fail
       }
     }
@@ -160,11 +165,51 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
   }
 
   "removeTeamMember" should {
-    "return 200 when remove collaborator call is successful " in new Setup {
-      removeTeamMemberReturnsResponse(organisationWithTeamMembers.organisationId, organisationWithTeamMembers.collaborators.head.email, "somegatekeeperId", OK, organisationWithTeamMembers.copy(collaborators = List.empty))
+    "return RemoveCollaboratorSuccessResult when remove collaborator call is successful " in new Setup {
+      removeTeamMemberReturnsResponse(
+        organisationWithTeamMembers.organisationId,
+        organisationWithTeamMembers.collaborators.head.email,
+        "somegatekeeperId",
+        OK,
+        organisationWithTeamMembers.copy(collaborators = List.empty)
+      )
       val result = await(objInTest.removeTeamMember(organisationWithTeamMembers.organisationId, organisationWithTeamMembers.collaborators.head.email, "somegatekeeperId"))
 
       result mustBe RemoveCollaboratorSuccessResult(organisationWithTeamMembers.copy(collaborators = List.empty))
+
+    }
+
+    "return RemoveCollaboratorFailureResult when remove collaborator call is unsuccessful " in new Setup {
+      removeTeamMemberReturnsResponse(
+        organisationWithTeamMembers.organisationId,
+        organisationWithTeamMembers.collaborators.head.email,
+        "somegatekeeperId",
+        NOT_FOUND,
+        organisationWithTeamMembers.copy(collaborators = List.empty)
+      )
+      val result = await(objInTest.removeTeamMember(organisationWithTeamMembers.organisationId, organisationWithTeamMembers.collaborators.head.email, "somegatekeeperId"))
+
+      result match {
+        case RemoveCollaboratorFailureResult(e) => e.getMessage
+        case _                                  => fail
+      }
+
+    }
+
+    "return RemoveCollaboratorFailureResult when remove collaborator call is unsuccessful (500 Error)" in new Setup {
+      removeTeamMemberReturnsResponse(
+        organisationWithTeamMembers.organisationId,
+        organisationWithTeamMembers.collaborators.head.email,
+        "somegatekeeperId",
+        INTERNAL_SERVER_ERROR,
+        organisationWithTeamMembers.copy(collaborators = List.empty)
+      )
+      val result = await(objInTest.removeTeamMember(organisationWithTeamMembers.organisationId, organisationWithTeamMembers.collaborators.head.email, "somegatekeeperId"))
+
+      result match {
+        case RemoveCollaboratorFailureResult(e) => e.getMessage
+        case _                                  => fail
+      }
 
     }
   }

@@ -24,17 +24,18 @@
 @layout(pageTitle = Some("Manage team members - HMRC API Gatekeeper")) {
 
 
-<span class="govuk-caption-l">@organisation.name</span>#
-<h1 class="govuk-heading-l">
+<span id="org-name-caption" class="govuk-caption-l">@organisation.name</span>
+<h1 id="team-member-heading" class="govuk-heading-l">
   Manage team members
 </h1>
 
 <dl class="govuk-summary-list govuk-!-margin-bottom-9">
-  <div class="govuk-summary-list__row">
-    <dd id="team-members-value" class="govuk-summary-list__value">
-      @for(member
-      <- organisation.collaborators.zipWithIndex){ @member._1.email <br />
-      }
+  @for(member<- organisation.collaborators.zipWithIndex){ <div class="govuk-summary-list__row">
+
+    <dd id="team-members-email-@member._2" class="govuk-summary-list__value">
+
+      @member._1.email <br />
+
     </dd>
     <dd class="govuk-summary-list__actions">
       <a href="#" class="govuk-link--no-visited-state">
@@ -43,12 +44,14 @@
       </a>
     </dd>
     <dd class="govuk-summary-list__actions">
-      <a href="#" class="govuk-link--no-visited-state">
+      <a id="remove-team-member-link-@member._2" href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.removeTeamMember(organisation.organisationId,  member._1.userId).url"" class="govuk-link--no-visited-state">
         Remove
         <span class="govuk-visually-hidden"> contact information</span>
       </a>
     </dd>
-  </div>
+
+    </div>
+    }
 </dl>
 
 <div class="govuk-button-group">
@@ -60,7 +63,7 @@
     Cancel
     <span class="govuk-visually-hidden"> contact information</span>
   </a>
-  
+
   <!-- <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
     Remove organisation</a> -->
 </div>

@@ -27,6 +27,7 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.{OrganisationDetailsView, OrganisationSearchView}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.ManageTeamMembersView
 import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -47,6 +48,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     private lazy val organisationSearchView = app.injector.instanceOf[OrganisationSearchView]
     private lazy val organisationDetailsView = app.injector.instanceOf[OrganisationDetailsView]
     private lazy val organisationAddView = app.injector.instanceOf[OrganisationAddView]
+    private lazy val manageTeamMembersView = app.injector.instanceOf[ManageTeamMembersView]
 
     val mockXmlServiceConnector = mock[XmlServicesConnector]
 
@@ -55,6 +57,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       organisationSearchView,
       organisationDetailsView,
       organisationAddView,
+      manageTeamMembersView,
       mockAuthConnector,
       forbiddenView,
       errorTemplate,
