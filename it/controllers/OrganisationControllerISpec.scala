@@ -23,12 +23,13 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
-import play.api.test.Helpers.{BAD_REQUEST, FORBIDDEN, NOT_FOUND, OK}
+import play.api.test.Helpers.{BAD_REQUEST, FORBIDDEN, NOT_FOUND, OK, UNAUTHORIZED}
 import support.AuthServiceStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Organisation, OrganisationId, VendorId}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
+import java.util.UUID
 
 class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with AuthServiceStub {
 
@@ -181,5 +182,22 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         Option(content.getElementById("results-table")).isDefined mustBe true
       }
     }
+
+    "GET /organisations/:organisationId/team-members" should {
+      "respond with 400 if invalid OrganisationId" in new Setup {
+        primeAuthServiceSuccess()
+        val result = callGetEndpoint(s"$url/organisations/aldskjflaskjdf/team-members")
+        result.status mustBe BAD_REQUEST
+
+      }
+
+      "respond with 401 if auth fails" in new Setup {
+        primeAuthServiceFail()
+        val result = callGetEndpoint(s"$url/organisations/${UUID.randomUUID.toString}/team-members")
+        result.status mustBe UNAUTHORIZED
+
+      }
+    }
+
   }
 }

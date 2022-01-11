@@ -25,6 +25,7 @@ lazy val microservice = Project(appName, file("."))
     ),
     majorVersion := 0,
     scalaVersion := "2.12.13",
+    routesImport += "uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.binders._",
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
     TwirlKeys.templateImports ++= Seq(
       "views.html.helper.CSPNonce",
