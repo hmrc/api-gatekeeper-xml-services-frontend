@@ -23,13 +23,14 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
-import play.api.test.Helpers.{BAD_REQUEST, FORBIDDEN, NOT_FOUND, OK, UNAUTHORIZED}
+import play.api.test.Helpers.{BAD_REQUEST, FORBIDDEN, NOT_FOUND, OK, INTERNAL_SERVER_ERROR}
 import support.AuthServiceStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Organisation, OrganisationId, VendorId}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
 import java.util.UUID
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Collaborator
 
 class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with AuthServiceStub {
 
@@ -53,6 +54,13 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
     val objInTest: XmlServicesConnector = app.injector.instanceOf[XmlServicesConnector]
     val vendorId: VendorId = VendorId(12)
     val organisation = Organisation(organisationId = OrganisationId(java.util.UUID.randomUUID()), vendorId = vendorId, name = "Org name")
+
+    val organisationWithTeamMembers = Organisation(
+      organisationId = OrganisationId(UUID.randomUUID()),
+      vendorId = VendorId(14),
+      name = "Org name3",
+      collaborators = List(Collaborator("userId", "collaborator1@mail.com"))
+    )
 
     def callGetEndpoint(url: String, headers: List[(String, String)] = List.empty): WSResponse =
       wsClient
@@ -191,10 +199,35 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
       }
 
-      "respond with 401 if auth fails" in new Setup {
+      "respond with 403 if auth fails" in new Setup {
         primeAuthServiceFail()
         val result = callGetEndpoint(s"$url/organisations/${UUID.randomUUID.toString}/team-members")
-        result.status mustBe UNAUTHORIZED
+        result.status mustBe FORBIDDEN
+
+      }
+
+      "respond with 200 and render manage team members page" in new Setup {
+        primeAuthServiceSuccess()
+        val orgId = organisationWithTeamMembers.organisationId
+        getOrganisationByOrganisationIdReturnsResponseWithBody(orgId, 200, Json.toJson(organisationWithTeamMembers).toString())
+        val result = callGetEndpoint(s"$url/organisations/${orgId.value.toString}/team-members")
+        result.status mustBe OK
+
+        val document = Jsoup.parse(result.body)
+        document.getElementById("org-name-caption").text() mustBe organisationWithTeamMembers.name
+        document.getElementById("team-member-heading").text() mustBe "Manage team members"
+
+      }
+
+      "respond with 500 and render error template" in new Setup {
+        primeAuthServiceSuccess()
+        val orgId = organisationWithTeamMembers.organisationId
+        getOrganisationByOrganisationIdReturnsError(orgId, 500)
+        val result = callGetEndpoint(s"$url/organisations/${orgId.value.toString}/team-members")
+        result.status mustBe INTERNAL_SERVER_ERROR
+
+        val document = Jsoup.parse(result.body)
+        document.getElementById("page-heading").text() mustBe "Internal Server Error"
 
       }
     }
