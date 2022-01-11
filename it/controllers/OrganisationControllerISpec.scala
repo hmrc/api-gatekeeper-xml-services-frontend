@@ -232,5 +232,13 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       }
     }
 
+    "GET /organisations/:organisationId/remove-team-member/:userId" should {
+      "respond with 400 if invalid OrganisationId" in new Setup {
+        primeAuthServiceSuccess()
+        val result = callGetEndpoint(s"$url/organisations/aldskjflaskjdf/remove-team-member/:userId")
+        result.status mustBe BAD_REQUEST
+
+      }
+    }
   }
 }
