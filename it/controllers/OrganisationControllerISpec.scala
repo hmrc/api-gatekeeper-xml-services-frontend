@@ -20,15 +20,17 @@ import mocks.XmlServicesStub
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.scalatest.BeforeAndAfterEach
+import play.api.http.Status.SEE_OTHER
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
-import play.api.test.Helpers.{BAD_REQUEST, FORBIDDEN, NOT_FOUND, OK, INTERNAL_SERVER_ERROR}
+import play.api.test.Helpers.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, OK}
 import support.AuthServiceStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Organisation, OrganisationId, VendorId}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
+
 import java.util.UUID
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Collaborator
 
@@ -53,13 +55,15 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
     val objInTest: XmlServicesConnector = app.injector.instanceOf[XmlServicesConnector]
     val vendorId: VendorId = VendorId(12)
-    val organisation = Organisation(organisationId = OrganisationId(java.util.UUID.randomUUID()), vendorId = vendorId, name = "Org name")
+    val organisationId = OrganisationId(java.util.UUID.randomUUID())
+    val organisation = Organisation(organisationId , vendorId = vendorId, name = "Org name")
 
+    val collaborator = Collaborator("userId", "collaborator1@mail.com")
     val organisationWithTeamMembers = Organisation(
       organisationId = OrganisationId(UUID.randomUUID()),
       vendorId = VendorId(14),
       name = "Org name3",
-      collaborators = List(Collaborator("userId", "collaborator1@mail.com"))
+      collaborators = List(collaborator)
     )
 
     def callGetEndpoint(url: String, headers: List[(String, String)] = List.empty): WSResponse =
@@ -209,7 +213,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       "respond with 200 and render manage team members page" in new Setup {
         primeAuthServiceSuccess()
         val orgId = organisationWithTeamMembers.organisationId
-        getOrganisationByOrganisationIdReturnsResponseWithBody(orgId, 200, Json.toJson(organisationWithTeamMembers).toString())
+        getOrganisationByOrganisationIdReturnsResponseWithBody(orgId, OK, Json.toJson(organisationWithTeamMembers).toString())
         val result = callGetEndpoint(s"$url/organisations/${orgId.value.toString}/team-members")
         result.status mustBe OK
 
@@ -222,7 +226,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       "respond with 500 and render error template" in new Setup {
         primeAuthServiceSuccess()
         val orgId = organisationWithTeamMembers.organisationId
-        getOrganisationByOrganisationIdReturnsError(orgId, 500)
+        getOrganisationByOrganisationIdReturnsError(orgId, INTERNAL_SERVER_ERROR)
         val result = callGetEndpoint(s"$url/organisations/${orgId.value.toString}/team-members")
         result.status mustBe INTERNAL_SERVER_ERROR
 
@@ -233,10 +237,39 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
     }
 
     "GET /organisations/:organisationId/remove-team-member/:userId" should {
+
+      "respond with 200 when remove team member is successful" in new Setup {
+        primeAuthServiceSuccess()
+
+        getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
+
+        val result = callGetEndpoint(s"$url/organisations/${organisationId.value.toString}/remove-team-member/${organisationWithTeamMembers.collaborators.head.userId}")
+
+        result.status mustBe OK
+
+        val document = Jsoup.parse(result.body)
+
+        document.getElementById("page-heading").text() mustBe s"Are you sure you want to remove ${collaborator.email}?"
+        Option(document.getElementById("yes")).isDefined mustBe true
+        Option(document.getElementById("no")).isDefined mustBe true
+        Option(document.getElementById("continue-button")).isDefined mustBe true
+
+      }
+
+
       "respond with 400 if invalid OrganisationId" in new Setup {
         primeAuthServiceSuccess()
-        val result = callGetEndpoint(s"$url/organisations/aldskjflaskjdf/remove-team-member/:userId")
+
+        val result = callGetEndpoint(s"$url/organisations/aldskjflaskjdf/remove-team-member/${organisationWithTeamMembers.collaborators.head.userId}")
         result.status mustBe BAD_REQUEST
+
+      }
+
+      "respond with 403 if auth fails" in new Setup {
+        primeAuthServiceFail()
+        val orgId = organisationWithTeamMembers.organisationId
+        val result = callGetEndpoint(s"$url/organisations/${orgId.value.toString}/remove-team-member/:userId")
+        result.status mustBe FORBIDDEN
 
       }
     }

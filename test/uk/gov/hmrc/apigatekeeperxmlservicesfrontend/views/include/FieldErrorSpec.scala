@@ -17,11 +17,9 @@
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.include
 
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Element
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
 
-import scala.collection.JavaConverters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.FieldError
 import play.api.data.FormError
 

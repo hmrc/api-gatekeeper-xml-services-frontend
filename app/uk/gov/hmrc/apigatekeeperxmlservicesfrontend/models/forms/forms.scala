@@ -20,14 +20,35 @@ import play.api.data.Form
 import play.api.data._
 import play.api.data.Forms._
 
-case class AddOrganisation(organisationname: Option[String] = Some(""))
+object Forms {
 
-object AddOrganisation {
-  
+  private def emailValidator() = {
+    text
+      .verifying("removeteammember.email.error.required", _.nonEmpty)
+//      .verifying("email.not.valid", email => EmailAddress.isValid(email) || email.isEmpty)
+  }
+
+
+  case class AddOrganisation(organisationname: Option[String] = Some(""))
+
+  object AddOrganisation {
+
     val form = Form(
       mapping( //organisation-name-input
         "organisationname" -> optional(nonEmptyText).verifying("organisationname.error.required", x => x.isDefined)
       )(AddOrganisation.apply)(AddOrganisation.unapply)
     )
 
+  }
+
+  final case class RemoveTeamMemberConfirmationForm(email: String, confirm: Option[String] = Some(""))
+
+  object RemoveTeamMemberConfirmationForm {
+    val form: Form[RemoveTeamMemberConfirmationForm] = Form(
+      mapping(
+        "email" -> emailValidator,
+        "confirm" -> optional(text).verifying("team.member.error.confirmation.no.choice.field", _.isDefined)
+      )(RemoveTeamMemberConfirmationForm.apply)(RemoveTeamMemberConfirmationForm.unapply)
+    )
+  }
 }

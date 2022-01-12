@@ -16,8 +16,9 @@
 
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.AddOrganisation
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.FieldError
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.AddOrganisation
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include._
+
 
 
 @this(layout: Layout)
@@ -29,22 +30,7 @@ appConfig: AppConfig)
 @layout(pageTitle = Some("Manage XML Organisations - HMRC API Gatekeeper")) {
 <div class="govuk-form-group">
 
-    @if(form.errors.nonEmpty) {
-        <div id="error-summary-display" class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
-          <h2 id="error-summary-title" class="govuk-error-summary__title">
-            There is a problem
-          </h2>
-          <div class="govuk-error-summary__body">
-            <ul id="error-list" class="govuk-list govuk-error-summary__list">
-              @for(error <- form.errors) {
-                <li>
-                  <a href="#@error.key">@Messages(s"${error.messages.head}")</a>
-                </li>
-              }
-            </ul>
-          </div>
-        </div>
-      }
+  @errorSummary(form)
 
     <h1 id="page-heading" class="govuk-heading-l">
         Add organisation

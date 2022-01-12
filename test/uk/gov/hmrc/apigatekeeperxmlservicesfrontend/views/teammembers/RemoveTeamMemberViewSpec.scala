@@ -14,66 +14,66 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.organisation
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.teammembers
 
-import play.api.test.FakeRequest
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.{CommonViewSpec, WithCSRFAddToken}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.AddOrganisation
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationAddView
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import play.api.test.FakeRequest
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.RemoveTeamMemberConfirmationForm
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.{CommonViewSpec, WithCSRFAddToken}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.RemoveTeamMemberView
 
-class OrganisationAddViewSpec extends CommonViewSpec with WithCSRFAddToken {
+class RemoveTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken {
 
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
-    val organisationAddView = app.injector.instanceOf[OrganisationAddView]
+    val removeTeamMemberView = app.injector.instanceOf[RemoveTeamMemberView]
 
   }
 
-  "Organisation Add View" should {
+  "Remove Team Member View" should {
 
     def validateFormErrors(document: Document, isError: Boolean)={
       Option(document.getElementById("error-summary-display")).isDefined shouldBe isError
       if(isError){
         document.getElementById("error-summary-title").text() shouldBe "There is a problem"
-        document.getElementById("error-list").children().eachText().contains("Enter an organisation name") shouldBe true
-      
+        document.getElementById("error-list").children().eachText().contains("Invalid Email provided") shouldBe true
       }
-      
-      Option(document.getElementById("data-field-error-organisationname")).isDefined shouldBe isError
+
       val formGroupElement = Option(document.getElementById("form-group"))
       formGroupElement.isDefined shouldBe true
       formGroupElement.head.classNames().contains("govuk-form-group--error") shouldBe isError
 
-
     }
 
-    "render the organisation add page correctly when no errors" in new Setup {
-  
-      val page = organisationAddView.render(AddOrganisation.form, FakeRequest().withCSRFToken, messagesProvider.messages, mockAppConfig)
+    "render the remove team member page correctly when no errors" in new Setup {
+
+      val page = removeTeamMemberView.render(RemoveTeamMemberConfirmationForm.form, org1.organisationId, collaborator1.userId, collaborator1.email, FakeRequest().withCSRFToken, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
 
       validateFormErrors(document, false)
 
-      document.getElementById("page-heading").text() shouldBe "Add organisation"
-      document.getElementById("organisation-name-label").text() shouldBe "Organisation name"
-      Option(document.getElementById("organisationname")).isDefined shouldBe true
+      document.getElementById("page-heading").text() shouldBe "Are you sure you want to remove email1?"
+      Option(document.getElementById("yes")).isDefined shouldBe true
+      Option(document.getElementById("no")).isDefined shouldBe true
       Option(document.getElementById("continue-button")).isDefined shouldBe true
     }
 
-    "render the organisation add page correctly when errors exist" in new Setup {
+    "render the remove team member page correctly when errors exist" in new Setup {
 
-      val page = organisationAddView.render(AddOrganisation.form.withError("organisationname", "organisationname.error.required"), FakeRequest().withCSRFToken, messagesProvider.messages, mockAppConfig)
+      val page = removeTeamMemberView.render(RemoveTeamMemberConfirmationForm.form.withError("email", "removeteammember.email.error.required"),
+        org1.organisationId, collaborator1.userId, collaborator1.email, FakeRequest().withCSRFToken, messagesProvider.messages, mockAppConfig)
+
       val document: Document = Jsoup.parse(page.body)
 
+      println(page.body)
       validateFormErrors(document, true)
 
-      document.getElementById("page-heading").text() shouldBe "Add organisation"
-      document.getElementById("organisation-name-label").text() shouldBe "Organisation name"
-      Option(document.getElementById("organisationname")).isDefined shouldBe true
+      document.getElementById("page-heading").text() shouldBe "Are you sure you want to remove email1?"
+      Option(document.getElementById("yes")).isDefined shouldBe true
+      Option(document.getElementById("no")).isDefined shouldBe true
       Option(document.getElementById("continue-button")).isDefined shouldBe true
     }
   }

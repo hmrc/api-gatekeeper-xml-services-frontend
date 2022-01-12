@@ -119,4 +119,14 @@ trait XmlServicesStub {
       ))
   }
 
+  def removeTeamMemberReturnsError(organisationId: OrganisationId, email: String, gatekeeperId: String, status: Int) = {
+
+    stubFor(post(urlEqualTo(removeTeamMemberUrl(organisationId)))
+      .withRequestBody(equalToJson(removeCollaboratorRequestAsString(email, gatekeeperId)))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+      ))
+  }
+
 }
