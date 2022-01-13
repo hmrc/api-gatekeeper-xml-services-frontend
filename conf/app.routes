@@ -6,9 +6,9 @@ GET        /organisations-search                          uk.gov.hmrc.apigatekee
 GET        /organisations-add                             uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.organisationsAddPage
 POST       /organisations-add                             uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.organisationsAddAction
 GET        /organisations/:organisationId                 uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.manageOrganisation(organisationId: uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId)
-GET       /organisations/:organisationId/team-members    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.manageTeamMembers(organisationId: uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId)
+GET        /organisations/:organisationId/team-members    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.manageTeamMembers(organisationId: uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId)
 
-GET       /organisations/:organisationId/remove-team-member/:userId    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.removeTeamMember(organisationId: uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId, userId: String)
+GET        /organisations/:organisationId/remove-team-member/:userId    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.removeTeamMember(organisationId: uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId, userId: String)
 POST       /organisations/:organisationId/remove-team-member/:userId    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.removeTeamMemberAction(organisationId: uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId, userId: String)
 
 
