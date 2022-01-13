@@ -20,12 +20,11 @@ import play.api.data.Form
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{AuthConnector, XmlServicesConnector}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Collaborator, GatekeeperRole, Organisation, OrganisationId, RemoveCollaboratorSuccessResult}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.RemoveTeamMemberConfirmationForm
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.{AddTeamMemberForm, RemoveTeamMemberConfirmationForm}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.{OrganisationAddView, OrganisationDetailsView, OrganisationSearchView}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.{ManageTeamMembersView, RemoveTeamMemberView}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
@@ -35,6 +34,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
                                       manageTeamMembersView: ManageTeamMembersView,
+                                      addTeamMemberView: AddTeamMemberView,
                                       removeTeamMemberView: RemoveTeamMemberView,
                                       override val authConnector: AuthConnector,
                                       val forbiddenView: ForbiddenView,
@@ -44,6 +44,8 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
                                       appConfig: AppConfig)
   extends FrontendController(mcc)
     with GatekeeperAuthWrapper {
+
+  val addTeamMemberForm: Form[AddTeamMemberForm] = AddTeamMemberForm.form
 
   val confirmRemoveForm: Form[RemoveTeamMemberConfirmationForm] = RemoveTeamMemberConfirmationForm.form
 
@@ -56,6 +58,28 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
           case Left(_) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
         }
     }
+  }
+
+  def addTeamMemberPage(organisationId: OrganisationId) =requiresAtLeast(GatekeeperRole.USER) {
+    implicit request => successful(Ok(addTeamMemberView(addTeamMemberForm, organisationId)))
+  }
+
+  def addTeamMemberAction(organisationId: OrganisationId) =requiresAtLeast(GatekeeperRole.USER) {
+    implicit request =>
+      addTeamMemberForm.bindFromRequest.fold(
+        formWithErrors => {
+          successful(BadRequest(addTeamMemberView(formWithErrors, organisationId)))
+        },
+        teamMemberAddData => {
+          xmlServicesConnector
+            .addTeamMember(organisationId, teamMemberAddData.emailAddress.getOrElse(""))
+            .map {
+              case AddCollaboratorSuccessResult(x: Organisation) =>
+                Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.TeamMembersController.manageTeamMembers(x.organisationId))
+              case _ => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+            }
+        }
+      )
   }
 
 
@@ -79,7 +103,7 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
           case Some(collaborator: Collaborator) =>
             xmlServicesConnector.removeTeamMember(organisationId, collaborator.email, request.name.getOrElse("Unknown Name"))
               .map {
-                case RemoveCollaboratorSuccessResult(_) => Redirect(routes.OrganisationController.manageOrganisation(organisationId).url, SEE_OTHER)
+                case RemoveCollaboratorSuccessResult(_) => Redirect(routes.TeamMembersController.manageTeamMembers(organisationId).url, SEE_OTHER)
                 case _ => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
               }
           case _ => successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error")))

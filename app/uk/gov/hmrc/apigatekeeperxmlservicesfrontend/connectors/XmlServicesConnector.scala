@@ -51,17 +51,6 @@ class XmlServicesConnector @Inject()(val http: HttpClient, val config: Config)(i
     handleResult(http.GET[Organisation](url = s"$baseUrl/organisations/${organisationId.value}"))
   }
 
-  def removeTeamMember(organisationId: OrganisationId, email: String, gateKeeperUserId: String)(implicit hc: HeaderCarrier) = {
-    http.POST[RemoveCollaboratorRequest, Either[UpstreamErrorResponse, Organisation]](
-      url = s"${baseUrl}/organisations/${organisationId.value}/remove-collaborator",
-      RemoveCollaboratorRequest(email, gateKeeperUserId)
-    ).map {
-      case Right(x: Organisation) => RemoveCollaboratorSuccessResult(x)
-      case Left(err) => RemoveCollaboratorFailureResult(err)
-    }
-
-  }
-
   def addOrganisation(organisationName: String)(implicit hc: HeaderCarrier): Future[CreateOrganisationResult] = {
     val createOrganisationRequest: CreateOrganisationRequest = CreateOrganisationRequest(organisationName)
 
@@ -71,6 +60,29 @@ class XmlServicesConnector @Inject()(val http: HttpClient, val config: Config)(i
     ).map {
       case Right(x: Organisation) => CreateOrganisationSuccessResult(x)
       case Left(err) => CreateOrganisationFailureResult(err)
+    }
+
+  }
+
+  def addTeamMember(organisationId: OrganisationId, email: String)(implicit hc: HeaderCarrier) = {
+    http.POST[AddCollaboratorRequest, Either[UpstreamErrorResponse, Organisation]](
+      url = s"$baseUrl/organisations/${organisationId.value}/add-collaborator",
+      AddCollaboratorRequest(email)
+    ).map {
+      case Right(x: Organisation) => AddCollaboratorSuccessResult(x)
+      case Left(err) => AddCollaboratorFailureResult(err)
+    }
+
+  }
+
+
+  def removeTeamMember(organisationId: OrganisationId, email: String, gateKeeperUserId: String)(implicit hc: HeaderCarrier) = {
+    http.POST[RemoveCollaboratorRequest, Either[UpstreamErrorResponse, Organisation]](
+      url = s"$baseUrl/organisations/${organisationId.value}/remove-collaborator",
+      RemoveCollaboratorRequest(email, gateKeeperUserId)
+    ).map {
+      case Right(x: Organisation) => RemoveCollaboratorSuccessResult(x)
+      case Left(err) => RemoveCollaboratorFailureResult(err)
     }
 
   }

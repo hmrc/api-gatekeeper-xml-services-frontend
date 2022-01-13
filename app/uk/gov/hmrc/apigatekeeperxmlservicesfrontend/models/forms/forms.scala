@@ -24,8 +24,7 @@ object Forms {
 
   private def emailValidator() = {
     text
-      .verifying("removeteammember.email.error.required", _.nonEmpty)
-//      .verifying("email.not.valid", email => EmailAddress.isValid(email) || email.isEmpty)
+      .verifying("teammember.remove.email.error.required", _.nonEmpty)
   }
 
 
@@ -37,6 +36,18 @@ object Forms {
       mapping( //organisation-name-input
         "organisationname" -> optional(nonEmptyText).verifying("organisationname.error.required", x => x.isDefined)
       )(AddOrganisation.apply)(AddOrganisation.unapply)
+    )
+
+  }
+
+  case class AddTeamMemberForm(emailAddress: Option[String] = Some(""))
+
+  object AddTeamMemberForm {
+
+    val form = Form(
+      mapping(
+        "emailAddress" -> optional(nonEmptyText).verifying("teammember.add.email.error.required", x => x.isDefined)
+      )(AddTeamMemberForm.apply)(AddTeamMemberForm.unapply)
     )
 
   }
