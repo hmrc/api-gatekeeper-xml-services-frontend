@@ -1,0 +1,12 @@
+# microservice specific routes
+
+
+GET        /                                uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.organisationsPage
+GET        /search                          uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.organisationsSearchAction(searchType: String, searchText: Option[String])
+GET        /add                             uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.organisationsAddPage
+POST       /add                             uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.organisationsAddAction
+GET        /:organisationId                 uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.manageOrganisation(organisationId: uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId)
+
+GET        /:organisationId/team-members    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.TeamMembersController.manageTeamMembers(organisationId: uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId)
+GET        /:organisationId/team-members/:userId/remove    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.TeamMembersController.removeTeamMember(organisationId: uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId, userId: String)
+POST       /:organisationId/team-members/:userId/remove    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.TeamMembersController.removeTeamMemberAction(organisationId: uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId, userId: String)

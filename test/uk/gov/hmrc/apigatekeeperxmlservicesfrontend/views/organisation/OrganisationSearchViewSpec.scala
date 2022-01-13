@@ -90,7 +90,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
 
       Option(document.getElementById("add-organisation-link")).isDefined shouldBe true
       document.getElementById("add-organisation-link").text shouldBe "Add organisation"
-      document.getElementById("add-organisation-link").attr("href") shouldBe "/api-gatekeeper-xml-services/organisations-add"
+      document.getElementById("add-organisation-link").attr("href") shouldBe "/api-gatekeeper-xml-services/organisations/add"
     }
 
     "render page correctly when organisations list is empty" in new Setup {
@@ -109,7 +109,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
 
       Option(document.getElementById("add-organisation-link")).isDefined shouldBe true
       document.getElementById("add-organisation-link").text shouldBe "Add organisation"
-      document.getElementById("add-organisation-link").attr("href") shouldBe "/api-gatekeeper-xml-services/organisations-add"
+      document.getElementById("add-organisation-link").attr("href") shouldBe "/api-gatekeeper-xml-services/organisations/add"
     }
   }
 }

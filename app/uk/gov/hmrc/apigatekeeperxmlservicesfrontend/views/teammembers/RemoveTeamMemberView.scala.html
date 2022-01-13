@@ -28,7 +28,7 @@
 
     @errorSummary(form)
 
-    @helper.form(action = uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.removeTeamMemberAction(organisationId, userId)) {
+    @helper.form(action = uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.TeamMembersController.removeTeamMemberAction(organisationId, userId)) {
         @helper.CSRF.formField
         <input type="hidden" name="email" value="@email">
         <div  id="form-group" class="form-group @if(form.errors("email").nonEmpty) {govuk-form-group--error}">

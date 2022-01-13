@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.organisation
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.teammembers
 
 import play.api.test.FakeRequest
 
@@ -45,7 +45,7 @@ class ManageTeamMembersViewSpec extends CommonViewSpec {
       document.getElementById("team-member-heading").text() shouldBe "Manage team members"
       
       document.getElementById("team-members-email-0").text() shouldBe organisationWithCollaborators.collaborators.head.email
-      document.getElementById("remove-team-member-link-0").attr("href") shouldBe s"/api-gatekeeper-xml-services/organisations/${organisationWithCollaborators.organisationId.value}/remove-team-member/userId1"
+      document.getElementById("remove-team-member-link-0").attr("href") shouldBe s"/api-gatekeeper-xml-services/organisations/${organisationWithCollaborators.organisationId.value}/team-members/userId1/remove"
     }
 
     

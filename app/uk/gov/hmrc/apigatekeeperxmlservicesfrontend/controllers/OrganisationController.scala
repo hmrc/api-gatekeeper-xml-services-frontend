@@ -16,26 +16,23 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
-import controllers.routes
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import play.api.data.Form
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{AuthConnector, XmlServicesConnector}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Collaborator, CreateOrganisationSuccessResult, GatekeeperRole, Organisation, OrganisationId, RemoveCollaboratorSuccessResult, VendorId}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.AddOrganisation
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
-import play.api.data.Form
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.{AddOrganisation, RemoveTeamMemberConfirmationForm}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.{RemoveTeamMemberView, ManageTeamMembersView}
-
+import scala.concurrent.ExecutionContext
 import scala.concurrent.Future.successful
+import scala.util.Try
 
 @Singleton
 class OrganisationController @Inject()(
@@ -43,8 +40,6 @@ class OrganisationController @Inject()(
                                         organisationSearchView: OrganisationSearchView,
                                         organisationDetailsView: OrganisationDetailsView,
                                         organisationAddView: OrganisationAddView,
-                                        manageTeamMembersView: ManageTeamMembersView,
-                                        removeTeamMemberView: RemoveTeamMemberView,
                                         override val authConnector: AuthConnector,
                                         val forbiddenView: ForbiddenView,
                                         errorTemplate: ErrorTemplate,
@@ -55,7 +50,6 @@ class OrganisationController @Inject()(
     with GatekeeperAuthWrapper {
 
   val addOrganisationForm: Form[AddOrganisation] = AddOrganisation.form
-  val confirmRemoveForm: Form[RemoveTeamMemberConfirmationForm] = RemoveTeamMemberConfirmationForm.form
 
   val organisationsPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request => successful(Ok(organisationSearchView(List.empty, showTable = false)))
@@ -119,66 +113,6 @@ class OrganisationController @Inject()(
           // in theory this error
           case Left(_) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
         }
-  }
-
-  def manageTeamMembers(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
-    implicit request => {
-      xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
-        .map {
-          case Right(org: Organisation) => Ok(manageTeamMembersView(org))
-          case Left(_) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
-        }
-    }
-  }
-
-
-  def removeTeamMember(organisationId: OrganisationId, userId: String): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
-    implicit request => {
-      getCollaboratorByUserIdAndOrganisationId(organisationId, userId).flatMap {
-        case Some(collaborator: Collaborator) =>
-          successful(Ok(removeTeamMemberView(RemoveTeamMemberConfirmationForm.form, organisationId, userId, collaborator.email)))
-        case _ => successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error")))
-      }
-    }
-
-  }
-
-
-  def removeTeamMemberAction(organisationId: OrganisationId, userId: String): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
-    implicit request =>
-
-      def handleRemoveTeamMember(): Future[Result] = {
-        getCollaboratorByUserIdAndOrganisationId(organisationId, userId).flatMap {
-          case Some(collaborator: Collaborator) =>
-            xmlServicesConnector.removeTeamMember(organisationId, collaborator.email, request.name.getOrElse("Unknown Name"))
-              .map {
-                case RemoveCollaboratorSuccessResult(_) => Redirect(routes.OrganisationController.manageOrganisation(organisationId).url, SEE_OTHER)
-                case _ => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
-              }
-          case _ => successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error")))
-        }
-      }
-
-      def handleValidForm(form: RemoveTeamMemberConfirmationForm): Future[Result] = {
-        form.confirm match {
-          case Some("Yes") => handleRemoveTeamMember()
-          case _ => successful(Redirect(routes.OrganisationController.manageOrganisation(organisationId).url))
-        }
-      }
-
-      def handleInvalidForm(formWithErrors: Form[RemoveTeamMemberConfirmationForm]) =
-        successful(BadRequest(removeTeamMemberView(formWithErrors, organisationId, userId, formWithErrors("email").value.getOrElse(""))))
-
-      RemoveTeamMemberConfirmationForm.form.bindFromRequest.fold(handleInvalidForm, handleValidForm)
-  }
-
-  private def getCollaboratorByUserIdAndOrganisationId(organisationId: OrganisationId, userId: String)
-                                                      (implicit hc: HeaderCarrier): Future[Option[Collaborator]] = {
-    xmlServicesConnector.getOrganisationByOrganisationId(organisationId).map {
-      case Right(organisation: Organisation) =>
-        organisation.collaborators.find(_.userId.equalsIgnoreCase(userId))
-      case _ => None
-    }
   }
 
   private def getEmailString(org: Organisation): String = {
