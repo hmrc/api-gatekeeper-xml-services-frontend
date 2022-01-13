@@ -32,23 +32,34 @@
         @helper.CSRF.formField
         <input type="hidden" name="email" value="@email">
         <div  id="form-group" class="form-group @if(form.errors("email").nonEmpty) {govuk-form-group--error}">
-            <h1 id="page-heading" class="heading-medium">Are you sure you want to remove @email?</h1>
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                <h1 class="govuk-fieldset__heading">
+                    Are you sure you want to remove @email?
+                </h1>
+            </legend>
 
             @FieldError(form.errors, "confirm")
-            <fieldset id="confirm" class="inline">
-                <div class="multiple-choice">
-                    <input id="yes" type="radio" name="confirm" value="Yes">
-                    <label for="yes"><strong class="bold">Yes</strong></label>
+            <div class="govuk-radios govuk-radios--inline" data-module="govuk-radios">
+
+
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="yes" name="confirm" type="radio" value="Yes">
+                    <label class="govuk-label govuk-radios__label" for="yes">
+                        <strong class="bold">Yes</strong>
+                    </label>
                 </div>
-                <div class="multiple-choice">
-                    <input id="no" type="radio" name="confirm" value="No">
-                    <label for="no"><strong class="bold">No</strong></label>
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="no" name="confirm" type="radio" value="No">
+                    <label class="govuk-label govuk-radios__label" for="no">
+                        <strong class="bold">No</strong>
+                    </label>
                 </div>
-            </fieldset>
-            <br>
+
+            </div>
         </div>
 
         <div class="form-field">
+        <br/>
             <button id="continue-button" class="govuk-button" data-module="govuk-button">
                 Continue
             </button>

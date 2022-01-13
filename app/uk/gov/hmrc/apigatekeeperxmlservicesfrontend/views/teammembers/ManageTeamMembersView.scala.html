@@ -37,12 +37,7 @@
       @member._1.email <br />
 
     </dd>
-    <dd class="govuk-summary-list__actions">
-      <a href="#" class="govuk-link--no-visited-state">
-        Change
-        <span class="govuk-visually-hidden"> contact information</span>
-      </a>
-    </dd>
+
     <dd class="govuk-summary-list__actions">
       <a id="remove-team-member-link-@member._2" href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.TeamMembersController.removeTeamMember(organisation.organisationId,  member._1.userId).url"" class="govuk-link--no-visited-state">
         Remove
@@ -58,8 +53,8 @@
   <button class="govuk-button" data-module="govuk-button">
     Add team member
   </button>
-
-  <a href="#" class="govuk-link--no-visited-state">
+@*    <a class="app-subnav__link govuk-link govuk-link--no-visited-state govuk-link--no-underline" href="/components/error-summary/">Error summary</a>*@
+  <a href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.manageOrganisation(organisation.organisationId).url" class="govuk-link govuk-link--no-visited-state">
     Cancel
     <span class="govuk-visually-hidden"> contact information</span>
   </a>
