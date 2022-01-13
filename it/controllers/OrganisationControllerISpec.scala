@@ -70,14 +70,6 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         .get()
         .futureValue
 
-    def callPostEndpoint(url: String, headers: List[(String, String)] = List.empty, request: String): WSResponse =
-      wsClient
-        .url(url)
-        .withHttpHeaders(headers: _*)
-        .withFollowRedirects(false)
-        .post(request)
-        .futureValue
-
     def validateOrganisationRow(rowId: Int, org: Organisation, document: Document) = {
       document.getElementById(s"vendor-id-$rowId").text() mustBe org.vendorId.value.toString
       document.getElementById(s"name-$rowId").text() mustBe org.name

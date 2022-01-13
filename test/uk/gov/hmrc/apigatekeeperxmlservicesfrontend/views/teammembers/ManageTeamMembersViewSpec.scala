@@ -17,16 +17,14 @@
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.teammembers
 
 import play.api.test.FakeRequest
-
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
-
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.ManageTeamMembersView
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 
-class ManageTeamMembersViewSpec extends CommonViewSpec {
+class ManageTeamMembersViewSpec extends CommonViewSpec with ViewSpecHelpers {
 
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
@@ -40,12 +38,7 @@ class ManageTeamMembersViewSpec extends CommonViewSpec {
 
       val page = manageTeamMembersView.render(organisationWithCollaborators, FakeRequest(), messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
-
-      document.getElementById("org-name-caption").text() shouldBe org1.name
-      document.getElementById("team-member-heading").text() shouldBe "Manage team members"
-      
-      document.getElementById("team-members-email-0").text() shouldBe organisationWithCollaborators.collaborators.head.email
-      document.getElementById("remove-team-member-link-0").attr("href") shouldBe s"/api-gatekeeper-xml-services/organisations/${organisationWithCollaborators.organisationId.value}/team-members/userId1/remove"
+      validateManageTeamMembersPage(document, organisationWithCollaborators)
     }
 
     

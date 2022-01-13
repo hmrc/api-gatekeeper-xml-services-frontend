@@ -60,11 +60,11 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
     }
   }
 
-  def addTeamMemberPage(organisationId: OrganisationId) =requiresAtLeast(GatekeeperRole.USER) {
+  def addTeamMemberPage(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request => successful(Ok(addTeamMemberView(addTeamMemberForm, organisationId)))
   }
 
-  def addTeamMemberAction(organisationId: OrganisationId) =requiresAtLeast(GatekeeperRole.USER) {
+  def addTeamMemberAction(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request =>
       addTeamMemberForm.bindFromRequest.fold(
         formWithErrors => {

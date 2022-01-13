@@ -59,11 +59,12 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     val organisation = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = vendorId, name = "Org name")
     val organisation2 = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = VendorId(13), name = "Org name2")
 
+    val collaboratorList = List(Collaborator("userId", "collaborator1@mail.com"))
     val organisationWithTeamMembers = Organisation(
       organisationId = OrganisationId(ju.UUID.randomUUID()),
       vendorId = VendorId(14),
       name = "Org name3",
-      collaborators = List(Collaborator("userId", "collaborator1@mail.com"))
+      collaborators = collaboratorList
     )
   }
 
@@ -162,6 +163,43 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
         case _                                                                                      => fail()
       }
     }
+  }
+
+  "AddTeamMember" should {
+    "return AddCollaboratorSuccessfulResult when add collaborator call is successful" in new Setup {
+      val emailAddress = "email@email.com"
+      val updatedCollaboratorList =  collaboratorList ++ List(Collaborator(emailAddress, "someUserId"))
+
+      addTeamMemberReturnsResponse(
+        organisationWithTeamMembers.organisationId,
+        emailAddress,
+      OK,
+      organisationWithTeamMembers.copy(collaborators = updatedCollaboratorList))
+
+
+      val result = await(objInTest.addTeamMember(organisationWithTeamMembers.organisationId, emailAddress))
+
+      result mustBe AddCollaboratorSuccessResult(organisationWithTeamMembers.copy(collaborators = updatedCollaboratorList))
+    }
+
+    "return AddCollaboratorFailureResult when add collaborator call is successful" in new Setup {
+      val emailAddress = "email@email.com"
+      val expectedErrorMessage =   s"POST of 'http://localhost:$wireMockPort/api-platform-xml-services/organisations/" +
+        s"${organisationWithTeamMembers.organisationId.value.toString}/add-collaborator' returned 404. Response body: ''"
+
+      addTeamMemberReturnsError(
+        organisationWithTeamMembers.organisationId,
+        emailAddress,
+        NOT_FOUND)
+
+      val result = await(objInTest.addTeamMember(organisationWithTeamMembers.organisationId, emailAddress))
+
+      result match {
+        case AddCollaboratorFailureResult(UpstreamErrorResponse(message, NOT_FOUND, _, _)) => message mustBe expectedErrorMessage
+        case _ => fail
+      }
+    }
+
   }
 
   "removeTeamMember" should {

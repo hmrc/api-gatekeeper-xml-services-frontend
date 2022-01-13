@@ -25,7 +25,7 @@ import play.api.http.Status.SEE_OTHER
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
-import play.api.test.Helpers.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, OK}
+import play.api.test.Helpers.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, OK}
 import support.AuthServiceStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._

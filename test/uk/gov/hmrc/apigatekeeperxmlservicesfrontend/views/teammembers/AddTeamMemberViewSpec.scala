@@ -20,41 +20,47 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.RemoveTeamMemberConfirmationForm
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.AddTeamMemberForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.{CommonViewSpec, WithCSRFAddToken}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.RemoveTeamMemberView
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.AddTeamMemberView
 
-class RemoveTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with ViewSpecHelpers {
+class AddTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with ViewSpecHelpers {
 
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
-    val removeTeamMemberView = app.injector.instanceOf[RemoveTeamMemberView]
+    val addTeamMemberView = app.injector.instanceOf[AddTeamMemberView]
 
   }
 
-  "Remove Team Member View" should {
+  "Add Team Member View" should {
 
-    "render the remove team member page correctly when no errors" in new Setup {
 
-      val page = removeTeamMemberView.render(RemoveTeamMemberConfirmationForm.form, org1.organisationId, collaborator1.userId, collaborator1.email, FakeRequest().withCSRFToken, messagesProvider.messages, mockAppConfig)
+    "render the add team member page correctly when no errors" in new Setup {
+
+      val page = addTeamMemberView.render(AddTeamMemberForm.form,
+        org1.organisationId,
+        FakeRequest().withCSRFToken,
+        messagesProvider.messages, mockAppConfig)
+
       val document: Document = Jsoup.parse(page.body)
 
       validateFormErrors(document)
-
-      validateRemoveTeamMemberPage(document)
+      validateAddTeamMemberPage(document)
     }
 
     "render the remove team member page correctly when errors exist" in new Setup {
 
-      val page = removeTeamMemberView.render(RemoveTeamMemberConfirmationForm.form.withError("email", "teammember.remove.email.error.required"),
-        org1.organisationId, collaborator1.userId, collaborator1.email, FakeRequest().withCSRFToken, messagesProvider.messages, mockAppConfig)
+      val page = addTeamMemberView.render(AddTeamMemberForm.form.withError("emailAddress", "teammember.add.email.error.required"),
+        org1.organisationId,
+        FakeRequest().withCSRFToken,
+        messagesProvider.messages,
+        mockAppConfig)
 
       val document: Document = Jsoup.parse(page.body)
 
-      validateFormErrors(document, Some("Invalid Email provided"))
-
-      validateRemoveTeamMemberPage(document)
+      validateFormErrors(document, Some("Enter an email address"))
+      validateAddTeamMemberPage(document)
     }
   }
 }

@@ -23,17 +23,17 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.{ManageTeamMembersView, RemoveTeamMemberView}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.{AddTeamMemberView, ManageTeamMembersView, RemoveTeamMemberView}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
-import uk.gov.hmrc.http.UpstreamErrorResponse
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 
-class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
+class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken with ViewSpecHelpers {
 
   trait Setup extends ControllerSetupBase with OrganisationTestData {
     val fakeRequest = FakeRequest("GET", "/organisations")
@@ -41,6 +41,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     private lazy val forbiddenView = app.injector.instanceOf[ForbiddenView]
     private lazy val errorTemplate = app.injector.instanceOf[ErrorTemplate]
     private lazy val manageTeamMembersView = app.injector.instanceOf[ManageTeamMembersView]
+    private lazy val addTeamMembersView = app.injector.instanceOf[AddTeamMemberView]
     private lazy val removeTeamMembersView = app.injector.instanceOf[RemoveTeamMemberView]
 
     val mockXmlServiceConnector = mock[XmlServicesConnector]
@@ -48,6 +49,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     val controller = new TeamMembersController(
       mcc,
       manageTeamMembersView,
+      addTeamMembersView,
       removeTeamMembersView,
       mockAuthConnector,
       forbiddenView,
@@ -106,6 +108,94 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
   }
 
+  "addTeamMemberPage" should {
+
+    "return 200 and display the add team member page" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+      val result = controller.addTeamMemberPage(org1.organisationId)(fakeRequest.withCSRFToken)
+
+      status(result) shouldBe Status.OK
+
+      val document = Jsoup.parse(contentAsString(result))
+
+      validateFormErrors(document)
+      validateAddTeamMemberPage(document)
+    }
+
+    "return forbidden view when not authorised" in new Setup {
+      givenAUnsuccessfulLogin()
+      val result = controller.addTeamMemberPage(organisationId1)(fakeRequest.withCSRFToken)
+
+      status(result) shouldBe Status.SEE_OTHER
+
+    }
+
+  }
+  "addTeamMemberAction" should {
+    "call add team member via connector, then redirect to the manage team members page when call is successful" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+      val emailAddress = "a@b.com"
+
+      when(mockXmlServiceConnector.addTeamMember(eqTo(organisationId1), eqTo(emailAddress))(*[HeaderCarrier]))
+        .thenReturn(Future.successful(AddCollaboratorSuccessResult(org1)))
+
+      val result = controller.addTeamMemberAction(organisationId1)(fakeRequest
+        .withCSRFToken.withFormUrlEncodedBody("emailAddress" -> emailAddress))
+
+      status(result) shouldBe Status.SEE_OTHER
+      headers(result).getOrElse(LOCATION, "") shouldBe s"/api-gatekeeper-xml-services/organisations/${organisationId1.value.toString}/team-members"
+
+      verify(mockXmlServiceConnector).addTeamMember(eqTo(organisationId1), eqTo(emailAddress))(*[HeaderCarrier])
+
+    }
+
+    "call add team member via connector, then show Internal server error page when call fails" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+      val emailAddress = "a@b.com"
+
+      when(mockXmlServiceConnector.addTeamMember(eqTo(organisationId1), eqTo(emailAddress))(*[HeaderCarrier]))
+        .thenReturn(Future.successful(AddCollaboratorFailureResult(UpstreamErrorResponse("", NOT_FOUND, NOT_FOUND))))
+
+      val result = controller.addTeamMemberAction(organisationId1)(fakeRequest
+        .withCSRFToken.withFormUrlEncodedBody("emailAddress" -> emailAddress))
+
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+
+      verify(mockXmlServiceConnector).addTeamMember(eqTo(organisationId1), eqTo(emailAddress))(*[HeaderCarrier])
+    }
+
+    "return 400 and display the add team member page with errors when the form is invalid" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+      val result = controller.addTeamMemberAction(organisationId1)(fakeRequest
+        .withCSRFToken.withFormUrlEncodedBody("emailAddress" -> ""))
+
+      status(result) shouldBe Status.BAD_REQUEST
+      val document = Jsoup.parse(contentAsString(result))
+
+      validateFormErrors(document, Some("Enter an email address"))
+      validateAddTeamMemberPage(document)
+      verifyZeroInteractions(mockXmlServiceConnector)
+
+    }
+
+
+    "return forbidden view when not authorised" in new Setup {
+      givenAUnsuccessfulLogin()
+      val result = controller.addTeamMemberAction(organisationId1)(fakeRequest
+        .withCSRFToken.withFormUrlEncodedBody("emailAddress" -> "dontcareAbout@this"))
+
+      status(result) shouldBe Status.SEE_OTHER
+
+      verifyZeroInteractions(mockXmlServiceConnector)
+    }
+
+
+  }
+
   "removeTeamMember" should {
 
     "return 200 and display the confirmation page when organisation is retrieved and call to remove team member is successful" in new Setup {
@@ -121,11 +211,9 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
 
       status(result) shouldBe Status.OK
       val document = Jsoup.parse(contentAsString(result))
-      document.getElementById("page-heading").text() shouldBe "Are you sure you want to remove email1?"
-      Option(document.getElementById("yes")).isDefined shouldBe true
-      Option(document.getElementById("no")).isDefined shouldBe true
-      Option(document.getElementById("continue-button")).isDefined shouldBe true
 
+      validateRemoveTeamMemberPage(document)
+      validateFormErrors(document)
       verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
 
 
@@ -191,7 +279,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       )
 
       status(result) shouldBe Status.SEE_OTHER
-      headers(result).getOrElse(LOCATION, "") shouldBe s"/api-gatekeeper-xml-services/organisations/${organisationId1.value.toString}"
+      headers(result).getOrElse(LOCATION, "") shouldBe s"/api-gatekeeper-xml-services/organisations/${organisationId1.value.toString}/team-members"
 
       verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
       verify(mockXmlServiceConnector).removeTeamMember(eqTo(organisationWithCollaborators.organisationId), eqTo(collaborator1.email), *)(*)
@@ -224,7 +312,6 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
 
       verifyZeroInteractions(mockXmlServiceConnector)
     }
-
 
 
     "return 400 when form is invalid (email value missing),  organisation is retrieved and call to remove team member is successful" in new Setup {
