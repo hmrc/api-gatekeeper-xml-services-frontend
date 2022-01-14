@@ -20,7 +20,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.{CommonViewSpec, WithCSRFAddToken}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.AddOrganisation
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.AddOrganisation
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationAddView
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -39,7 +39,7 @@ class OrganisationAddViewSpec extends CommonViewSpec with WithCSRFAddToken {
       Option(document.getElementById("error-summary-display")).isDefined shouldBe isError
       if(isError){
         document.getElementById("error-summary-title").text() shouldBe "There is a problem"
-        document.getElementById("error-list").children().eachText().contains("Enter an organistion name") shouldBe true
+        document.getElementById("error-list").children().eachText().contains("Enter an organisation name") shouldBe true
       
       }
       

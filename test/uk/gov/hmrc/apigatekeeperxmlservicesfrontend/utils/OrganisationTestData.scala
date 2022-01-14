@@ -24,11 +24,16 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Collaborator
 
 trait OrganisationTestData {
     val vendorId = 9001L
-    val org1 = Organisation(organisationId = OrganisationId(UUID.randomUUID()), vendorId = VendorId(1), name = "Org 1")
-    val org2 = org1.copy(vendorId = VendorId(2), name = "Org 2")
-    val org3 = org1.copy(vendorId = VendorId(3), name = "Org 3")
+    val organisationId1 = OrganisationId(UUID.randomUUID())
+    val organisationId2 = OrganisationId(UUID.randomUUID())
+    val organisationId3 = OrganisationId(UUID.randomUUID())
+    val org1 = Organisation(organisationId1, VendorId(1),  "Org 1")
+    val org2 = Organisation(organisationId2, VendorId(2), "Org 2")
+    val org3 = Organisation(organisationId3, VendorId(3), "Org 3")
 
-    val organisationWithCollaborators = org1.copy(collaborators = List(Collaborator("userId1", "email1"), Collaborator("userId2", "email2")))
+    val collaborator1 = Collaborator("userId1", "email1")
+    val collaborator2 =  Collaborator("userId2", "email2")
+    val organisationWithCollaborators = org1.copy(collaborators = List(collaborator1, collaborator2))
 
     val organisations = List(org1, org2, org3)
 

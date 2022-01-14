@@ -36,13 +36,13 @@ class XmlServicesConnector @Inject()(val http: HttpClient, val config: Config)(i
                                (implicit hc: HeaderCarrier): Future[Either[Throwable, List[Organisation]]] = {
     val vendorIdParams = vendorId.map(v => Seq("vendorId" -> v.value.toString)).getOrElse(Seq.empty)
     val orgNameParams = organisationName.map(o => Seq("organisationName" -> o)).getOrElse(Seq.empty)
-    val sortByParms = (vendorId , organisationName) match {
-      case (Some(_), None) => Seq("sortBy" ->  "VENDOR_ID")
-      case (None, Some(_)) => Seq("sortBy" ->  "ORGANISATION_NAME")
+    val sortByParams = (vendorId, organisationName) match {
+      case (Some(_), None) => Seq("sortBy" -> "VENDOR_ID")
+      case (None, Some(_)) => Seq("sortBy" -> "ORGANISATION_NAME")
       case _ => Seq.empty
-    }                            
+    }
 
-    val params = vendorIdParams ++ orgNameParams ++ sortByParms
+    val params = vendorIdParams ++ orgNameParams ++ sortByParams
 
     handleResult(http.GET[List[Organisation]](url = s"$baseUrl/organisations", queryParams = params))
   }
@@ -55,11 +55,34 @@ class XmlServicesConnector @Inject()(val http: HttpClient, val config: Config)(i
     val createOrganisationRequest: CreateOrganisationRequest = CreateOrganisationRequest(organisationName)
 
     http.POST[CreateOrganisationRequest, Either[UpstreamErrorResponse, Organisation]](
-      url = s"${baseUrl}/organisations",
+      url = s"$baseUrl/organisations",
       body = createOrganisationRequest
     ).map {
       case Right(x: Organisation) => CreateOrganisationSuccessResult(x)
       case Left(err) => CreateOrganisationFailureResult(err)
+    }
+
+  }
+
+  def addTeamMember(organisationId: OrganisationId, email: String)(implicit hc: HeaderCarrier) = {
+    http.POST[AddCollaboratorRequest, Either[UpstreamErrorResponse, Organisation]](
+      url = s"$baseUrl/organisations/${organisationId.value}/add-collaborator",
+      AddCollaboratorRequest(email)
+    ).map {
+      case Right(x: Organisation) => AddCollaboratorSuccessResult(x)
+      case Left(err) => AddCollaboratorFailureResult(err)
+    }
+
+  }
+
+
+  def removeTeamMember(organisationId: OrganisationId, email: String, gateKeeperUserId: String)(implicit hc: HeaderCarrier) = {
+    http.POST[RemoveCollaboratorRequest, Either[UpstreamErrorResponse, Organisation]](
+      url = s"$baseUrl/organisations/${organisationId.value}/remove-collaborator",
+      RemoveCollaboratorRequest(email, gateKeeperUserId)
+    ).map {
+      case Right(x: Organisation) => RemoveCollaboratorSuccessResult(x)
+      case Left(err) => RemoveCollaboratorFailureResult(err)
     }
 
   }
@@ -75,7 +98,9 @@ class XmlServicesConnector @Inject()(val http: HttpClient, val config: Config)(i
 }
 
 object XmlServicesConnector {
-
-  case class Config(
-                     serviceBaseUrl: String)
+  case class Config(serviceBaseUrl: String)
 }
+
+case class AddCollaboratorRequest(email: String)
+
+case class RemoveCollaboratorRequest(email: String, gatekeeperUserId: String)

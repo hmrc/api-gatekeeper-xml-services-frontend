@@ -15,36 +15,34 @@
  *@
 
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.AddOrganisation
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.AddTeamMemberForm
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include._
-
-
 
 @this(layout: Layout)
 
-@(form: Form[AddOrganisation])(implicit request:
+@(form: Form[AddTeamMemberForm], organisationId: OrganisationId)(implicit request:
 Request[_], messages: Messages,
 appConfig: AppConfig)
 
-@layout(pageTitle = Some("Manage XML Organisations - HMRC API Gatekeeper")) {
+@layout(pageTitle = Some("Add Team Member - HMRC API Gatekeeper")) {
 <div class="govuk-form-group">
 
   @errorSummary(form)
 
     <h1 id="page-heading" class="govuk-heading-l">
-        Add organisation
+        Add a team member
     </h1>
     @helper.form(action =
-    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsAddAction()) {
+    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.TeamMembersController.addTeamMemberAction(organisationId)) {
         @helper.CSRF.formField
-    <div id="form-group" class="govuk-form-group @if(form.errors("organisationname").nonEmpty) {govuk-form-group--error}">
-        <label id="organisation-name-label" class="govuk-label govuk-label--m" for="organisationname">
-            Organisation name
+    <div id="form-group" class="govuk-form-group @if(form.errors("emailAddress").nonEmpty) {govuk-form-group--error}">
+        <label id="email-address-label" class="govuk-label govuk-label--m" for="emailAddress">
+            Email address
         </label>
-        @FieldError(form.errors, "organisationname")
-        <input class="govuk-input govuk-input--width-20" id="organisationname" name="organisationname" type="text"
-            aria-describedby="organisationname">
+        @FieldError(form.errors, "emailAddress")
+        <input id="email-address-input" class="govuk-input govuk-input--width-20" id="emailAddress" name="emailAddress" type="text"
+            aria-describedby="emailAddress">
     </div>
     <div class="govuk-form-group">
         <button id="continue-button" class="govuk-button" data-module="govuk-button">
