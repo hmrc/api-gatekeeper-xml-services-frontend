@@ -29,3 +29,7 @@ case class AddCollaboratorFailureResult(error: Throwable) extends AddCollaborato
 sealed trait RemoveCollaboratorResult
 case class RemoveCollaboratorSuccessResult(organisation: Organisation) extends RemoveCollaboratorResult
 case class RemoveCollaboratorFailureResult(error: Throwable) extends RemoveCollaboratorResult
+
+sealed trait ParseOrganisationCsvFailureResult
+case class InvalidNumberOfColumnsInCsvResult(error: Throwable) extends ParseOrganisationCsvFailureResult
+case class OrganisationCsvParseFailurerResult(error: Throwable) extends ParseOrganisationCsvFailureResult

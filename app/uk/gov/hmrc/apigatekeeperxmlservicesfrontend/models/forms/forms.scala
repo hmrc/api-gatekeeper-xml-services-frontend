@@ -22,9 +22,6 @@ import play.api.data.Forms._
 
 object Forms {
 
-
-
-
   case class AddOrganisation(organisationname: Option[String] = Some(""))
 
   object AddOrganisation {
@@ -58,6 +55,17 @@ object Forms {
           .verifying("teammember.remove.email.error.required", _.nonEmpty),
         "confirm" -> optional(text).verifying("team.member.error.confirmation.no.choice.field", _.isDefined)
       )(RemoveTeamMemberConfirmationForm.apply)(RemoveTeamMemberConfirmationForm.unapply)
+    )
+  }
+
+  case class CsvData(csv: String)
+
+  object CsvData {
+
+    val form = Form(
+      mapping(
+        "csv-data-input" -> text.verifying("csvdata.error.required", _.nonEmpty)
+      )(CsvData.apply)(CsvData.unapply)
     )
   }
 }
