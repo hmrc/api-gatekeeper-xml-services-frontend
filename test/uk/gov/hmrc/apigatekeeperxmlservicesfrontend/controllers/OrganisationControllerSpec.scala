@@ -27,7 +27,7 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationCont
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.{OrganisationAddView, OrganisationDetailsView, OrganisationSearchView}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
 import uk.gov.hmrc.http.UpstreamErrorResponse
 
@@ -45,6 +45,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     private lazy val organisationSearchView = app.injector.instanceOf[OrganisationSearchView]
     private lazy val organisationDetailsView = app.injector.instanceOf[OrganisationDetailsView]
     private lazy val organisationAddView = app.injector.instanceOf[OrganisationAddView]
+    private lazy val organisationUpdateView = app.injector.instanceOf[OrganisationUpdateView]
 
     val mockXmlServiceConnector = mock[XmlServicesConnector]
 
@@ -53,6 +54,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       organisationSearchView,
       organisationDetailsView,
       organisationAddView,
+      organisationUpdateView,
       mockAuthConnector,
       forbiddenView,
       errorTemplate,
@@ -80,7 +82,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
   }
 
-  "GET /organisations-search" should {
+  "GET /organisations/search" should {
 
     "return 200 and render search page when vendor-id search type and valid vendor id" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
@@ -223,7 +225,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(*))
         .thenReturn(Future.successful(Right(org1)))
 
-      val result = controller.manageOrganisation(org1.organisationId)(fakeRequest)
+      val result = controller.viewOrganisationPage(org1.organisationId)(fakeRequest)
       status(result) shouldBe Status.OK
       val document = Jsoup.parse(contentAsString(result))
       validatePageRender(document, org1)
@@ -235,7 +237,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(*))
         .thenReturn(Future.successful(Right(org1)))
 
-      val result = controller.manageOrganisation(org1.organisationId)(fakeRequest)
+      val result = controller.viewOrganisationPage(org1.organisationId)(fakeRequest)
       status(result) shouldBe Status.OK
 
       val document = Jsoup.parse(contentAsString(result))
@@ -248,7 +250,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(*))
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
 
-      val result = controller.manageOrganisation(org1.organisationId)(fakeRequest)
+      val result = controller.viewOrganisationPage(org1.organisationId)(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
@@ -262,7 +264,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
 
     "return forbidden view" in new Setup {
       givenAUnsuccessfulLogin()
-      val result = controller.manageOrganisation(org1.organisationId)(fakeRequest)
+      val result = controller.viewOrganisationPage(org1.organisationId)(fakeRequest)
       status(result) shouldBe Status.SEE_OTHER
     }
   }
@@ -284,7 +286,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
   "organisationsAddAction" should {
     "display organisation details page when create successful result returned from connector" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-      when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name))(*)).thenReturn(Future.successful(CreateOrganisationSuccessResult(org1)))
+      when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name))(*)).thenReturn(Future.successful(CreateOrganisationSuccess(org1)))
 
       val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationname" -> org1.name))
       status(result) shouldBe SEE_OTHER
@@ -296,7 +298,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     "display internal server error when failure result returned from connector" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name))(*))
-        .thenReturn(Future.successful(CreateOrganisationFailureResult(UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
+        .thenReturn(Future.successful(CreateOrganisationFailure(UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
 
       val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationname" -> org1.name))
       status(result) shouldBe INTERNAL_SERVER_ERROR
@@ -319,6 +321,21 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
 
       status(result) shouldBe Status.SEE_OTHER
 
+    }
+  }
+
+
+  "updateOrganisationsDetailsPage" should {
+    "display updateOrganisationsDetails page when authorised" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      val result = controller.updateOrganisationsDetailsPage(organisationId1)(fakeRequest.withCSRFToken)
+      status(result) shouldBe OK
+    }
+
+    "return forbidden view when not authorised" in new Setup {
+      givenAUnsuccessfulLogin()
+      val result = controller.updateOrganisationsDetailsPage(organisationId1)(fakeRequest.withCSRFToken)
+      status(result) shouldBe Status.SEE_OTHER
     }
   }
 

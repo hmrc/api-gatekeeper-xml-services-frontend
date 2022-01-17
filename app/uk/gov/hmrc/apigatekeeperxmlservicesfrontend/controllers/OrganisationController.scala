@@ -21,7 +21,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{AuthConnector, XmlServicesConnector}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.AddOrganisation
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.{AddOrganisationForm, UpdateOrganisationDetailsForm}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation._
@@ -40,16 +40,17 @@ class OrganisationController @Inject()(
                                         organisationSearchView: OrganisationSearchView,
                                         organisationDetailsView: OrganisationDetailsView,
                                         organisationAddView: OrganisationAddView,
+                                        organisationUpdateView: OrganisationUpdateView,
                                         override val authConnector: AuthConnector,
                                         val forbiddenView: ForbiddenView,
                                         errorTemplate: ErrorTemplate,
                                         xmlServicesConnector: XmlServicesConnector
                                       )(implicit val ec: ExecutionContext,
                                         appConfig: AppConfig)
-  extends FrontendController(mcc)
-    with GatekeeperAuthWrapper {
+  extends FrontendController(mcc) with GatekeeperAuthWrapper {
 
-  val addOrganisationForm: Form[AddOrganisation] = AddOrganisation.form
+  val addOrganisationForm: Form[AddOrganisationForm] = AddOrganisationForm.form
+  val updateOrganisationDetailsForm: Form[UpdateOrganisationDetailsForm] = UpdateOrganisationDetailsForm.form
 
   val organisationsPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request => successful(Ok(organisationSearchView(List.empty, showTable = false)))
@@ -62,20 +63,63 @@ class OrganisationController @Inject()(
   def organisationsAddAction(): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request =>
       addOrganisationForm.bindFromRequest.fold(
-        formWithErrors => {
-          successful(BadRequest(organisationAddView(formWithErrors)))
-        },
+        formWithErrors => successful(BadRequest(organisationAddView(formWithErrors))),
         organisationAddData => {
           xmlServicesConnector
             .addOrganisation(organisationAddData.organisationname.getOrElse(""))
             .map {
-              case CreateOrganisationSuccessResult(x: Organisation) =>
-                Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.manageOrganisation(x.organisationId))
+              case CreateOrganisationSuccess(x: Organisation) =>
+                Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(x.organisationId))
               case _ => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
             }
         }
       )
   }
+
+  def viewOrganisationPage(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+    implicit request =>
+      xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
+        .map {
+          case Right(org: Organisation) => Ok(organisationDetailsView(org, getEmailString(org)))
+          // in theory this error
+          case Left(_) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+        }
+  }
+
+
+  def updateOrganisationsDetailsPage(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+    implicit request =>
+      xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
+        .map {
+          case Right(org: Organisation) =>Ok(organisationUpdateView(updateOrganisationDetailsForm, organisationId))
+          // in theory this error
+          case Left(_) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+        }
+  }
+
+
+
+
+  def updateOrganisationsDetailsAction(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+    implicit request =>
+      updateOrganisationDetailsForm.bindFromRequest.fold(
+        formWithErrors => successful(BadRequest(organisationUpdateView(formWithErrors, organisationId))),
+        formData =>
+          formData.organisationname match{
+            case Some(organisationName: String) =>  xmlServicesConnector
+                                          .updateOrganisationDetails(organisationId, organisationName).map{
+              case UpdateOrganisationDetailsSuccess(_) =>
+                Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(organisationId))
+              case _ =>
+                Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(organisationId))
+            }
+            case _  => successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error")))
+          }
+
+
+      )
+  }
+
 
   def organisationsSearchAction(searchType: String, searchText: Option[String]): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request =>
@@ -105,15 +149,7 @@ class OrganisationController @Inject()(
       }
   }
 
-  def manageOrganisation(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
-    implicit request =>
-      xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
-        .map {
-          case Right(org: Organisation) => Ok(organisationDetailsView(org, getEmailString(org)))
-          // in theory this error
-          case Left(_) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
-        }
-  }
+
 
   private def getEmailString(org: Organisation): String = {
     if (org.collaborators.isEmpty) ""

@@ -58,8 +58,22 @@ class XmlServicesConnector @Inject()(val http: HttpClient, val config: Config)(i
       url = s"$baseUrl/organisations",
       body = createOrganisationRequest
     ).map {
-      case Right(x: Organisation) => CreateOrganisationSuccessResult(x)
-      case Left(err) => CreateOrganisationFailureResult(err)
+      case Right(x: Organisation) => CreateOrganisationSuccess(x)
+      case Left(err) => CreateOrganisationFailure(err)
+    }
+
+  }
+
+  def updateOrganisationDetails(organisationId: OrganisationId, organisationName: String)
+                               (implicit hc: HeaderCarrier): Future[UpdateOrganisationDetailsResult] = {
+    val updateOrganisationDetailsRequest: UpdateOrganisationDetailsRequest = UpdateOrganisationDetailsRequest(organisationName)
+
+    http.POST[UpdateOrganisationDetailsRequest, Either[UpstreamErrorResponse, Organisation]](
+      url = s"$baseUrl/organisations/${organisationId.value}",
+      body = updateOrganisationDetailsRequest
+    ).map {
+      case Right(x: Organisation) => UpdateOrganisationDetailsSuccess(x)
+      case Left(err) => UpdateOrganisationDetailsFailure(err)
     }
 
   }
@@ -69,8 +83,8 @@ class XmlServicesConnector @Inject()(val http: HttpClient, val config: Config)(i
       url = s"$baseUrl/organisations/${organisationId.value}/add-collaborator",
       AddCollaboratorRequest(email)
     ).map {
-      case Right(x: Organisation) => AddCollaboratorSuccessResult(x)
-      case Left(err) => AddCollaboratorFailureResult(err)
+      case Right(x: Organisation) => AddCollaboratorSuccess(x)
+      case Left(err) => AddCollaboratorFailure(err)
     }
 
   }
@@ -81,8 +95,8 @@ class XmlServicesConnector @Inject()(val http: HttpClient, val config: Config)(i
       url = s"$baseUrl/organisations/${organisationId.value}/remove-collaborator",
       RemoveCollaboratorRequest(email, gateKeeperUserId)
     ).map {
-      case Right(x: Organisation) => RemoveCollaboratorSuccessResult(x)
-      case Left(err) => RemoveCollaboratorFailureResult(err)
+      case Right(x: Organisation) => RemoveCollaboratorSuccess(x)
+      case Left(err) => RemoveCollaboratorFailure(err)
     }
 
   }

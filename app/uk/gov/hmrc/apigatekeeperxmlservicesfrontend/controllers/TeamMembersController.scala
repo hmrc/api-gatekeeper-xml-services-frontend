@@ -42,13 +42,10 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
                                       xmlServicesConnector: XmlServicesConnector
                                     )(implicit val ec: ExecutionContext,
                                       appConfig: AppConfig)
-  extends FrontendController(mcc)
-    with GatekeeperAuthWrapper {
+  extends FrontendController(mcc) with GatekeeperAuthWrapper {
 
   val addTeamMemberForm: Form[AddTeamMemberForm] = AddTeamMemberForm.form
-
   val confirmRemoveForm: Form[RemoveTeamMemberConfirmationForm] = RemoveTeamMemberConfirmationForm.form
-
 
   def manageTeamMembers(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request => {
@@ -74,7 +71,7 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
           xmlServicesConnector
             .addTeamMember(organisationId, teamMemberAddData.emailAddress.getOrElse(""))
             .map {
-              case AddCollaboratorSuccessResult(x: Organisation) =>
+              case AddCollaboratorSuccess(x: Organisation) =>
                 Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.TeamMembersController.manageTeamMembers(x.organisationId))
               case _ => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
             }
@@ -103,7 +100,7 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
           case Some(collaborator: Collaborator) =>
             xmlServicesConnector.removeTeamMember(organisationId, collaborator.email, request.name.getOrElse("Unknown Name"))
               .map {
-                case RemoveCollaboratorSuccessResult(_) => Redirect(routes.TeamMembersController.manageTeamMembers(organisationId).url, SEE_OTHER)
+                case RemoveCollaboratorSuccess(_) => Redirect(routes.TeamMembersController.manageTeamMembers(organisationId).url, SEE_OTHER)
                 case _ => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
               }
           case _ => successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error")))
@@ -113,7 +110,7 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
       def handleValidForm(form: RemoveTeamMemberConfirmationForm): Future[Result] = {
         form.confirm match {
           case Some("Yes") => handleRemoveTeamMember()
-          case _ => successful(Redirect(routes.OrganisationController.manageOrganisation(organisationId).url))
+          case _ => successful(Redirect(routes.OrganisationController.viewOrganisationPage(organisationId).url))
         }
       }
 

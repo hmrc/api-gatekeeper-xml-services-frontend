@@ -146,24 +146,46 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
   }
   "addOrganisation" should {
 
-    "return CreateOrganisationSuccessResult when back end returns Organisation" in new Setup {
+    "return CreateOrganisationSuccess when back end returns Organisation" in new Setup {
       addOrganisationReturnsResponse(organisation.name, OK, organisation)
       val result = await(objInTest.addOrganisation(organisation.name))
 
-      result mustBe CreateOrganisationSuccessResult(organisation)
+      result mustBe CreateOrganisationSuccess(organisation)
 
     }
 
-    "return CreateOrganisationFailureResult when back end returns error" in new Setup {
+    "return CreateOrganisationFailure when back end returns error" in new Setup {
       addOrganisationReturnsError(organisation.name, INTERNAL_SERVER_ERROR)
       val result = await(objInTest.addOrganisation(organisation.name))
 
       result match {
-        case CreateOrganisationFailureResult(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed
+        case CreateOrganisationFailure(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed
         case _                                                                                      => fail()
       }
     }
   }
+
+  "updateOrganisationDetails" should {
+
+    "return UpdateOrganisationSuccess when back end returns Organisation" in new Setup {
+      updateOrganisationDetailsReturnsResponse(organisation.name, organisation.organisationId,  OK, organisation)
+      val result = await(objInTest.updateOrganisationDetails(organisation.organisationId, organisation.name))
+
+      result mustBe UpdateOrganisationDetailsSuccess(organisation)
+
+    }
+
+    "return UpdateOrganisationDetailsFailure when back end returns error" in new Setup {
+      updateOrganisationDetailsReturnsError(organisation.name, organisation.organisationId, INTERNAL_SERVER_ERROR)
+      val result = await(objInTest.updateOrganisationDetails(organisation.organisationId, organisation.name))
+
+      result match {
+        case UpdateOrganisationDetailsFailure(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed
+        case _                                                                                      => fail()
+      }
+    }
+  }
+
 
   "AddTeamMember" should {
     "return AddCollaboratorSuccessfulResult when add collaborator call is successful" in new Setup {
@@ -179,10 +201,10 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       val result = await(objInTest.addTeamMember(organisationWithTeamMembers.organisationId, emailAddress))
 
-      result mustBe AddCollaboratorSuccessResult(organisationWithTeamMembers.copy(collaborators = updatedCollaboratorList))
+      result mustBe AddCollaboratorSuccess(organisationWithTeamMembers.copy(collaborators = updatedCollaboratorList))
     }
 
-    "return AddCollaboratorFailureResult when add collaborator call is successful" in new Setup {
+    "return AddCollaboratorFailure when add collaborator call is successful" in new Setup {
       val emailAddress = "email@email.com"
       val expectedErrorMessage =   s"POST of 'http://localhost:$wireMockPort/api-platform-xml-services/organisations/" +
         s"${organisationWithTeamMembers.organisationId.value.toString}/add-collaborator' returned 404. Response body: ''"
@@ -195,7 +217,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       val result = await(objInTest.addTeamMember(organisationWithTeamMembers.organisationId, emailAddress))
 
       result match {
-        case AddCollaboratorFailureResult(UpstreamErrorResponse(message, NOT_FOUND, _, _)) => message mustBe expectedErrorMessage
+        case AddCollaboratorFailure(UpstreamErrorResponse(message, NOT_FOUND, _, _)) => message mustBe expectedErrorMessage
         case _ => fail
       }
     }
@@ -203,7 +225,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
   }
 
   "removeTeamMember" should {
-    "return RemoveCollaboratorSuccessResult when remove collaborator call is successful " in new Setup {
+    "return RemoveCollaboratorSuccess when remove collaborator call is successful " in new Setup {
       removeTeamMemberReturnsResponse(
         organisationWithTeamMembers.organisationId,
         organisationWithTeamMembers.collaborators.head.email,
@@ -213,11 +235,11 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       )
       val result = await(objInTest.removeTeamMember(organisationWithTeamMembers.organisationId, organisationWithTeamMembers.collaborators.head.email, "somegatekeeperId"))
 
-      result mustBe RemoveCollaboratorSuccessResult(organisationWithTeamMembers.copy(collaborators = List.empty))
+      result mustBe RemoveCollaboratorSuccess(organisationWithTeamMembers.copy(collaborators = List.empty))
 
     }
 
-    "return RemoveCollaboratorFailureResult when remove collaborator call is unsuccessful " in new Setup {
+    "return RemoveCollaboratorFailure when remove collaborator call is unsuccessful " in new Setup {
       removeTeamMemberReturnsResponse(
         organisationWithTeamMembers.organisationId,
         organisationWithTeamMembers.collaborators.head.email,
@@ -228,13 +250,13 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       val result = await(objInTest.removeTeamMember(organisationWithTeamMembers.organisationId, organisationWithTeamMembers.collaborators.head.email, "somegatekeeperId"))
 
       result match {
-        case RemoveCollaboratorFailureResult(e) => e.getMessage
+        case RemoveCollaboratorFailure(e) => e.getMessage
         case _                                  => fail
       }
 
     }
 
-    "return RemoveCollaboratorFailureResult when remove collaborator call is unsuccessful (500 Error)" in new Setup {
+    "return RemoveCollaboratorFailure when remove collaborator call is unsuccessful (500 Error)" in new Setup {
       removeTeamMemberReturnsResponse(
         organisationWithTeamMembers.organisationId,
         organisationWithTeamMembers.collaborators.head.email,
@@ -245,7 +267,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       val result = await(objInTest.removeTeamMember(organisationWithTeamMembers.organisationId, organisationWithTeamMembers.collaborators.head.email, "somegatekeeperId"))
 
       result match {
-        case RemoveCollaboratorFailureResult(e) => e.getMessage
+        case RemoveCollaboratorFailure(e) => e.getMessage
         case _                                  => fail
       }
 

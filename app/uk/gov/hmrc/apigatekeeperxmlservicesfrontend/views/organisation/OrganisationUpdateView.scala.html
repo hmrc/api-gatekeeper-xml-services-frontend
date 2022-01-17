@@ -15,15 +15,16 @@
  *@
 
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.AddOrganisationForm
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.UpdateOrganisationDetailsForm
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include._
 
 
 
 @this(layout: Layout)
 
-@(form: Form[AddOrganisationForm])(implicit request:
+@(form: Form[UpdateOrganisationDetailsForm],
+        organisationId: OrganisationId)(implicit request:
 Request[_], messages: Messages,
 appConfig: AppConfig)
 
@@ -32,24 +33,24 @@ appConfig: AppConfig)
 
   @errorSummary(form)
 
-    <h1 id="page-heading" class="govuk-heading-l">
-        Add organisation
-    </h1>
     @helper.form(action =
-    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsAddAction()) {
+    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.updateOrganisationsDetailsAction(organisationId)) {
         @helper.CSRF.formField
     <div id="form-group" class="govuk-form-group @if(form.errors("organisationname").nonEmpty) {govuk-form-group--error}">
-        <label id="organisation-name-label" class="govuk-label govuk-label--m" for="organisationname">
-            Organisation name
+        <label id="organisation-name-label" class="govuk-label govuk-label--l" for="organisationname">
+            Change organisation name
         </label>
         @FieldError(form.errors, "organisationname")
         <input class="govuk-input govuk-input--width-20" id="organisationname" name="organisationname" type="text"
             aria-describedby="organisationname">
     </div>
-    <div class="govuk-form-group">
+    <div class="govuk-button-group">
         <button id="continue-button" class="govuk-button" data-module="govuk-button">
             Continue
         </button>
+        <a href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(organisationId).url" class="govuk-link govuk-link--no-visited-state">
+            Cancel
+        </a>
     </div>
     }
 

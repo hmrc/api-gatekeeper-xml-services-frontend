@@ -25,14 +25,26 @@ object Forms {
 
 
 
-  case class AddOrganisation(organisationname: Option[String] = Some(""))
+  case class AddOrganisationForm(organisationname: Option[String] = Some(""))
 
-  object AddOrganisation {
+  object AddOrganisationForm {
 
     val form = Form(
       mapping( //organisation-name-input
         "organisationname" -> optional(nonEmptyText).verifying("organisationname.error.required", x => x.isDefined)
-      )(AddOrganisation.apply)(AddOrganisation.unapply)
+      )(AddOrganisationForm.apply)(AddOrganisationForm.unapply)
+    )
+
+  }
+
+  case class UpdateOrganisationDetailsForm(organisationname: Option[String] = Some(""))
+
+  object UpdateOrganisationDetailsForm {
+
+    val form = Form(
+      mapping( //organisation-name-input
+        "organisationname" -> optional(nonEmptyText).verifying("organisationname.error.required", x => x.isDefined)
+      )(UpdateOrganisationDetailsForm.apply)(UpdateOrganisationDetailsForm.unapply)
     )
 
   }

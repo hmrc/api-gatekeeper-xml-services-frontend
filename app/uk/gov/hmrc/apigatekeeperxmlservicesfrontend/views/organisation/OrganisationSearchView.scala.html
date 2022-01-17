@@ -24,7 +24,7 @@
 appConfig: AppConfig)
 
 @buildManageOrgPath(org: Organisation) = @{
-uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.manageOrganisation(org.organisationId).url
+uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(org.organisationId).url
 }
 
 @layout(pageTitle = Some("Manage XML Organisations - HMRC API Gatekeeper")) {
