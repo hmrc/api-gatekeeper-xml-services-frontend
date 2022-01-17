@@ -14,33 +14,26 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.csvupload
 
 import org.apache.commons.csv.CSVRecord
 import org.apache.commons.io.IOUtils
 import play.api.Logging
 import play.api.data.Form
-import play.api.mvc.Action
-import play.api.mvc.AnyContent
-import play.api.mvc.MessagesControllerComponents
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.AuthConnector
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.GatekeeperRole
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.VendorId
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{GatekeeperRole, Organisation, OrganisationId, VendorId}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.CsvData
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.CsvUploadView
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import java.io.InputStreamReader
-import javax.inject.Inject
-import javax.inject.Singleton
+import javax.inject.{Inject, Singleton}
 import scala.collection.JavaConverters._
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 
 @Singleton

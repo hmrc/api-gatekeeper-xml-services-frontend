@@ -34,7 +34,7 @@
         </fieldset>
     </div>
 
-    @helper.form(action = uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.CsvUploadController.uploadOrganisationsCsvAction()) {
+    @helper.form(action = uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.csvupload.routes.CsvUploadController.uploadOrganisationsCsvAction()) {
         @helper.CSRF.formField
         <div class="govuk-form-group">
             <label class="govuk-label" id="csv-data-input-label" for="csv-data-input">Provide CSV input here please</label>
