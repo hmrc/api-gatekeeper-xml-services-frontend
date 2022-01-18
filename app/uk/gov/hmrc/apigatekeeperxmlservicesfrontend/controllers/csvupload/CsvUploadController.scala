@@ -61,8 +61,7 @@ class CsvUploadController @Inject() (
           try{
           val organisations: Seq[Organisation] = mapToOrganisationFromCsv(csvData.csv)
 
-          logger.info(s"***** Number of Organisations: ${organisations.size}")
-          logger.info(s"***** Organisations: ${organisations}")
+          logger.info(s"***** Number of Organisations successfully parsed: ${organisations.size}")
 
           Future.successful(Ok(csvUploadView(csvDataForm)))
         } catch {
