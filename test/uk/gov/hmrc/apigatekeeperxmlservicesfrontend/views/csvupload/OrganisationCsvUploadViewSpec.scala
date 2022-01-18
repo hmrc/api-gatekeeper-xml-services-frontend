@@ -22,7 +22,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.CsvUploadView
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.OrganisationCsvUploadView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.CsvData
 
@@ -30,7 +30,7 @@ class CsvUploadViewSpec extends CommonViewSpec with WithCSRFAddToken {
 
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
-    val csvUploadView = app.injector.instanceOf[CsvUploadView]
+    val organisationCsvUploadView = app.injector.instanceOf[OrganisationCsvUploadView]
 
   }
 
@@ -45,7 +45,7 @@ class CsvUploadViewSpec extends CommonViewSpec with WithCSRFAddToken {
     }
 
     "render the organisation csv upload page correctly when no errors" in new Setup {
-      val page = csvUploadView.render(CsvData.form, FakeRequest().withCSRFToken, messagesProvider.messages)
+      val page = organisationCsvUploadView.render(CsvData.form, FakeRequest().withCSRFToken, messagesProvider.messages)
       val document: Document = Jsoup.parse(page.body)
 
       validateFormErrors(document, false)
@@ -58,7 +58,7 @@ class CsvUploadViewSpec extends CommonViewSpec with WithCSRFAddToken {
 
     "render the organisation csv upload page correctly when errors exist" in new Setup {
 
-      val page = csvUploadView.render(CsvData.form.withError("csv-data-input", "csvdata.error.required"), 
+      val page = organisationCsvUploadView.render(CsvData.form.withError("csv-data-input", "csvdata.error.required"), 
                                       FakeRequest().withCSRFToken, messagesProvider.messages)
       val document: Document = Jsoup.parse(page.body)
 

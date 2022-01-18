@@ -26,7 +26,7 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.AuthConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{GatekeeperRole, Organisation, OrganisationId, VendorId}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.CsvData
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.CsvUploadView
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.OrganisationCsvUploadView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
@@ -39,7 +39,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class CsvUploadController @Inject() (
     mcc: MessagesControllerComponents,
-    csvUploadView: CsvUploadView,
+    organisationCsvUploadView: OrganisationCsvUploadView,
     errorTemplate: ErrorTemplate,
     override val authConnector: AuthConnector,
     val forbiddenView: ForbiddenView
@@ -48,14 +48,14 @@ class CsvUploadController @Inject() (
   val csvDataForm: Form[CsvData] = CsvData.form
 
   def organisationPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
-    implicit request => Future.successful(Ok(csvUploadView(csvDataForm)))
+    implicit request => Future.successful(Ok(organisationCsvUploadView(csvDataForm)))
   }
 
   def uploadOrganisationsCsvAction(): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request =>
       csvDataForm.bindFromRequest.fold(
         formWithErrors => {
-          Future.successful(BadRequest(csvUploadView(formWithErrors)))
+          Future.successful(BadRequest(organisationCsvUploadView(formWithErrors)))
         },
         csvData => {
           try{
@@ -63,7 +63,7 @@ class CsvUploadController @Inject() (
 
           logger.info(s"***** Number of Organisations successfully parsed: ${organisations.size}")
 
-          Future.successful(Ok(csvUploadView(csvDataForm)))
+          Future.successful(Ok(organisationCsvUploadView(csvDataForm)))
         } catch {
             case exception: Throwable => Future.successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", exception.getMessage)))
         }
