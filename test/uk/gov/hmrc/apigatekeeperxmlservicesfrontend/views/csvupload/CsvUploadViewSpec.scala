@@ -44,7 +44,7 @@ class CsvUploadViewSpec extends CommonViewSpec with WithCSRFAddToken {
       Option(document.getElementById("data-field-error-csv-data-input")).isDefined shouldBe isError
     }
 
-    "render the csv upload page correctly when no errors" in new Setup {
+    "render the organisation csv upload page correctly when no errors" in new Setup {
       val page = csvUploadView.render(CsvData.form, FakeRequest().withCSRFToken, messagesProvider.messages)
       val document: Document = Jsoup.parse(page.body)
 
@@ -56,7 +56,7 @@ class CsvUploadViewSpec extends CommonViewSpec with WithCSRFAddToken {
       Option(document.getElementById("upload-csv-button")).isDefined shouldBe true
     }
 
-    "render the csv upload page correctly when errors exist" in new Setup {
+    "render the organisation csv upload page correctly when errors exist" in new Setup {
 
       val page = csvUploadView.render(CsvData.form.withError("csv-data-input", "csvdata.error.required"), 
                                       FakeRequest().withCSRFToken, messagesProvider.messages)
