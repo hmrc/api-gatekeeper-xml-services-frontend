@@ -16,25 +16,27 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.csvupload
 
-import org.apache.commons.csv.CSVRecord
-import org.apache.commons.io.IOUtils
 import play.api.Logging
 import play.api.data.Form
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.Action
+import play.api.mvc.AnyContent
+import play.api.mvc.MessagesControllerComponents
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.AuthConnector
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{GatekeeperRole, Organisation, OrganisationId, VendorId}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.GatekeeperRole
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.CsvData
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.services.CsvUploadService
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ErrorTemplate
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.OrganisationCsvUploadView
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
-import java.io.InputStreamReader
-import javax.inject.{Inject, Singleton}
-import scala.collection.JavaConverters._
-import scala.concurrent.{ExecutionContext, Future}
-
+import javax.inject.Inject
+import javax.inject.Singleton
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 @Singleton
 class CsvUploadController @Inject() (
@@ -42,8 +44,13 @@ class CsvUploadController @Inject() (
     organisationCsvUploadView: OrganisationCsvUploadView,
     errorTemplate: ErrorTemplate,
     override val authConnector: AuthConnector,
-    val forbiddenView: ForbiddenView
-  )(implicit val ec: ExecutionContext, appConfig: AppConfig) extends FrontendController(mcc) with GatekeeperAuthWrapper  with Logging {
+    val forbiddenView: ForbiddenView,
+    val csvUploadService: CsvUploadService
+  )(implicit val ec: ExecutionContext,
+    appConfig: AppConfig)
+    extends FrontendController(mcc)
+    with GatekeeperAuthWrapper
+    with Logging {
 
   val csvDataForm: Form[CsvData] = CsvData.form
 
@@ -58,44 +65,16 @@ class CsvUploadController @Inject() (
           Future.successful(BadRequest(organisationCsvUploadView(formWithErrors)))
         },
         csvData => {
-          try{
-          val organisations: Seq[Organisation] = mapToOrganisationFromCsv(csvData.csv)
+          try {
+            val organisations: Seq[Organisation] = csvUploadService.mapToOrganisationFromCsv(csvData.csv)
 
-          logger.info(s"***** Number of Organisations successfully parsed: ${organisations.size}")
+            logger.info(s"Number of Organisations successfully parsed: ${organisations.size}")
 
-          Future.successful(Ok(organisationCsvUploadView(csvDataForm)))
-        } catch {
+            Future.successful(Ok(organisationCsvUploadView(csvDataForm)))
+          } catch {
             case exception: Throwable => Future.successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", exception.getMessage)))
+          }
         }
-  }
       )
   }
-
-  private def mapToOrganisationFromCsv(csvData: String): Seq[Organisation] = {
-    val reader = new InputStreamReader(IOUtils.toInputStream(csvData))
-
-    org.apache.commons.csv.CSVFormat.EXCEL
-      .withFirstRecordAsHeader()
-      .parse(reader).getRecords.asScala
-      .map(createOrganisation)
-  }
-
-  private def createOrganisation(record: CSVRecord): Organisation = {
-    val expectedValues = 2
-    if (record.size() < expectedValues) throw new RuntimeException(s"Expected $expectedValues values on row ${record.getRecordNumber}")
-
-    def parseString(s: String): String = {
-      Option(s) match {
-        case Some(s: String) if s.nonEmpty => s.trim()
-        case _ => throw new RuntimeException(s"Organisation name cannot be empty")
-      }
-    }
-
-    Organisation(
-      organisationId = OrganisationId(java.util.UUID.randomUUID()),
-      vendorId = VendorId(record.get("VENDORID").trim().toLong),
-      name = parseString(record.get("NAME"))
-    )
-  }
-
 }
