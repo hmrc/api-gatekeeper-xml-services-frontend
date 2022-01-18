@@ -20,11 +20,11 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.CsvData
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.upload.CsvUploadView
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.CsvUploadView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.CsvData
 
 class CsvUploadViewSpec extends CommonViewSpec with WithCSRFAddToken {
 
