@@ -66,7 +66,7 @@ class OrganisationController @Inject()(
         formWithErrors => successful(BadRequest(organisationAddView(formWithErrors))),
         organisationAddData => {
           xmlServicesConnector
-            .addOrganisation(organisationAddData.organisationname.getOrElse(""))
+            .addOrganisation(organisationAddData.organisationName)
             .map {
               case CreateOrganisationSuccess(x: Organisation) =>
                 Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(x.organisationId))
@@ -91,12 +91,10 @@ class OrganisationController @Inject()(
     implicit request =>
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
         .map {
-          case Right(org: Organisation) =>Ok(organisationUpdateView(updateOrganisationDetailsForm, organisationId))
-          // in theory this error
+          case Right(_ : Organisation) =>Ok(organisationUpdateView(updateOrganisationDetailsForm, organisationId))
           case Left(_) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
         }
   }
-
 
 
 
@@ -105,18 +103,13 @@ class OrganisationController @Inject()(
       updateOrganisationDetailsForm.bindFromRequest.fold(
         formWithErrors => successful(BadRequest(organisationUpdateView(formWithErrors, organisationId))),
         formData =>
-          formData.organisationname match{
-            case Some(organisationName: String) =>  xmlServicesConnector
-                                          .updateOrganisationDetails(organisationId, organisationName).map{
+          xmlServicesConnector.updateOrganisationDetails(organisationId, formData.organisationName).map{
               case UpdateOrganisationDetailsSuccess(_) =>
                 Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(organisationId))
               case _ =>
-                Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(organisationId))
+                InternalServerError(errorTemplate(pageTitle = "Internal Server Error", heading = "Internal Server Error",
+                  message = "Update organisation failed"))
             }
-            case _  => successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error")))
-          }
-
-
       )
   }
 

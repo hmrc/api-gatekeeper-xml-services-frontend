@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
-package controllers
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
-import mocks.XmlServicesStub
+
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.scalatest.BeforeAndAfterEach
+import play.api.http.HeaderNames.CONTENT_TYPE
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
-import play.api.test.Helpers.{BAD_REQUEST, FORBIDDEN, NOT_FOUND, OK}
-import support.AuthServiceStub
+import play.api.test.Helpers.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, LOCATION, NOT_FOUND, OK, SEE_OTHER}
+import play.filters.csrf.CSRF.TokenProvider
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Collaborator, Organisation, OrganisationId, VendorId}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{AuthServiceStub, ServerBaseISpec}
 
 class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with AuthServiceStub {
 
@@ -48,11 +50,12 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
   trait Setup extends XmlServicesStub {
     val wsClient: WSClient = app.injector.instanceOf[WSClient]
+    val tokenProvider = app.injector.instanceOf[TokenProvider]
 
     val objInTest: XmlServicesConnector = app.injector.instanceOf[XmlServicesConnector]
     val vendorId: VendorId = VendorId(12)
     val organisationId = OrganisationId(java.util.UUID.randomUUID())
-    val organisation = Organisation(organisationId , vendorId = vendorId, name = "Org name")
+    val organisation = Organisation(organisationId, vendorId = vendorId, name = "Org name")
 
     val collaborator = Collaborator("userId", "collaborator1@mail.com")
     val organisationWithTeamMembers = Organisation(
@@ -68,6 +71,14 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         .withHttpHeaders(headers: _*)
         .withFollowRedirects(false)
         .get()
+        .futureValue
+
+    def callPostEndpoint(url: String, headers: List[(String, String)] = List.empty, request: String): WSResponse =
+      wsClient
+        .url(url)
+        .withHttpHeaders(headers: _*)
+        .withFollowRedirects(false)
+        .post(request)
         .futureValue
 
     def validateOrganisationRow(rowId: Int, org: Organisation, document: Document) = {
@@ -205,5 +216,68 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         Option(content.getElementById("results-table")).isDefined mustBe true
       }
     }
+
+    "GET /add" should {
+
+      "return 200 and display the add page when authorised " in new Setup {
+        primeAuthServiceSuccess()
+
+        val result = callGetEndpoint(s"$url/organisations/add")
+        result.status mustBe OK
+
+        val document = Jsoup.parse(result.body)
+        document.getElementById("page-heading").text() mustBe "Add organisation"
+        document.getElementById("organisation-name-label").text() mustBe "Organisation name"
+        Option(document.getElementById("organisationName")).isDefined mustBe true
+        Option(document.getElementById("continue-button")).isDefined mustBe true
+      }
+
+      "return 403 when not authorised" in new Setup {
+        primeAuthServiceFail()
+
+        val result = callGetEndpoint(s"$url/organisations/add")
+        result.status mustBe FORBIDDEN
+      }
+
+    }
+
+
+    "GET  /:organisationId/update" should {
+      "return 200 and organisationDetails EditPage when auth is successful and organisationId exists" in new Setup {
+        primeAuthServiceSuccess()
+
+        getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
+
+        val result = callGetEndpoint(s"$url/organisations/${organisationId.value.toString}/update")
+
+        result.status mustBe OK
+
+        val document = Jsoup.parse(result.body)
+        document.getElementById("organisation-name-label").text() mustBe "Change organisation name"
+        Option(document.getElementById("organisationName")).isDefined mustBe true
+        Option(document.getElementById("continue-button")).isDefined mustBe true
+      }
+
+      "return 500 and when auth is successful but organisation cannot be found" in new Setup {
+        primeAuthServiceSuccess()
+
+        getOrganisationByOrganisationIdReturnsError(organisationId, NOT_FOUND)
+
+        val result = callGetEndpoint(s"$url/organisations/${organisationId.value.toString}/update")
+
+        result.status mustBe INTERNAL_SERVER_ERROR
+
+      }
+
+
+      "return 403 when not authorised" in new Setup {
+        primeAuthServiceFail()
+
+        val result = callGetEndpoint(s"$url/organisations/${organisationId.value.toString}/update")
+
+        result.status mustBe FORBIDDEN
+      }
+    }
+
   }
 }

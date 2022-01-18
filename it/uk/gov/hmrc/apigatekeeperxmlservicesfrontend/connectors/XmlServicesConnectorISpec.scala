@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package connectors
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors
 
-import mocks.XmlServicesStub
+
 import org.scalatest.BeforeAndAfterEach
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import play.api.test.Helpers._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
@@ -144,6 +144,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     }
 
   }
+
   "addOrganisation" should {
 
     "return CreateOrganisationSuccess when back end returns Organisation" in new Setup {

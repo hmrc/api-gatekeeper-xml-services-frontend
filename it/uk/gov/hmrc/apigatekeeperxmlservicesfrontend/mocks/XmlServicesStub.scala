@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package mocks
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._

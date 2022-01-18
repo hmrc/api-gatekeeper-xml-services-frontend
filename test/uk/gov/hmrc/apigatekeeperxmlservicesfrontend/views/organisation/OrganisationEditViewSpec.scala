@@ -47,13 +47,13 @@ class OrganisationEditViewSpec extends CommonViewSpec with WithCSRFAddToken with
       val document: Document = Jsoup.parse(page.body)
 
       validateFormErrors(document)
-      validateEditOrganisationPage(document)
+      validateUpdateOrganisationDetailsPage(document)
     }
 
     "render the organisation add page correctly when errors exist" in new Setup {
 
       val page = organisationUpdateView.render(
-        UpdateOrganisationDetailsForm.form.withError("organisationname", "organisationname.error.required"),
+        UpdateOrganisationDetailsForm.form.withError("organisationName", "organisationname.error.required"),
         organisationId1,
         FakeRequest().withCSRFToken,
         messagesProvider.messages,
@@ -62,7 +62,7 @@ class OrganisationEditViewSpec extends CommonViewSpec with WithCSRFAddToken with
       val document: Document = Jsoup.parse(page.body)
 
       validateFormErrors(document, Some("Enter an organisation name"))
-      validateEditOrganisationPage(document)
+      validateUpdateOrganisationDetailsPage(document)
 
     }
   }

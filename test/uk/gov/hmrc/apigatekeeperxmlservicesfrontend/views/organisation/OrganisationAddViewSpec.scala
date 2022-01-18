@@ -43,7 +43,7 @@ class OrganisationAddViewSpec extends CommonViewSpec with WithCSRFAddToken {
       
       }
       
-      Option(document.getElementById("data-field-error-organisationname")).isDefined shouldBe isError
+      Option(document.getElementById("data-field-error-organisationName")).isDefined shouldBe isError
       val formGroupElement = Option(document.getElementById("form-group"))
       formGroupElement.isDefined shouldBe true
       formGroupElement.head.classNames().contains("govuk-form-group--error") shouldBe isError
@@ -60,20 +60,20 @@ class OrganisationAddViewSpec extends CommonViewSpec with WithCSRFAddToken {
 
       document.getElementById("page-heading").text() shouldBe "Add organisation"
       document.getElementById("organisation-name-label").text() shouldBe "Organisation name"
-      Option(document.getElementById("organisationname")).isDefined shouldBe true
+      Option(document.getElementById("organisationName")).isDefined shouldBe true
       Option(document.getElementById("continue-button")).isDefined shouldBe true
     }
 
     "render the organisation add page correctly when errors exist" in new Setup {
 
-      val page = organisationAddView.render(AddOrganisationForm.form.withError("organisationname", "organisationname.error.required"), FakeRequest().withCSRFToken, messagesProvider.messages, mockAppConfig)
+      val page = organisationAddView.render(AddOrganisationForm.form.withError("organisationName", "organisationname.error.required"), FakeRequest().withCSRFToken, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
 
       validateFormErrors(document, true)
 
       document.getElementById("page-heading").text() shouldBe "Add organisation"
       document.getElementById("organisation-name-label").text() shouldBe "Organisation name"
-      Option(document.getElementById("organisationname")).isDefined shouldBe true
+      Option(document.getElementById("organisationName")).isDefined shouldBe true
       Option(document.getElementById("continue-button")).isDefined shouldBe true
     }
   }
