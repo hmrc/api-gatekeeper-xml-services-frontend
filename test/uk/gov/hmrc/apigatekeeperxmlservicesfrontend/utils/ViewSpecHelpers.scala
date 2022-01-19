@@ -41,6 +41,12 @@ trait ViewSpecHelpers extends Matchers {
 
   }
 
+  def validateAddOrganisationDetailsPage(document: Document) ={
+    document.getElementById("organisation-name-label").text() shouldBe "Organisation name"
+    Option(document.getElementById("organisationName")).isDefined shouldBe true
+    Option(document.getElementById("continue-button")).isDefined shouldBe true
+  }
+
   def validateUpdateOrganisationDetailsPage(document: Document) ={
     document.getElementById("organisation-name-label").text() shouldBe "Change organisation name"
     Option(document.getElementById("organisationName")).isDefined shouldBe true

@@ -25,7 +25,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
@@ -37,7 +37,7 @@ import scala.concurrent.Future
 
 class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
 
-  trait Setup extends ControllerSetupBase with OrganisationTestData {
+  trait Setup extends ControllerSetupBase with OrganisationTestData with ViewSpecHelpers {
     val fakeRequest = FakeRequest("GET", "/organisations")
     val organisationSearchRequest = FakeRequest("GET", "/organisations-search")
     private lazy val forbiddenView = app.injector.instanceOf[ForbiddenView]
@@ -274,6 +274,9 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       val result = controller.organisationsAddPage()(fakeRequest.withCSRFToken)
       status(result) shouldBe OK
+      val document = Jsoup.parse(contentAsString(result))
+      validateAddOrganisationDetailsPage(document)
+      validateFormErrors(document, None)
     }
 
     "return forbidden view when not authorised" in new Setup {
@@ -295,6 +298,19 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       verify(mockXmlServiceConnector).addOrganisation(eqTo(org1.name))(*)
     }
 
+    "not allow spaces as organisation name" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+      val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> "  "))
+
+      status(result) shouldBe BAD_REQUEST
+      val document = Jsoup.parse(contentAsString(result))
+      validateAddOrganisationDetailsPage(document)
+      validateFormErrors(document, Some("Enter an organisation name"))
+      verifyZeroInteractions(mockXmlServiceConnector)
+    }
+
+
     "display internal server error when failure result returned from connector" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name))(*))
@@ -310,7 +326,11 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
       val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> ""))
+
       status(result) shouldBe BAD_REQUEST
+      val document = Jsoup.parse(contentAsString(result))
+      validateAddOrganisationDetailsPage(document)
+      validateFormErrors(document, Some("Enter an organisation name"))
 
       verifyZeroInteractions(mockXmlServiceConnector)
     }
@@ -334,6 +354,8 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       val result = controller.updateOrganisationsDetailsPage(organisationId1)(fakeRequest.withCSRFToken)
       status(result) shouldBe OK
       val document = Jsoup.parse(contentAsString(result))
+      validateUpdateOrganisationDetailsPage(document)
+      validateFormErrors(document, None)
 
     }
 
@@ -379,12 +401,26 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
           eqTo(org1.name))(*)
       }
 
-      "display add page with error messages when invalid form provided" in new Setup {
+      "display update page with error messages when invalid form provided" in new Setup {
         givenTheGKUserIsAuthorisedAndIsANormalUser()
 
         val result = controller.updateOrganisationsDetailsAction(organisationId1)(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> ""))
         status(result) shouldBe BAD_REQUEST
+        val document = Jsoup.parse(contentAsString(result))
+        validateUpdateOrganisationDetailsPage(document)
+        validateFormErrors(document, Some("Enter an organisation name"))
+        verifyZeroInteractions(mockXmlServiceConnector)
+      }
 
+      "not allow spaces in form" in new Setup {
+        givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+        val result = controller.updateOrganisationsDetailsAction(organisationId1)(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> "  "))
+
+        status(result) shouldBe BAD_REQUEST
+        val document = Jsoup.parse(contentAsString(result))
+        validateUpdateOrganisationDetailsPage(document)
+        validateFormErrors(document, Some("Enter an organisation name"))
         verifyZeroInteractions(mockXmlServiceConnector)
       }
 
