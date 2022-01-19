@@ -31,7 +31,7 @@ object Forms {
 
     val form = Form(
       mapping( //organisation-name-input
-        "organisationName" -> text.verifying("organisationname.error.required", x => x.nonEmpty)
+        "organisationName" -> text.verifying("organisationname.error.required", x => x.trim.nonEmpty)
       )(AddOrganisationForm.apply)(AddOrganisationForm.unapply)
     )
 
@@ -43,7 +43,7 @@ object Forms {
 
     val form = Form(
       mapping( //organisation-name-input
-        "organisationName" -> text.verifying("organisationname.error.required", x => x.nonEmpty)
+        "organisationName" -> text.verifying("organisationname.error.required", x => x.trim.nonEmpty)
       )(UpdateOrganisationDetailsForm.apply)(UpdateOrganisationDetailsForm.unapply)
     )
 
