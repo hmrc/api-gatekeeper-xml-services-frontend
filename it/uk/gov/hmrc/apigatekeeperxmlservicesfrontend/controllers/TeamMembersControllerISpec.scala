@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package controllers
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
-import mocks.XmlServicesStub
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.scalatest.BeforeAndAfterEach
@@ -26,11 +25,11 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.Helpers.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, OK}
-import support.AuthServiceStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Collaborator, Organisation, OrganisationId, VendorId}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{AuthServiceStub, ServerBaseISpec}
 
 import java.util.UUID
 
@@ -139,7 +138,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
 
         getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
 
-        val result = callGetEndpoint(s"$url/organisations/${organisationId.value.toString}/team-members/${organisationWithTeamMembers.collaborators.head.userId}/remove")
+        val result = callGetEndpoint(s"$url/organisations/${organisationId.value.toString}/team-members/${collaborator.userId}/remove")
 
         result.status mustBe OK
 
@@ -179,11 +178,11 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       "respond with 200 when remove team member action is successful" in new Setup {
         primeAuthServiceSuccess()
 
-        getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, 200, Json.toJson(organisationWithTeamMembers).toString())
+        getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
 
-        removeTeamMemberReturnsResponse(organisationId, organisationWithTeamMembers.collaborators.head.email, "bob", OK, organisationWithTeamMembers.copy(collaborators = List.empty))
+        removeTeamMemberReturnsResponse(organisationId, collaborator.email, "bob", OK, organisationWithTeamMembers.copy(collaborators = List.empty))
 
-        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/team-members/${organisationWithTeamMembers.collaborators.head.userId}/remove",
+        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/team-members/${collaborator.userId}/remove",
          List(CONTENT_TYPE -> "application/x-www-form-urlencoded"), s"email=${collaborator.email};confirm=Yes;")
 
         result.status mustBe SEE_OTHER
@@ -193,11 +192,11 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       "respond with 500 when remove team member fails" in new Setup {
         primeAuthServiceSuccess()
 
-        getOrganisationByOrganisationIdReturnsResponseWithBody(organisationWithTeamMembers.organisationId, 200, Json.toJson(organisationWithTeamMembers).toString())
+        getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
 
-        removeTeamMemberReturnsError(organisationWithTeamMembers.organisationId, organisationWithTeamMembers.collaborators.head.email, "bob", INTERNAL_SERVER_ERROR)
+        removeTeamMemberReturnsError(organisationId, organisationWithTeamMembers.collaborators.head.email, "bob", INTERNAL_SERVER_ERROR)
 
-        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/team-members/${organisationWithTeamMembers.collaborators.head.userId}/remove",
+        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/team-members/${collaborator.userId}/remove",
           List(CONTENT_TYPE -> "application/x-www-form-urlencoded"), s"email=${collaborator.email};confirm=Yes;")
 
         result.status mustBe INTERNAL_SERVER_ERROR
@@ -218,7 +217,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       "respond with 403 if auth fails" in new Setup {
         primeAuthServiceFail()
 
-        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/team-members/${organisationWithTeamMembers.collaborators.head.userId}/remove",
+        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/team-members/${collaborator.userId}/remove",
           List(CONTENT_TYPE -> "application/x-www-form-urlencoded"), s"email=${collaborator.email};confirm=Yes;")
 
         result.status mustBe FORBIDDEN
