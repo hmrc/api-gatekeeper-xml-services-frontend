@@ -100,7 +100,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
       }
     }
 
-    "POST /csvupload/organisation-action" should {
+    /* "POST /csvupload/organisation-action" should {
 
       "display organisation page when valid form provided" in new Setup {
         primeAuthServiceSuccess()
@@ -113,7 +113,6 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
         validatePageIsRendered(result)
       }
-
-    }
+    } */
   }
 }

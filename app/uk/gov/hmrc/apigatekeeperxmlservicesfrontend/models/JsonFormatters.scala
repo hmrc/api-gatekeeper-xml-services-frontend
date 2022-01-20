@@ -21,10 +21,14 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{AddCollaboratorR
 
 object JsonFormatters {
   implicit val formatOrganisationId = Json.valueFormat[OrganisationId]
+  implicit val formatOrganisationName = Json.valueFormat[OrganisationName]
   implicit val formatVendorId = Json.valueFormat[VendorId]
   implicit val formatCollaborator = Json.format[Collaborator]
   implicit val formatOrganisation = Json.format[Organisation]
   implicit val formatCreateOrganisationRequest = Json.format[CreateOrganisationRequest]
   implicit val formatAddCollaboratorRequest = Json.format[AddCollaboratorRequest]
   implicit val formatRemoveCollaboratorRequest = Json.format[RemoveCollaboratorRequest]
+
+  implicit val formatOrganisationWithNameAndVendorId = Json.format[OrganisationWithNameAndVendorId]
+  implicit val formatBulkFindAndCreateOrUpdateRequest = Json.format[BulkFindAndCreateOrUpdateRequest]
 }

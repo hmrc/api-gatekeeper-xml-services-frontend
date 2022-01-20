@@ -21,7 +21,7 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.csvupload.CsvUploadController
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.services.CsvUploadService
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.services.CsvService
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ErrorTemplate
@@ -41,7 +41,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
     private lazy val errorTemplate = app.injector.instanceOf[ErrorTemplate]
     private lazy val organisationCsvUploadView = app.injector.instanceOf[OrganisationCsvUploadView]
 
-    val mockCsvUploadService = mock[CsvUploadService]
+    val mockCsvService = mock[CsvService]
 
     val controller = new CsvUploadController(
       mcc,
@@ -49,7 +49,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
       errorTemplate,
       mockAuthConnector,
       forbiddenView,
-      mockCsvUploadService
+      mockCsvService
     )
 
     val validCsvPayloadWithOneRow = """VENDORID,NAME
@@ -88,7 +88,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
       val result = controller.uploadOrganisationsCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> ""))
       status(result) shouldBe BAD_REQUEST
 
-      verifyZeroInteractions(mockCsvUploadService)
+      verifyZeroInteractions(mockCsvService)
     }
 
     "return forbidden view when not authorised" in new Setup {
@@ -96,21 +96,21 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
       val result = controller.uploadOrganisationsCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> validCsvPayloadWithOneRow))
 
       status(result) shouldBe Status.SEE_OTHER
-      verifyZeroInteractions(mockCsvUploadService)
+      verifyZeroInteractions(mockCsvService)
     }
 
     "successfully parse the organisations then go back to organisation page" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-      when(mockCsvUploadService.mapToOrganisationFromCsv(*)).thenReturn(organisations)
+      when(mockCsvService.mapToOrganisationFromCsv(*)).thenReturn(organisations)
 
       validatePageIsRendered(controller.uploadOrganisationsCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> validCsvPayloadWithTwoRows)))
-      verify(mockCsvUploadService).mapToOrganisationFromCsv(*)
+      verify(mockCsvService).mapToOrganisationFromCsv(*)
     }
 
     "display internal server error when failure result returned from CsvUploadService" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       val exceptionMessage = "Parse Exception"
-      when(mockCsvUploadService.mapToOrganisationFromCsv((*))).thenThrow(new RuntimeException(exceptionMessage))
+      when(mockCsvService.mapToOrganisationFromCsv((*))).thenThrow(new RuntimeException(exceptionMessage))
 
       val result = controller.uploadOrganisationsCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> validCsvPayloadWithTwoRows))
       status(result) shouldBe INTERNAL_SERVER_ERROR
@@ -119,7 +119,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
       document.getElementById("page-heading").text() shouldBe "Internal Server Error"
       document.getElementById("page-body").text() shouldBe exceptionMessage
 
-      verify(mockCsvUploadService).mapToOrganisationFromCsv(*)
+      verify(mockCsvService).mapToOrganisationFromCsv(*)
     }
   }
 }

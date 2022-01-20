@@ -20,9 +20,9 @@ import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.HmrcSpec
 
-class CsvUploadServiceSpec extends HmrcSpec with BeforeAndAfterEach {
+class CsvServiceSpec extends HmrcSpec with BeforeAndAfterEach {
 
-  val csvUploadService = new CsvUploadService()
+  val csvService = new CsvService()
 
   "mapToOrganisationFromCsv" should {
 
@@ -32,7 +32,7 @@ class CsvUploadServiceSpec extends HmrcSpec with BeforeAndAfterEach {
       val csvTestData = s"""VENDORID,NAME
     $vendorId,$organisationName"""
 
-      val result: Seq[Organisation] = csvUploadService.mapToOrganisationFromCsv(csvTestData)
+      val result: Seq[Organisation] = csvService.mapToOrganisationFromCsv(csvTestData)
       val actualOrganisation = result.head
 
       actualOrganisation.name shouldBe organisationName
@@ -43,7 +43,7 @@ class CsvUploadServiceSpec extends HmrcSpec with BeforeAndAfterEach {
       val csvTestData = s"""VENDORID,NAME
     testOrganisationName"""
 
-      val exception = intercept[RuntimeException] { csvUploadService.mapToOrganisationFromCsv(csvTestData) }
+      val exception = intercept[RuntimeException] { csvService.mapToOrganisationFromCsv(csvTestData) }
       exception.getMessage() shouldBe "Expected 2 values on row 1"
     }
 
@@ -51,7 +51,7 @@ class CsvUploadServiceSpec extends HmrcSpec with BeforeAndAfterEach {
       val csvTestData = s"""VENDORID,NAME
     ,testOrganisationName"""
 
-      val exception = intercept[NumberFormatException] { csvUploadService.mapToOrganisationFromCsv(csvTestData) }
+      val exception = intercept[NumberFormatException] { csvService.mapToOrganisationFromCsv(csvTestData) }
       exception.getMessage() shouldBe "For input string: \"\""
     }
 
@@ -59,7 +59,7 @@ class CsvUploadServiceSpec extends HmrcSpec with BeforeAndAfterEach {
       val csvTestData = s"""VENDORID,NAME
     11.01,testOrganisationName"""
 
-      val exception = intercept[NumberFormatException] { csvUploadService.mapToOrganisationFromCsv(csvTestData) }
+      val exception = intercept[NumberFormatException] { csvService.mapToOrganisationFromCsv(csvTestData) }
       exception.getMessage() shouldBe "For input string: \"11.01\""
     }
 
@@ -67,7 +67,7 @@ class CsvUploadServiceSpec extends HmrcSpec with BeforeAndAfterEach {
       val csvTestData = s"""VENDORID,NAME
     1011"""
 
-      val exception = intercept[RuntimeException] { csvUploadService.mapToOrganisationFromCsv(csvTestData) }
+      val exception = intercept[RuntimeException] { csvService.mapToOrganisationFromCsv(csvTestData) }
       exception.getMessage() shouldBe "Expected 2 values on row 1"
     }
 
@@ -75,7 +75,7 @@ class CsvUploadServiceSpec extends HmrcSpec with BeforeAndAfterEach {
       val csvTestData = s"""VENDORID,NAME
     1011,"""
 
-      val exception = intercept[RuntimeException] { csvUploadService.mapToOrganisationFromCsv(csvTestData) }
+      val exception = intercept[RuntimeException] { csvService.mapToOrganisationFromCsv(csvTestData) }
       exception.getMessage() shouldBe "Organisation name cannot be empty"
     }
 
@@ -84,7 +84,7 @@ class CsvUploadServiceSpec extends HmrcSpec with BeforeAndAfterEach {
       val csvTestData = """INVALID_FIRST_HEADER,INVALID_SECOND_HEADER
     SomeInvalidData,SomeInvalidData"""
 
-      val exception = intercept[IllegalArgumentException] { csvUploadService.mapToOrganisationFromCsv(csvTestData) }
+      val exception = intercept[IllegalArgumentException] { csvService.mapToOrganisationFromCsv(csvTestData) }
       exception.getMessage() shouldBe "Mapping for VENDORID not found, expected one of [INVALID_FIRST_HEADER, INVALID_SECOND_HEADER]"
     }
 
@@ -92,7 +92,7 @@ class CsvUploadServiceSpec extends HmrcSpec with BeforeAndAfterEach {
 
       val csvTestData = """VENDORID"""
 
-      val exception = intercept[RuntimeException] { csvUploadService.mapToOrganisationFromCsv(csvTestData) }
+      val exception = intercept[RuntimeException] { csvService.mapToOrganisationFromCsv(csvTestData) }
       exception.getMessage() shouldBe "No record(s) found"
     }
   }

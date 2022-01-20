@@ -24,9 +24,9 @@ import play.api.mvc.MessagesControllerComponents
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.AuthConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.GatekeeperRole
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.CsvData
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.services.CsvUploadService
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.services.CsvService
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ErrorTemplate
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
@@ -37,6 +37,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 
 @Singleton
 class CsvUploadController @Inject() (
@@ -45,7 +46,8 @@ class CsvUploadController @Inject() (
     errorTemplate: ErrorTemplate,
     override val authConnector: AuthConnector,
     val forbiddenView: ForbiddenView,
-    val csvUploadService: CsvUploadService
+    val csvService: CsvService,
+    val xmlServicesConnector: XmlServicesConnector
   )(implicit val ec: ExecutionContext,
     appConfig: AppConfig)
     extends FrontendController(mcc)
@@ -66,10 +68,13 @@ class CsvUploadController @Inject() (
         },
         csvData => {
           try {
-            val organisations: Seq[Organisation] = csvUploadService.mapToOrganisationFromCsv(csvData.csv)
+            val organisations: Seq[OrganisationWithNameAndVendorId] = csvService.mapToOrganisationFromCsv(csvData.csv)
 
             logger.info(s"Number of Organisations successfully parsed: ${organisations.size}")
-
+            logger.info(s"About to persist Organisations, check api-platform-xml-services logs for progress")
+            
+            xmlServicesConnector.bulkFindAndCreateOrUpdate(organisations)
+            
             Future.successful(Ok(organisationCsvUploadView(csvDataForm)))
           } catch {
             case exception: Throwable => Future.successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", exception.getMessage)))
