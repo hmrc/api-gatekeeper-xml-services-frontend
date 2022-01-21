@@ -19,6 +19,7 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.services
 import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.HmrcSpec
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationWithNameAndVendorId
 
 class CsvServiceSpec extends HmrcSpec with BeforeAndAfterEach {
 
@@ -32,7 +33,7 @@ class CsvServiceSpec extends HmrcSpec with BeforeAndAfterEach {
       val csvTestData = s"""VENDORID,NAME
     $vendorId,$organisationName"""
 
-      val result: Seq[Organisation] = csvService.mapToOrganisationFromCsv(csvTestData)
+      val result: Seq[OrganisationWithNameAndVendorId] = csvService.mapToOrganisationFromCsv(csvTestData)
       val actualOrganisation = result.head
 
       actualOrganisation.name shouldBe organisationName

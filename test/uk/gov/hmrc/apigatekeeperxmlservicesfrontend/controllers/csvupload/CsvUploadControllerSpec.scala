@@ -31,6 +31,11 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.Organis
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import org.jsoup.Jsoup
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationWithNameAndVendorId
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationName
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.VendorId
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.BulkFindAndCreateOrUpdateRequest
 
 class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
 
@@ -42,6 +47,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
     private lazy val organisationCsvUploadView = app.injector.instanceOf[OrganisationCsvUploadView]
 
     val mockCsvService = mock[CsvService]
+    val mockXmlServiceConnector = mock[XmlServicesConnector]
 
     val controller = new CsvUploadController(
       mcc,
@@ -49,7 +55,8 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
       errorTemplate,
       mockAuthConnector,
       forbiddenView,
-      mockCsvService
+      mockCsvService,
+      mockXmlServiceConnector
     )
 
     val validCsvPayloadWithOneRow = """VENDORID,NAME
@@ -59,6 +66,11 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
     1110,TestOrganisation101
     1111,TestOrganisation102"""
 
+    val organisationsWithNameAndVendorIds = Seq(
+      OrganisationWithNameAndVendorId(OrganisationName("Test Organsation One"), VendorId(101)),
+      OrganisationWithNameAndVendorId(OrganisationName("Test Organsation Two"), VendorId(102))
+    )
+    
     def validatePageIsRendered(result: Future[Result]) = {
       status(result) shouldBe Status.OK
       contentType(result) shouldBe Some("text/html")
@@ -101,7 +113,8 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
 
     "successfully parse the organisations then go back to organisation page" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-      when(mockCsvService.mapToOrganisationFromCsv(*)).thenReturn(organisations)
+      when(mockCsvService.mapToOrganisationFromCsv(*)).thenReturn(organisationsWithNameAndVendorIds)
+      when(mockXmlServiceConnector.bulkFindAndCreateOrUpdate(eqTo(organisationsWithNameAndVendorIds))).thenReturn(Future.successful(Right(())))
 
       validatePageIsRendered(controller.uploadOrganisationsCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> validCsvPayloadWithTwoRows)))
       verify(mockCsvService).mapToOrganisationFromCsv(*)

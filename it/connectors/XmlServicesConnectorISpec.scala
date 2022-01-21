@@ -29,6 +29,7 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
 import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse, UpstreamErrorResponse}
 
 import java.{util => ju}
+import uk.gov.hmrc.http.Upstream5xxResponse
 
 class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach {
 
@@ -60,11 +61,17 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     val organisation2 = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = VendorId(13), name = "Org name2")
 
     val collaboratorList = List(Collaborator("userId", "collaborator1@mail.com"))
+
     val organisationWithTeamMembers = Organisation(
       organisationId = OrganisationId(ju.UUID.randomUUID()),
       vendorId = VendorId(14),
       name = "Org name3",
       collaborators = collaboratorList
+    )
+
+    val organisationsWithNameAndVendorIds = Seq(
+      OrganisationWithNameAndVendorId(OrganisationName("Test Organsation One"), VendorId(101)),
+      OrganisationWithNameAndVendorId(OrganisationName("Test Organsation Two"), VendorId(102))
     )
   }
 
@@ -168,14 +175,14 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
   "AddTeamMember" should {
     "return AddCollaboratorSuccessfulResult when add collaborator call is successful" in new Setup {
       val emailAddress = "email@email.com"
-      val updatedCollaboratorList =  collaboratorList ++ List(Collaborator(emailAddress, "someUserId"))
+      val updatedCollaboratorList = collaboratorList ++ List(Collaborator(emailAddress, "someUserId"))
 
       addTeamMemberReturnsResponse(
         organisationWithTeamMembers.organisationId,
         emailAddress,
-      OK,
-      organisationWithTeamMembers.copy(collaborators = updatedCollaboratorList))
-
+        OK,
+        organisationWithTeamMembers.copy(collaborators = updatedCollaboratorList)
+      )
 
       val result = await(objInTest.addTeamMember(organisationWithTeamMembers.organisationId, emailAddress))
 
@@ -184,19 +191,20 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
     "return AddCollaboratorFailureResult when add collaborator call is successful" in new Setup {
       val emailAddress = "email@email.com"
-      val expectedErrorMessage =   s"POST of 'http://localhost:$wireMockPort/api-platform-xml-services/organisations/" +
+      val expectedErrorMessage = s"POST of 'http://localhost:$wireMockPort/api-platform-xml-services/organisations/" +
         s"${organisationWithTeamMembers.organisationId.value.toString}/add-collaborator' returned 404. Response body: ''"
 
       addTeamMemberReturnsError(
         organisationWithTeamMembers.organisationId,
         emailAddress,
-        NOT_FOUND)
+        NOT_FOUND
+      )
 
       val result = await(objInTest.addTeamMember(organisationWithTeamMembers.organisationId, emailAddress))
 
       result match {
         case AddCollaboratorFailureResult(UpstreamErrorResponse(message, NOT_FOUND, _, _)) => message mustBe expectedErrorMessage
-        case _ => fail
+        case _                                                                             => fail
       }
     }
 
@@ -248,7 +256,28 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
         case RemoveCollaboratorFailureResult(e) => e.getMessage
         case _                                  => fail
       }
+    }
 
+    "bulkFindAndCreateOrUpdate" should {
+
+      "return Right when bulkFindAndCreateOrUpdate call is successful" in new Setup {
+        bulkFindAndCreateOrUpdateReturnsResponse(organisationsWithNameAndVendorIds, OK)
+
+        val result = await(objInTest.bulkFindAndCreateOrUpdate(organisationsWithNameAndVendorIds))
+
+        result mustBe Right(())
+      }
+
+      "return Left when bulkFindAndCreateOrUpdate call is successful" in new Setup {
+        bulkFindAndCreateOrUpdateReturnsResponse(organisationsWithNameAndVendorIds, INTERNAL_SERVER_ERROR)
+
+        val result = await(objInTest.bulkFindAndCreateOrUpdate(organisationsWithNameAndVendorIds))
+
+        result match {
+          case Left(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed
+          case _                                                           => fail
+        }
+      }
     }
   }
 }

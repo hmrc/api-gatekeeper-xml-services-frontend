@@ -27,6 +27,7 @@ trait XmlServicesStub {
   val baseUrl = "/api-platform-xml-services"
 
   val organisationUrl = s"$baseUrl/organisations"
+  
   def  removeTeamMemberUrl(organisationId: OrganisationId) ={
     s"$organisationUrl/${organisationId.value.toString}/remove-collaborator"
   }
@@ -34,6 +35,7 @@ trait XmlServicesStub {
   def  addTeamMemberUrl(organisationId: OrganisationId) ={
     s"$organisationUrl/${organisationId.value.toString}/add-collaborator"
   }
+  
   def findOrganisationByParamsUrl(vendorId: Option[String], organisationName: Option[String]) =
     (vendorId, organisationName) match {
       case (Some(v), None)       => s"$baseUrl/organisations?vendorId=$v&sortBy=VENDOR_ID"
@@ -47,6 +49,10 @@ trait XmlServicesStub {
 
   def addCollaboratorRequestAsString(email: String): String = {
     Json.toJson(AddCollaboratorRequest(email)).toString
+  }
+
+  def bulkFindAndCreateOrUpdateRequestAsString(organisationsWithNameAndVendorIds: Seq[OrganisationWithNameAndVendorId]): String = {
+    Json.toJson(BulkFindAndCreateOrUpdateRequest(organisationsWithNameAndVendorIds)).toString
   }
 
   def removeCollaboratorRequestAsString(email: String, gateKeeperId: String): String = {
@@ -126,6 +132,7 @@ trait XmlServicesStub {
           .withBody(Json.toJson(response).toString)
       ))
   }
+
   def addTeamMemberReturnsError(organisationId: OrganisationId, email: String, status: Int) = {
 
     stubFor(post(urlEqualTo(addTeamMemberUrl(organisationId)))
@@ -135,7 +142,6 @@ trait XmlServicesStub {
           .withStatus(status)
       ))
   }
-
 
   def removeTeamMemberReturnsResponse(organisationId: OrganisationId, email: String, gatekeeperId: String, status: Int, response: Organisation) = {
 
@@ -152,6 +158,16 @@ trait XmlServicesStub {
 
     stubFor(post(urlEqualTo(removeTeamMemberUrl(organisationId)))
       .withRequestBody(equalToJson(removeCollaboratorRequestAsString(email, gatekeeperId)))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+      ))
+  }
+
+  def bulkFindAndCreateOrUpdateReturnsResponse(organisationsWithNameAndVendorIds: Seq[OrganisationWithNameAndVendorId], status: Int) = {
+
+    stubFor(post(urlEqualTo(s"$organisationUrl/bulk"))
+      .withRequestBody(equalToJson(bulkFindAndCreateOrUpdateRequestAsString(organisationsWithNameAndVendorIds)))
       .willReturn(
         aResponse()
           .withStatus(status)
