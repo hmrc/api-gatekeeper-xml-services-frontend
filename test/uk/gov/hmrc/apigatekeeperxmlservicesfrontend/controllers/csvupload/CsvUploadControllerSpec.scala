@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.csvupload
 
 import org.jsoup.Jsoup
 import play.api.http.Status
@@ -22,7 +22,7 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.csvupload.CsvUploadController
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.{ControllerBaseSpec, ControllerSetupBase}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationName
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationWithNameAndVendorId
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.VendorId
@@ -128,22 +128,26 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
       verifyZeroInteractions(mockXmlServiceConnector)
     }
 
-    "Go back to the organisation page when organisations are successfully parsed and the connector returns Right" in new Setup {
+    "Redirect to the organisation page when organisations are successfully parsed and the connector returns Right" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       when(mockXmlServiceConnector.bulkFindAndCreateOrUpdate(*)(*)).thenReturn(Future.successful(Right(())))
       when(mockCsvService.mapToOrganisationFromCsv(*)).thenReturn(organisationsWithNameAndVendorIds)
 
-      validatePageIsRendered(controller.uploadOrganisationsCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> validCsvPayloadWithTwoRows)))
+      val result = controller.uploadOrganisationsCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> validCsvPayloadWithTwoRows))
+      status(result) shouldBe SEE_OTHER
+
       verify(mockCsvService).mapToOrganisationFromCsv(*)
       verify(mockXmlServiceConnector).bulkFindAndCreateOrUpdate(*)(*)
     }
 
-    "Go back to the organisation page when organisations are successfully parsed and the connector returns Left" in new Setup {
+    "Show error page when organisations are successfully parsed but the connector returns Left" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       when(mockXmlServiceConnector.bulkFindAndCreateOrUpdate(*)(*)).thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, 1, Map.empty))))
       when(mockCsvService.mapToOrganisationFromCsv(*)).thenReturn(organisationsWithNameAndVendorIds)
 
-      validatePageIsRendered(controller.uploadOrganisationsCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> validCsvPayloadWithTwoRows)))
+      val result = controller.uploadOrganisationsCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> validCsvPayloadWithTwoRows))
+      status(result) shouldBe INTERNAL_SERVER_ERROR
+
       verify(mockCsvService).mapToOrganisationFromCsv(*)
       verify(mockXmlServiceConnector).bulkFindAndCreateOrUpdate(*)(*)
     }

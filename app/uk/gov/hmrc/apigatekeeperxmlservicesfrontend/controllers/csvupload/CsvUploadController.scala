@@ -38,6 +38,7 @@ import javax.inject.Singleton
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
+import uk.gov.hmrc.http.UpstreamErrorResponse
 
 @Singleton
 class CsvUploadController @Inject() (
@@ -73,9 +74,11 @@ class CsvUploadController @Inject() (
             logger.info(s"Number of Organisations successfully parsed: ${organisations.size}")
             logger.info(s"About to persist Organisations, check api-platform-xml-services logs for progress")
             
-            xmlServicesConnector.bulkFindAndCreateOrUpdate(organisations)
-            
-            Future.successful(Ok(organisationCsvUploadView(csvDataForm)))
+            xmlServicesConnector.bulkFindAndCreateOrUpdate(organisations).map {
+              case Right(_) => Redirect(routes.CsvUploadController.organisationPage())
+              case Left(e: UpstreamErrorResponse) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", e.getMessage))
+            }
+
           } catch {
             case exception: Throwable => Future.successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", exception.getMessage)))
           }

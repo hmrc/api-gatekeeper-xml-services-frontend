@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.csvupload
 
+import mocks.XmlServicesStub
 import org.jsoup.Jsoup
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.HeaderNames.CONTENT_TYPE
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.ws.WSClient
-import play.api.libs.ws.WSResponse
-import play.api.test.Helpers.FORBIDDEN
-import play.api.test.Helpers.NOT_FOUND
-import play.api.test.Helpers.OK
+import play.api.libs.ws.{WSClient, WSResponse}
+import play.api.test.Helpers.{FORBIDDEN, NOT_FOUND, OK, SEE_OTHER, INTERNAL_SERVER_ERROR}
 import support.AuthServiceStub
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{OrganisationName, OrganisationWithNameAndVendorId, VendorId}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
 
 class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with AuthServiceStub {
@@ -38,12 +37,17 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
         "auditing.enabled" -> false,
         "auditing.consumer.baseUri.host" -> wireMockHost,
         "auditing.consumer.baseUri.port" -> wireMockPort,
+        "microservice.services.api-platform-xml-services.host" -> wireMockHost,
+        "microservice.services.api-platform-xml-services.port" -> wireMockPort
       )
 
   val url = s"http://localhost:$port/api-gatekeeper-xml-services"
 
-  trait Setup {
+  trait Setup extends XmlServicesStub {
     val wsClient: WSClient = app.injector.instanceOf[WSClient]
+
+    val invalidCsvPayload = """,NAME
+    1110,TestOrganisation101"""
 
     val validCsvPayloadWithOneRow = """VENDORID,NAME
     1110,TestOrganisation101"""
@@ -51,6 +55,11 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
     val validCsvPayloadWithTwoRows = """VENDORID,NAME
     1110,TestOrganisation101
     1111,TestOrganisation102"""
+
+    val organisationsWithNameAndVendorIds = Seq(
+      OrganisationWithNameAndVendorId(OrganisationName("TestOrganisation101"), VendorId(1110)),
+      OrganisationWithNameAndVendorId(OrganisationName("TestOrganisation102"), VendorId(1111))
+    )
 
     def callGetEndpoint(url: String, headers: List[(String, String)] = List.empty): WSResponse =
       wsClient
@@ -68,8 +77,8 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
         .post(request)
         .futureValue
 
-    def validatePageIsRendered(result: WSResponse) = {
-      result.status mustBe OK
+    def validatePageIsRendered(result: WSResponse, status: Int) = {
+      result.status mustBe status
       val content = Jsoup.parse(result.body)
       content.getElementById("page-heading").text() mustBe "Upload organisations as CSV"
     }
@@ -102,16 +111,40 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
     "POST /csvupload/organisation-action" should {
 
-      "display organisation page when valid form provided" in new Setup {
+      "redirect to organisation page when valid form provided and connector returns 200" in new Setup {
+        primeAuthServiceSuccess()
+        bulkFindAndCreateOrUpdateReturnsResponse(organisationsWithNameAndVendorIds, OK)
+
+        val result = callPostEndpoint(
+          url = s"$url/csvupload/organisation-action",
+          List(CONTENT_TYPE -> "application/x-www-form-urlencoded"),
+          s"csv-data-input=${validCsvPayloadWithTwoRows};"
+        )
+        result.status mustBe SEE_OTHER
+      }
+
+      "show error page when valid form provided but connector returns error" in new Setup {
+        primeAuthServiceSuccess()
+        bulkFindAndCreateOrUpdateReturnsResponse(organisationsWithNameAndVendorIds, INTERNAL_SERVER_ERROR)
+
+        val result = callPostEndpoint(
+          url = s"$url/csvupload/organisation-action",
+          List(CONTENT_TYPE -> "application/x-www-form-urlencoded"),
+          s"csv-data-input=${validCsvPayloadWithTwoRows};"
+        )
+        result.status mustBe INTERNAL_SERVER_ERROR
+      }
+
+      "show error page when invalid form provided" in new Setup {
         primeAuthServiceSuccess()
 
         val result = callPostEndpoint(
           url = s"$url/csvupload/organisation-action",
           List(CONTENT_TYPE -> "application/x-www-form-urlencoded"),
-          s"csv=${validCsvPayloadWithOneRow};confirm=Yes;"
+          s"csv-data-input=${invalidCsvPayload};"
         )
 
-        validatePageIsRendered(result)
+        result.status mustBe INTERNAL_SERVER_ERROR
       }
     }
   }
