@@ -16,16 +16,15 @@
 
 package controllers.csvupload
 
-import mocks.XmlServicesStub
 import org.jsoup.Jsoup
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.HeaderNames.CONTENT_TYPE
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.{WSClient, WSResponse}
-import play.api.test.Helpers.{FORBIDDEN, NOT_FOUND, OK, SEE_OTHER, INTERNAL_SERVER_ERROR}
-import support.AuthServiceStub
+import play.api.test.Helpers.{FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SEE_OTHER}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{OrganisationName, OrganisationWithNameAndVendorId, VendorId}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{AuthServiceStub, ServerBaseISpec}
 
 class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with AuthServiceStub {
 

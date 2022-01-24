@@ -17,21 +17,27 @@
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models
 
 case class CreateOrganisationRequest(organisationName: String)
+case class UpdateOrganisationDetailsRequest(organisationName: String)
 
 case class OrganisationWithNameAndVendorId(name: OrganisationName, vendorId: VendorId)
 case class BulkFindAndCreateOrUpdateRequest(organisations: Seq[OrganisationWithNameAndVendorId])
 
 sealed trait CreateOrganisationResult
-case class CreateOrganisationSuccessResult(organisation: Organisation) extends CreateOrganisationResult
-case class CreateOrganisationFailureResult(error: Throwable) extends CreateOrganisationResult
+case class CreateOrganisationSuccess(organisation: Organisation) extends CreateOrganisationResult
+case class CreateOrganisationFailure(error: Throwable) extends CreateOrganisationResult
+
+sealed trait UpdateOrganisationDetailsResult
+case class UpdateOrganisationDetailsSuccess(organisation: Organisation) extends UpdateOrganisationDetailsResult
+case class UpdateOrganisationDetailsFailure(error: Throwable) extends UpdateOrganisationDetailsResult
+
 
 sealed trait AddCollaboratorResult
-case class AddCollaboratorSuccessResult(organisation: Organisation) extends AddCollaboratorResult
-case class AddCollaboratorFailureResult(error: Throwable) extends AddCollaboratorResult
+case class AddCollaboratorSuccess(organisation: Organisation) extends AddCollaboratorResult
+case class AddCollaboratorFailure(error: Throwable) extends AddCollaboratorResult
 
 sealed trait RemoveCollaboratorResult
-case class RemoveCollaboratorSuccessResult(organisation: Organisation) extends RemoveCollaboratorResult
-case class RemoveCollaboratorFailureResult(error: Throwable) extends RemoveCollaboratorResult
+case class RemoveCollaboratorSuccess(organisation: Organisation) extends RemoveCollaboratorResult
+case class RemoveCollaboratorFailure(error: Throwable) extends RemoveCollaboratorResult
 
 sealed trait ParseOrganisationCsvFailureResult
 case class InvalidNumberOfColumnsInCsvResult(error: Throwable) extends ParseOrganisationCsvFailureResult

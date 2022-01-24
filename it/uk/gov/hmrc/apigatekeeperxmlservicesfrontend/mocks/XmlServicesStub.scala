@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package mocks
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
@@ -27,7 +27,11 @@ trait XmlServicesStub {
   val baseUrl = "/api-platform-xml-services"
 
   val organisationUrl = s"$baseUrl/organisations"
-  
+
+  def  updateOrganistionDetailsUrl(organisationId: OrganisationId) ={
+    s"$organisationUrl/${organisationId.value.toString}"
+  }
+
   def  removeTeamMemberUrl(organisationId: OrganisationId) ={
     s"$organisationUrl/${organisationId.value.toString}/remove-collaborator"
   }
@@ -35,7 +39,7 @@ trait XmlServicesStub {
   def  addTeamMemberUrl(organisationId: OrganisationId) ={
     s"$organisationUrl/${organisationId.value.toString}/add-collaborator"
   }
-  
+
   def findOrganisationByParamsUrl(vendorId: Option[String], organisationName: Option[String]) =
     (vendorId, organisationName) match {
       case (Some(v), None)       => s"$baseUrl/organisations?vendorId=$v&sortBy=VENDOR_ID"
@@ -45,6 +49,10 @@ trait XmlServicesStub {
 
   def createOrganisationRequestAsString(organisationName: String): String = {
     Json.toJson(CreateOrganisationRequest(organisationName)).toString
+  }
+
+  def updateOrganisationDetailsRequestAsString(organisationName: String): String = {
+    Json.toJson(UpdateOrganisationDetailsRequest(organisationName)).toString
   }
 
   def addCollaboratorRequestAsString(email: String): String = {
@@ -116,6 +124,26 @@ trait XmlServicesStub {
 
     stubFor(post(urlEqualTo(organisationUrl))
       .withRequestBody(equalToJson(createOrganisationRequestAsString(organisationName)))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+      ))
+  }
+
+  def updateOrganisationDetailsReturnsResponse(organisationName: String, organisationId: OrganisationId,  status: Int, response: Organisation) = {
+
+    stubFor(post(urlEqualTo(updateOrganistionDetailsUrl(organisationId)))
+      .withRequestBody(equalToJson(updateOrganisationDetailsRequestAsString(organisationName)))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withBody(Json.toJson(response).toString)
+      ))
+  }
+
+  def updateOrganisationDetailsReturnsError(organisationName: String, organisationId: OrganisationId, status: Int) = {
+    stubFor(post(urlEqualTo(updateOrganistionDetailsUrl(organisationId)))
+      .withRequestBody(equalToJson(updateOrganisationDetailsRequestAsString(organisationName)))
       .willReturn(
         aResponse()
           .withStatus(status)

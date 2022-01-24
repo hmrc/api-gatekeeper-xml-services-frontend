@@ -139,7 +139,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       val emailAddress = "a@b.com"
 
       when(mockXmlServiceConnector.addTeamMember(eqTo(organisationId1), eqTo(emailAddress))(*[HeaderCarrier]))
-        .thenReturn(Future.successful(AddCollaboratorSuccessResult(org1)))
+        .thenReturn(Future.successful(AddCollaboratorSuccess(org1)))
 
       val result = controller.addTeamMemberAction(organisationId1)(fakeRequest
         .withCSRFToken.withFormUrlEncodedBody("emailAddress" -> emailAddress))
@@ -157,7 +157,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       val emailAddress = "a@b.com"
 
       when(mockXmlServiceConnector.addTeamMember(eqTo(organisationId1), eqTo(emailAddress))(*[HeaderCarrier]))
-        .thenReturn(Future.successful(AddCollaboratorFailureResult(UpstreamErrorResponse("", NOT_FOUND, NOT_FOUND))))
+        .thenReturn(Future.successful(AddCollaboratorFailure(UpstreamErrorResponse("", NOT_FOUND, NOT_FOUND))))
 
       val result = controller.addTeamMemberAction(organisationId1)(fakeRequest
         .withCSRFToken.withFormUrlEncodedBody("emailAddress" -> emailAddress))
@@ -271,7 +271,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
 
       when(mockXmlServiceConnector.removeTeamMember(eqTo(organisationWithCollaborators.organisationId), *, *)(*))
-        .thenReturn(Future.successful(RemoveCollaboratorSuccessResult(organisationWithCollaborators)))
+        .thenReturn(Future.successful(RemoveCollaboratorSuccess(organisationWithCollaborators)))
 
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
@@ -347,7 +347,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
 
       when(mockXmlServiceConnector.removeTeamMember(*[OrganisationId], *, *)(*))
-        .thenReturn(Future.successful(RemoveCollaboratorFailureResult(new RuntimeException("some error"))))
+        .thenReturn(Future.successful(RemoveCollaboratorFailure(new RuntimeException("some error"))))
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
         fakeRequest.withCSRFToken.withFormUrlEncodedBody("email" -> organisationWithCollaborators.name, "confirm" -> "Yes")

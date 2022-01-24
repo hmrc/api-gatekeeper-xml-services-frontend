@@ -25,11 +25,11 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.{OrganisationAddView, OrganisationDetailsView, OrganisationSearchView}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
-import uk.gov.hmrc.http.UpstreamErrorResponse
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -37,7 +37,7 @@ import scala.concurrent.Future
 
 class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
 
-  trait Setup extends ControllerSetupBase with OrganisationTestData {
+  trait Setup extends ControllerSetupBase with OrganisationTestData with ViewSpecHelpers {
     val fakeRequest = FakeRequest("GET", "/organisations")
     val organisationSearchRequest = FakeRequest("GET", "/organisations-search")
     private lazy val forbiddenView = app.injector.instanceOf[ForbiddenView]
@@ -45,6 +45,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     private lazy val organisationSearchView = app.injector.instanceOf[OrganisationSearchView]
     private lazy val organisationDetailsView = app.injector.instanceOf[OrganisationDetailsView]
     private lazy val organisationAddView = app.injector.instanceOf[OrganisationAddView]
+    private lazy val organisationUpdateView = app.injector.instanceOf[OrganisationUpdateView]
 
     val mockXmlServiceConnector = mock[XmlServicesConnector]
 
@@ -53,6 +54,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       organisationSearchView,
       organisationDetailsView,
       organisationAddView,
+      organisationUpdateView,
       mockAuthConnector,
       forbiddenView,
       errorTemplate,
@@ -80,7 +82,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
   }
 
-  "GET /organisations-search" should {
+  "GET /organisations/search" should {
 
     "return 200 and render search page when vendor-id search type and valid vendor id" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
@@ -223,7 +225,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(*))
         .thenReturn(Future.successful(Right(org1)))
 
-      val result = controller.manageOrganisation(org1.organisationId)(fakeRequest)
+      val result = controller.viewOrganisationPage(org1.organisationId)(fakeRequest)
       status(result) shouldBe Status.OK
       val document = Jsoup.parse(contentAsString(result))
       validatePageRender(document, org1)
@@ -235,7 +237,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(*))
         .thenReturn(Future.successful(Right(org1)))
 
-      val result = controller.manageOrganisation(org1.organisationId)(fakeRequest)
+      val result = controller.viewOrganisationPage(org1.organisationId)(fakeRequest)
       status(result) shouldBe Status.OK
 
       val document = Jsoup.parse(contentAsString(result))
@@ -248,7 +250,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(*))
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
 
-      val result = controller.manageOrganisation(org1.organisationId)(fakeRequest)
+      val result = controller.viewOrganisationPage(org1.organisationId)(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
@@ -262,7 +264,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
 
     "return forbidden view" in new Setup {
       givenAUnsuccessfulLogin()
-      val result = controller.manageOrganisation(org1.organisationId)(fakeRequest)
+      val result = controller.viewOrganisationPage(org1.organisationId)(fakeRequest)
       status(result) shouldBe Status.SEE_OTHER
     }
   }
@@ -272,6 +274,9 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       val result = controller.organisationsAddPage()(fakeRequest.withCSRFToken)
       status(result) shouldBe OK
+      val document = Jsoup.parse(contentAsString(result))
+      validateAddOrganisationDetailsPage(document)
+      validateFormErrors(document, None)
     }
 
     "return forbidden view when not authorised" in new Setup {
@@ -284,21 +289,34 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
   "organisationsAddAction" should {
     "display organisation details page when create successful result returned from connector" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-      when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name))(*)).thenReturn(Future.successful(CreateOrganisationSuccessResult(org1)))
+      when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name))(*)).thenReturn(Future.successful(CreateOrganisationSuccess(org1)))
 
-      val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationname" -> org1.name))
+      val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> org1.name))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).getOrElse("") shouldBe s"/api-gatekeeper-xml-services/organisations/${org1.organisationId.value}"
 
       verify(mockXmlServiceConnector).addOrganisation(eqTo(org1.name))(*)
     }
 
+    "not allow spaces as organisation name" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+      val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> "  "))
+
+      status(result) shouldBe BAD_REQUEST
+      val document = Jsoup.parse(contentAsString(result))
+      validateAddOrganisationDetailsPage(document)
+      validateFormErrors(document, Some("Enter an organisation name"))
+      verifyZeroInteractions(mockXmlServiceConnector)
+    }
+
+
     "display internal server error when failure result returned from connector" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name))(*))
-        .thenReturn(Future.successful(CreateOrganisationFailureResult(UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
+        .thenReturn(Future.successful(CreateOrganisationFailure(UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
 
-      val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationname" -> org1.name))
+      val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> org1.name))
       status(result) shouldBe INTERNAL_SERVER_ERROR
 
       verify(mockXmlServiceConnector).addOrganisation(eqTo(org1.name))(*)
@@ -307,19 +325,115 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     "display add page with error messages when invalid form provided" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
-      val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationname" -> ""))
+      val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> ""))
+
       status(result) shouldBe BAD_REQUEST
+      val document = Jsoup.parse(contentAsString(result))
+      validateAddOrganisationDetailsPage(document)
+      validateFormErrors(document, Some("Enter an organisation name"))
 
       verifyZeroInteractions(mockXmlServiceConnector)
     }
 
     "return forbidden view when not authorised" in new Setup {
       givenAUnsuccessfulLogin()
-      val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationname" -> org1.name))
+      val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> org1.name))
 
       status(result) shouldBe Status.SEE_OTHER
 
     }
   }
+
+
+  "updateOrganisationsDetailsPage" should {
+    "display updateOrganisationsDetails page when authorised and organisation exists" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*[HeaderCarrier]))
+        .thenReturn(Future.successful(Right(org1)))
+
+      val result = controller.updateOrganisationsDetailsPage(organisationId1)(fakeRequest.withCSRFToken)
+      status(result) shouldBe OK
+      val document = Jsoup.parse(contentAsString(result))
+      validateUpdateOrganisationDetailsPage(document)
+      validateFormErrors(document, None)
+
+    }
+
+    "display internal server error page when authorised and but organisation does not exist" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*[HeaderCarrier]))
+        .thenReturn(Future.successful(Left(UpstreamErrorResponse("", NOT_FOUND, NOT_FOUND))))
+
+      val result = controller.updateOrganisationsDetailsPage(organisationId1)(fakeRequest.withCSRFToken)
+      status(result) shouldBe INTERNAL_SERVER_ERROR
+    }
+
+    "return forbidden view when not authorised" in new Setup {
+      givenAUnsuccessfulLogin()
+      val result = controller.updateOrganisationsDetailsPage(organisationId1)(fakeRequest.withCSRFToken)
+      status(result) shouldBe Status.SEE_OTHER
+    }
+
+    "updateOrganisationsDetailsAction" should {
+      "display organisation details page when create successful result returned from connector" in new Setup {
+        givenTheGKUserIsAuthorisedAndIsANormalUser()
+        when(mockXmlServiceConnector.updateOrganisationDetails(eqTo(organisationId1),
+          eqTo(org1.name))(*)).thenReturn(Future.successful(UpdateOrganisationDetailsSuccess(org1)))
+
+        val result = controller.updateOrganisationsDetailsAction(organisationId1)(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> org1.name))
+
+        status(result) shouldBe SEE_OTHER
+        redirectLocation(result).getOrElse("") shouldBe s"/api-gatekeeper-xml-services/organisations/${org1.organisationId.value}"
+
+        verify(mockXmlServiceConnector).updateOrganisationDetails(eqTo(organisationId1),
+          eqTo(org1.name))(*)
+      }
+
+      "display internal server error when failure result returned from connector" in new Setup {
+        givenTheGKUserIsAuthorisedAndIsANormalUser()
+        when(mockXmlServiceConnector.updateOrganisationDetails(eqTo(organisationId1), eqTo(org1.name))(*))
+          .thenReturn(Future.successful(UpdateOrganisationDetailsFailure(UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
+
+        val result = controller.updateOrganisationsDetailsAction(organisationId1)(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> org1.name))
+        status(result) shouldBe INTERNAL_SERVER_ERROR
+
+        verify(mockXmlServiceConnector).updateOrganisationDetails(eqTo(organisationId1),
+          eqTo(org1.name))(*)
+      }
+
+      "display update page with error messages when invalid form provided" in new Setup {
+        givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+        val result = controller.updateOrganisationsDetailsAction(organisationId1)(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> ""))
+        status(result) shouldBe BAD_REQUEST
+        val document = Jsoup.parse(contentAsString(result))
+        validateUpdateOrganisationDetailsPage(document)
+        validateFormErrors(document, Some("Enter an organisation name"))
+        verifyZeroInteractions(mockXmlServiceConnector)
+      }
+
+      "not allow spaces in form" in new Setup {
+        givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+        val result = controller.updateOrganisationsDetailsAction(organisationId1)(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> "  "))
+
+        status(result) shouldBe BAD_REQUEST
+        val document = Jsoup.parse(contentAsString(result))
+        validateUpdateOrganisationDetailsPage(document)
+        validateFormErrors(document, Some("Enter an organisation name"))
+        verifyZeroInteractions(mockXmlServiceConnector)
+      }
+
+      "return forbidden view when not authorised" in new Setup {
+        givenAUnsuccessfulLogin()
+        val result = controller.updateOrganisationsDetailsAction(organisationId1)(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> org1.name))
+
+        status(result) shouldBe Status.SEE_OTHER
+
+      }
+    }
+  }
+
+
 
 }
