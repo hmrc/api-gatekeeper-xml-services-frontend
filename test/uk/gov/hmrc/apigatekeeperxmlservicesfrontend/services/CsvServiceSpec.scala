@@ -51,8 +51,8 @@ class CsvServiceSpec extends HmrcSpec with BeforeAndAfterEach {
       val csvTestData = s"""VENDORID,NAME
     ,testOrganisationName"""
 
-      val exception = intercept[NumberFormatException] { csvService.mapToOrganisationFromCsv(csvTestData) }
-      exception.getMessage() shouldBe "For input string: \"\""
+      val exception = intercept[RuntimeException] { csvService.mapToOrganisationFromCsv(csvTestData) }
+      exception.getMessage() shouldBe "VendorId cannot be empty on row 1"
     }
 
     "throw an exception when payload has decimal vendorId value" in {
@@ -60,7 +60,7 @@ class CsvServiceSpec extends HmrcSpec with BeforeAndAfterEach {
     11.01,testOrganisationName"""
 
       val exception = intercept[NumberFormatException] { csvService.mapToOrganisationFromCsv(csvTestData) }
-      exception.getMessage() shouldBe "For input string: \"11.01\""
+      exception.getMessage() shouldBe "Invalid VendorId value on row 1"
     }
 
     "throw an exception when payload is missing organisation name value" in {
@@ -76,7 +76,7 @@ class CsvServiceSpec extends HmrcSpec with BeforeAndAfterEach {
     1011,"""
 
       val exception = intercept[RuntimeException] { csvService.mapToOrganisationFromCsv(csvTestData) }
-      exception.getMessage() shouldBe "Organisation name cannot be empty"
+      exception.getMessage() shouldBe "Organisation name cannot be empty on row 1"
     }
 
     "throw an exception when payload contains invalid column header(s)" in {

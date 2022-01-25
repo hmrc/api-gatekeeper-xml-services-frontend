@@ -34,7 +34,7 @@ class CsvService @Inject() () extends Logging {
 
     val records = org.apache.commons.csv.CSVFormat.EXCEL
       .withFirstRecordAsHeader()
-      .parse(reader).getRecords.asScala
+      .parse(reader).getRecords.asScala.toList
 
     if (records.size == 0) throw new RuntimeException("No record(s) found")
 
@@ -47,15 +47,20 @@ class CsvService @Inject() () extends Logging {
 
     def parseString(s: String): String = {
       Option(s) match {
-        case Some(s: String) if s.nonEmpty => s.trim()
-        case _                             => throw new RuntimeException(s"Organisation name cannot be empty")
+        case Some(s: String) if s.trim.nonEmpty => s.trim()
+        case _                             => throw new RuntimeException(s"Organisation name cannot be empty on row ${record.getRecordNumber}")
       }
     }
 
     def parseLong(s: String): Long = {
       Option(s) match {
-        case Some(s: String) if s.nonEmpty => s.trim().toLong
-        case _                             => throw new NumberFormatException(s"Invalid VendorId value")
+        case Some(s: String) if s.trim.nonEmpty => 
+          try{
+             s.trim().toLong
+          }catch{
+            case e: NumberFormatException =>  throw new NumberFormatException(s"Invalid VendorId value on row ${record.getRecordNumber}")
+          }
+        case _                             => throw new RuntimeException(s"VendorId cannot be empty on row ${record.getRecordNumber}")
       }
     }
 
