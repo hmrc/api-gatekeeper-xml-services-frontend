@@ -66,7 +66,7 @@ class OrganisationController @Inject()(
         formWithErrors => successful(BadRequest(organisationAddView(formWithErrors))),
         organisationAddData => {
           xmlServicesConnector
-            .addOrganisation(organisationAddData.organisationName)
+            .addOrganisation(organisationAddData.organisationName, organisationAddData.emailAddress)
             .map {
               case CreateOrganisationSuccess(x: Organisation) =>
                 Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(x.organisationId))

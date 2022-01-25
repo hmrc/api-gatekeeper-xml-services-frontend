@@ -52,8 +52,8 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
     handleResult(http.GET[Organisation](url = s"$baseUrl/organisations/${organisationId.value}"))
   }
 
-  def addOrganisation(organisationName: String)(implicit hc: HeaderCarrier): Future[CreateOrganisationResult] = {
-    val createOrganisationRequest: CreateOrganisationRequest = CreateOrganisationRequest(organisationName)
+  def addOrganisation(organisationName: String, email: String)(implicit hc: HeaderCarrier): Future[CreateOrganisationResult] = {
+    val createOrganisationRequest: CreateOrganisationRequest = CreateOrganisationRequest(organisationName, email)
 
     http.POST[CreateOrganisationRequest, Either[UpstreamErrorResponse, Organisation]](
       url = s"$baseUrl/organisations",

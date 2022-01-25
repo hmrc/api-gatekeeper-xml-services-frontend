@@ -31,9 +31,11 @@ trait ViewSpecHelpers extends Matchers {
     if (expectedError.isDefined) {
       Option(document.getElementById("error-summary-display")).isDefined shouldBe true
       document.getElementById("error-summary-title").text() shouldBe "There is a problem"
-      document.getElementById("error-list").children().eachText().contains(expectedError.getOrElse("")) shouldBe true
+      withClue(s"Expected Error ${expectedError.getOrElse("")} is not displayed") {
+       document.getElementById("error-list").children().eachText().contains(expectedError.getOrElse("")) shouldBe true
+      }
       formGroupElement.head.classNames().contains("govuk-form-group--error") shouldBe true
-    }else{
+    } else {
       Option(document.getElementById("error-summary-display")).isDefined shouldBe false
       Option(document.getElementById("error-summary-title")).isDefined shouldBe false
       Option(document.getElementById("error-list")).isDefined shouldBe false
@@ -41,13 +43,26 @@ trait ViewSpecHelpers extends Matchers {
 
   }
 
-  def validateAddOrganisationDetailsPage(document: Document) ={
+  def validateAddOrganisationPage(document: Document) = {
+
+    document.getElementById("page-heading").text() shouldBe "Add organisation"
     document.getElementById("organisation-name-label").text() shouldBe "Organisation name"
     Option(document.getElementById("organisationName")).isDefined shouldBe true
+
+    Option(document.getElementById("team-member-legend")).isDefined shouldBe true
+    document.getElementById("team-member-legend").text() shouldBe "Team member"
+
+    Option(document.getElementById("team-member-hint")).isDefined shouldBe true
+    document.getElementById("team-member-hint").text shouldBe "Organisations need at least 1 team member. You can add more team members later."
+
+    document.getElementById("email-label").text() shouldBe "Email address"
+    Option(document.getElementById("emailAddress")).isDefined shouldBe true
+
     Option(document.getElementById("continue-button")).isDefined shouldBe true
   }
 
-  def validateUpdateOrganisationDetailsPage(document: Document) ={
+
+  def validateUpdateOrganisationDetailsPage(document: Document) = {
     document.getElementById("organisation-name-label").text() shouldBe "Change organisation name"
     Option(document.getElementById("organisationName")).isDefined shouldBe true
     Option(document.getElementById("continue-button")).isDefined shouldBe true
@@ -73,7 +88,9 @@ trait ViewSpecHelpers extends Matchers {
 
     if (organisation.collaborators.nonEmpty) {
       document.getElementById("team-members-email-0").text() shouldBe organisation.collaborators.head.email
-      document.getElementById("remove-team-member-link-0").attr("href") shouldBe s"/api-gatekeeper-xml-services/organisations/${organisation.organisationId.value}/team-members/userId1/remove"
+      document.getElementById("remove-team-member-link-0").attr(
+        "href"
+      ) shouldBe s"/api-gatekeeper-xml-services/organisations/${organisation.organisationId.value}/team-members/userId1/remove"
     }
 
   }

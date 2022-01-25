@@ -3,6 +3,7 @@ service.text = This is your new service
 
 
 organisationname.error.required = Enter an organisation name
+emailAddress.error.required = Enter an email address
 
 teammember.add.email.error.required = Enter an email address
 teammember.remove.email.error.required = Invalid Email provided

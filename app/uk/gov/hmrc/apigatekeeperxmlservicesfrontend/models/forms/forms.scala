@@ -22,16 +22,14 @@ import play.api.data.Forms.{nonEmptyText, _}
 
 object Forms {
 
-
-
-
-  case class AddOrganisationForm(organisationName: String)
+  case class AddOrganisationForm(organisationName: String, emailAddress: String)
 
   object AddOrganisationForm {
 
     val form = Form(
       mapping( //organisation-name-input
-        "organisationName" -> nonEmptyText.verifying("organisationname.error.required", x => x.trim.nonEmpty)
+        "organisationName" -> nonEmptyText.verifying(error = "organisationname.error.required", x => x.trim.nonEmpty),
+         "emailAddress" -> nonEmptyText.verifying(error = "emailAddress.error.required", x => x.trim.nonEmpty)
       )(AddOrganisationForm.apply)(AddOrganisationForm.unapply)
     )
 
