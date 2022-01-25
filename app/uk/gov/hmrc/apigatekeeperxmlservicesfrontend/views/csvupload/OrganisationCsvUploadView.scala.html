@@ -1,0 +1,49 @@
+@*
+ * Copyright 2022 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.CsvData
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.FieldError
+
+@this(layout: Layout)
+
+
+@(form: Form[CsvData])(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = Some("Upload organisations as CSV - HMRC API Gatekeeper")) {
+    <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset" aria-describedby="search-by-hint">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                <h1 id="page-heading" class="govuk-fieldset__heading">
+                    Upload organisations as CSV
+                </h1>
+            </legend>
+        </fieldset>
+    </div>
+
+    @helper.form(action = uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.csvupload.routes.CsvUploadController.uploadOrganisationsCsvAction()) {
+        @helper.CSRF.formField
+        <div class="govuk-form-group">
+            <label class="govuk-label" id="csv-data-input-label" for="csv-data-input">Provide CSV input here please</label>
+
+            @FieldError(form.errors, "csv-data-input")
+            <textarea class="govuk-textarea" id="csv-data-input" name="csv-data-input" rows="10"></textarea>
+            <button id="upload-csv-button" class="govuk-button" data-module="govuk-button" type="submit">
+                Upload
+            </button>
+        </div>
+    }
+}

@@ -17,8 +17,10 @@
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models
 
 case class CreateOrganisationRequest(organisationName: String)
-
 case class UpdateOrganisationDetailsRequest(organisationName: String)
+
+case class OrganisationWithNameAndVendorId(name: OrganisationName, vendorId: VendorId)
+case class BulkFindAndCreateOrUpdateRequest(organisations: Seq[OrganisationWithNameAndVendorId])
 
 sealed trait CreateOrganisationResult
 case class CreateOrganisationSuccess(organisation: Organisation) extends CreateOrganisationResult
@@ -36,3 +38,7 @@ case class AddCollaboratorFailure(error: Throwable) extends AddCollaboratorResul
 sealed trait RemoveCollaboratorResult
 case class RemoveCollaboratorSuccess(organisation: Organisation) extends RemoveCollaboratorResult
 case class RemoveCollaboratorFailure(error: Throwable) extends RemoveCollaboratorResult
+
+sealed trait ParseOrganisationCsvFailureResult
+case class InvalidNumberOfColumnsInCsvResult(error: Throwable) extends ParseOrganisationCsvFailureResult
+case class OrganisationCsvParseFailurerResult(error: Throwable) extends ParseOrganisationCsvFailureResult

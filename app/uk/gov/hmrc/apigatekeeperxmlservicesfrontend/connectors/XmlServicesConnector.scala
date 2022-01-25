@@ -26,20 +26,21 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, UpstreamErrorResponse}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
+import play.api.mvc.Result
+import uk.gov.hmrc.http.HttpResponse
 
 @Singleton
-class XmlServicesConnector @Inject()(val http: HttpClient, val config: Config)(implicit ec: ExecutionContext) extends Logging {
+class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(implicit ec: ExecutionContext) extends Logging {
 
   val baseUrl: String = s"${config.serviceBaseUrl}/api-platform-xml-services"
 
-  def findOrganisationsByParams(vendorId: Option[VendorId], organisationName: Option[String])
-                               (implicit hc: HeaderCarrier): Future[Either[Throwable, List[Organisation]]] = {
+  def findOrganisationsByParams(vendorId: Option[VendorId], organisationName: Option[String])(implicit hc: HeaderCarrier): Future[Either[Throwable, List[Organisation]]] = {
     val vendorIdParams = vendorId.map(v => Seq("vendorId" -> v.value.toString)).getOrElse(Seq.empty)
     val orgNameParams = organisationName.map(o => Seq("organisationName" -> o)).getOrElse(Seq.empty)
     val sortByParams = (vendorId, organisationName) match {
       case (Some(_), None) => Seq("sortBy" -> "VENDOR_ID")
       case (None, Some(_)) => Seq("sortBy" -> "ORGANISATION_NAME")
-      case _ => Seq.empty
+      case _               => Seq.empty
     }
 
     val params = vendorIdParams ++ orgNameParams ++ sortByParams
@@ -89,6 +90,11 @@ class XmlServicesConnector @Inject()(val http: HttpClient, val config: Config)(i
 
   }
 
+  def bulkFindAndCreateOrUpdate(organisations: Seq[OrganisationWithNameAndVendorId])(implicit hc: HeaderCarrier) = {
+    http.POST[BulkFindAndCreateOrUpdateRequest, Either[UpstreamErrorResponse, Unit]](
+      url = s"$baseUrl/organisations/bulk", BulkFindAndCreateOrUpdateRequest(organisations)
+    )
+  }
 
   def removeTeamMember(organisationId: OrganisationId, email: String, gateKeeperUserId: String)(implicit hc: HeaderCarrier) = {
     http.POST[RemoveCollaboratorRequest, Either[UpstreamErrorResponse, Organisation]](

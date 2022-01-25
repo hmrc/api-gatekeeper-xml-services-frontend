@@ -72,4 +72,15 @@ object Forms {
       )(RemoveTeamMemberConfirmationForm.apply)(RemoveTeamMemberConfirmationForm.unapply)
     )
   }
+
+  case class CsvData(csv: String)
+
+  object CsvData {
+
+    val form = Form(
+      mapping(
+        "csv-data-input" -> text.verifying("csvdata.error.required", _.nonEmpty)
+      )(CsvData.apply)(CsvData.unapply)
+    )
+  }
 }

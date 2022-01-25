@@ -6,3 +6,5 @@ organisationname.error.required = Enter an organisation name
 
 teammember.add.email.error.required = Enter an email address
 teammember.remove.email.error.required = Invalid Email provided
+
+csvdata.error.required = Enter CSV data

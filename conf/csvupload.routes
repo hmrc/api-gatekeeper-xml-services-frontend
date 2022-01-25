@@ -1,0 +1,5 @@
+# microservice specific routes
+
+GET     /organisation-page      uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.csvupload.CsvUploadController.organisationPage
+POST    /organisation-action    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.csvupload.CsvUploadController.uploadOrganisationsCsvAction
+
