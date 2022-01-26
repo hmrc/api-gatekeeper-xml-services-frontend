@@ -17,7 +17,6 @@
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms
 
 import play.api.data.Form
-import play.api.data._
 import play.api.data.Forms.{nonEmptyText, _}
 
 object Forms {
@@ -25,17 +24,9 @@ object Forms {
   case class AddOrganisationForm(organisationName: String, emailAddress: String)
 
   object AddOrganisationForm {
-// val nonEmptyText: Mapping[String] = text.verifying(Constraints.nonEmpty)
-
-  // def nonEmpty(errorMessage: String = "error.required"): Constraint[String] =
-  //   Constraint[String]("constraint.required") { o =>
-  //     if (o == null) Invalid(ValidationError(errorMessage))
-  //     else if (o.trim.isEmpty) Invalid(ValidationError(errorMessage))
-  //     else Valid
-  //   }
   
     val form = Form(
-      mapping( //organisation-name-input
+      mapping(
         "organisationName" -> text.verifying(error = "organisationname.error.required", x => x.trim.nonEmpty),
          "emailAddress" -> text.verifying(error = "emailAddress.error.required", x => x.trim.nonEmpty)
       )(AddOrganisationForm.apply)(AddOrganisationForm.unapply)
@@ -48,8 +39,8 @@ object Forms {
   object UpdateOrganisationDetailsForm {
 
     val form = Form(
-      mapping( //organisation-name-input
-        "organisationName" ->  nonEmptyText.verifying("organisationname.error.required", x => x.trim.nonEmpty)
+      mapping(
+        "organisationName" ->  text.verifying("organisationname.error.required", x => x.trim.nonEmpty)
       )(UpdateOrganisationDetailsForm.apply)(UpdateOrganisationDetailsForm.unapply)
     )
 

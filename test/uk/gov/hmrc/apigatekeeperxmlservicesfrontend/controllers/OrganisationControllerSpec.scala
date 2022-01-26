@@ -302,11 +302,9 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> "  ", "emailAddress" -> "  "))
 
       status(result) shouldBe BAD_REQUEST
+
       val document = Jsoup.parse(contentAsString(result))
       validateAddOrganisationPage(document)
-      //TODO - this error should not be displayed.. this is a bug and needs fixing. it is the default play error
-      // for NonemptyText constraint
-      validateFormErrors(document, Some("This field is required"))
       validateFormErrors(document, Some("Enter an organisation name"))
       validateFormErrors(document, Some("Enter an email address"))
       verifyZeroInteractions(mockXmlServiceConnector)
@@ -332,9 +330,6 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
 
       val document = Jsoup.parse(contentAsString(result))
       validateAddOrganisationPage(document)
-      //TODO - this error should not be displayed.. this is a bug and needs fixing. it is the default play error
-      // for NonemptyText constraint
-      validateFormErrors(document, Some("This field is required"))
       validateFormErrors(document, Some("Enter an organisation name"))
       validateFormErrors(document, Some("Enter an email address"))
       verifyZeroInteractions(mockXmlServiceConnector)
