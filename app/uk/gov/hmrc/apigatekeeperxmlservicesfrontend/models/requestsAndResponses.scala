@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models
 
-case class CreateOrganisationRequest(organisationName: String)
+case class CreateOrganisationRequest(organisationName: String, email: String)
 case class UpdateOrganisationDetailsRequest(organisationName: String)
 
 case class OrganisationWithNameAndVendorId(name: OrganisationName, vendorId: VendorId)

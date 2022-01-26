@@ -47,8 +47,8 @@ trait XmlServicesStub {
       case _                     => s"$baseUrl/organisations"
     }
 
-  def createOrganisationRequestAsString(organisationName: String): String = {
-    Json.toJson(CreateOrganisationRequest(organisationName)).toString
+  def createOrganisationRequestAsString(organisationName: String, email: String): String = {
+    Json.toJson(CreateOrganisationRequest(organisationName, email)).toString
   }
 
   def updateOrganisationDetailsRequestAsString(organisationName: String): String = {
@@ -109,10 +109,10 @@ trait XmlServicesStub {
       ))
   }
 
-  def addOrganisationReturnsResponse(organisationName: String, status: Int, response: Organisation) = {
+  def addOrganisationReturnsResponse(organisationName: String, email: String, status: Int, response: Organisation) = {
 
     stubFor(post(urlEqualTo(organisationUrl))
-      .withRequestBody(equalToJson(createOrganisationRequestAsString(organisationName)))
+      .withRequestBody(equalToJson(createOrganisationRequestAsString(organisationName, email)))
       .willReturn(
         aResponse()
           .withStatus(status)
@@ -120,10 +120,10 @@ trait XmlServicesStub {
       ))
   }
 
-  def addOrganisationReturnsError(organisationName: String, status: Int) = {
+  def addOrganisationReturnsError(organisationName: String, email: String, status: Int) = {
 
     stubFor(post(urlEqualTo(organisationUrl))
-      .withRequestBody(equalToJson(createOrganisationRequestAsString(organisationName)))
+      .withRequestBody(equalToJson(createOrganisationRequestAsString(organisationName, email)))
       .willReturn(
         aResponse()
           .withStatus(status)
