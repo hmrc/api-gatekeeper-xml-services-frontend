@@ -29,14 +29,35 @@ import play.api.Logging
 @Singleton
 class CsvService @Inject() () extends Logging {
 
+  object OrganisationHeader extends Enumeration {
+    type OrganisationHeader = Value
+
+    val VENDORID, NAME = Value
+  }
+
   def mapToOrganisationFromCsv(csvData: String): Seq[OrganisationWithNameAndVendorId] = {
     val reader = new InputStreamReader(IOUtils.toInputStream(csvData, StandardCharsets.UTF_8))
 
-    val records = org.apache.commons.csv.CSVFormat.EXCEL
-      .withFirstRecordAsHeader()
-      .parse(reader).getRecords.asScala.toList
+    def validateHeader(header: List[String]) = {
+      if (!header.contains(s"${OrganisationHeader.VENDORID}") || !header.contains(s"${OrganisationHeader.NAME}")) {
+        throw new IllegalArgumentException(s"Invalid Header - expected ${OrganisationHeader.VENDORID},${OrganisationHeader.NAME}")
+      }
+    }
 
-    if (records.size == 0) throw new RuntimeException("No record(s) found")
+    def validateRecords(records: List[CSVRecord]) = {
+      if (records.size == 0) throw new RuntimeException("No record(s) found")
+    }
+
+    val csvFormat = org.apache.commons.csv.CSVFormat.EXCEL
+      .withHeader(s"${OrganisationHeader.VENDORID}", s"${OrganisationHeader.NAME}")
+      .withFirstRecordAsHeader()
+      .parse(reader)
+
+    validateHeader(csvFormat.getHeaderNames.asScala.toList)
+
+    val records = csvFormat.getRecords.asScala.toList
+
+    validateRecords(records)
 
     records.map(parseOrganisation)
   }
@@ -54,7 +75,7 @@ class CsvService @Inject() () extends Logging {
 
     def parseLong(s: String): Long = {
       Option(s) match {
-        case Some(s: String) if s.trim.nonEmpty => 
+        case Some(s: String) if s.trim.nonEmpty =>
           try{
              s.trim().toLong
           }catch{
@@ -65,8 +86,10 @@ class CsvService @Inject() () extends Logging {
     }
 
     OrganisationWithNameAndVendorId(
-      vendorId = VendorId(parseLong(record.get("VENDORID"))),
-      name = OrganisationName(parseString(record.get("NAME")))
+      vendorId = VendorId(parseLong(record.get(s"${OrganisationHeader.VENDORID}"))),
+      name = OrganisationName(parseString(record.get(s"${OrganisationHeader.NAME}")))
     )
+
+
   }
 }
