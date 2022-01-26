@@ -85,7 +85,7 @@ class CsvServiceSpec extends HmrcSpec with BeforeAndAfterEach {
     SomeInvalidData,SomeInvalidData"""
 
       val exception = intercept[IllegalArgumentException] { csvService.mapToOrganisationFromCsv(csvTestData) }
-      exception.getMessage() shouldBe "Mapping for VENDORID not found, expected one of [INVALID_FIRST_HEADER, INVALID_SECOND_HEADER]"
+      exception.getMessage() shouldBe "Invalid Header - expected VENDORID,NAME"
     }
 
     "throw an exception when payload is missing a column header" in {
@@ -93,7 +93,15 @@ class CsvServiceSpec extends HmrcSpec with BeforeAndAfterEach {
       val csvTestData = """VENDORID"""
 
       val exception = intercept[RuntimeException] { csvService.mapToOrganisationFromCsv(csvTestData) }
-      exception.getMessage() shouldBe "No record(s) found"
+      exception.getMessage() shouldBe "Invalid Header - expected VENDORID,NAME"
+    }
+
+    "throw an exception when no payload" in {
+
+      val csvTestData = """"""
+
+      val exception = intercept[RuntimeException] { csvService.mapToOrganisationFromCsv(csvTestData) }
+      exception.getMessage() shouldBe "Invalid Header - expected VENDORID,NAME"
     }
   }
 }
