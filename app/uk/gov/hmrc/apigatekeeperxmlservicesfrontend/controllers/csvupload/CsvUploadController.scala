@@ -30,7 +30,7 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.services.CsvService
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ErrorTemplate
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.OrganisationCsvUploadView
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.{OrganisationCsvUploadView, UsersCsvUploadView}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.Inject
@@ -44,6 +44,7 @@ import uk.gov.hmrc.http.UpstreamErrorResponse
 class CsvUploadController @Inject() (
     mcc: MessagesControllerComponents,
     organisationCsvUploadView: OrganisationCsvUploadView,
+        usersCsvUploadView: UsersCsvUploadView,
     errorTemplate: ErrorTemplate,
     override val authConnector: AuthConnector,
     val forbiddenView: ForbiddenView,
@@ -59,6 +60,16 @@ class CsvUploadController @Inject() (
 
   def organisationPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request => Future.successful(Ok(organisationCsvUploadView(csvDataForm)))
+  }  
+  
+  def usersPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+    implicit request => Future.successful(Ok(usersCsvUploadView(csvDataForm)))
+  }
+
+  def uploadUsersCsvAction(): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+    implicit request =>
+      Future.successful(Ok("hello"))
+
   }
 
   def uploadOrganisationsCsvAction(): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
