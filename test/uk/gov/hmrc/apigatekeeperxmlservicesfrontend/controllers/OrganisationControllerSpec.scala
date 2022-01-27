@@ -45,6 +45,8 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     private lazy val organisationDetailsView = app.injector.instanceOf[OrganisationDetailsView]
     private lazy val organisationAddView = app.injector.instanceOf[OrganisationAddView]
     private lazy val organisationUpdateView = app.injector.instanceOf[OrganisationUpdateView]
+    private lazy val organisationRemoveView = app.injector.instanceOf[OrganisationRemoveView]
+    private lazy val organisationRemoveSuccessView = app.injector.instanceOf[OrganisationRemoveSuccessView]
 
     val mockXmlServiceConnector = mock[XmlServicesConnector]
 
@@ -54,6 +56,8 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       organisationDetailsView,
       organisationAddView,
       organisationUpdateView,
+      organisationRemoveView,
+      organisationRemoveSuccessView,
       mockAuthConnector,
       forbiddenView,
       errorTemplate,
@@ -427,6 +431,22 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
         status(result) shouldBe Status.SEE_OTHER
 
       }
+    }
+  }
+
+  "removeOrganisationAction" should {
+    "returns removeOrganisationPage with errors when form is invalid" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*[HeaderCarrier]))
+        .thenReturn(Future.successful(Right(org1)))
+
+      val result = controller.removeOrganisationAction(organisationId1)(fakeRequest.withCSRFToken)
+      status(result) shouldBe BAD_REQUEST
+      
+      val document = Jsoup.parse(contentAsString(result))
+      validateRemoveOrganisationPage(document, org1.name)
+
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(org1.organisationId))(*)
     }
   }
 

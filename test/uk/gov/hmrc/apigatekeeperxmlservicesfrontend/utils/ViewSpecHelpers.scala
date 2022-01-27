@@ -68,6 +68,20 @@ trait ViewSpecHelpers extends Matchers {
     Option(document.getElementById("continue-button")).isDefined shouldBe true
   }
 
+  def validateRemoveOrganisationPage(document: Document, organisationName: String) = {
+    document.getElementById("page-heading").text() shouldBe s"Are you sure you want to remove $organisationName?"
+    Option(document.getElementById("yes")).isDefined shouldBe true
+    Option(document.getElementById("no")).isDefined shouldBe true
+    Option(document.getElementById("continue-button")).isDefined shouldBe true
+  }
+
+  def validateRemoveOrganisationSuccessPage(document: Document, organisationName: String) = {
+    Option(document.getElementById("panel-heading")).isDefined shouldBe true
+    document.getElementById("panel-heading").text() shouldBe s"You removed $organisationName"
+    Option(document.getElementById("back-to-xml-link")).isDefined shouldBe true
+    document.getElementById("back-to-xml-link").text() shouldBe "Back to XML organisations"
+  }
+
   def validateAddTeamMemberPage(document: Document) = {
     document.getElementById("page-heading").text() shouldBe "Add a team member"
     document.getElementById("email-address-label").text() shouldBe "Email address"

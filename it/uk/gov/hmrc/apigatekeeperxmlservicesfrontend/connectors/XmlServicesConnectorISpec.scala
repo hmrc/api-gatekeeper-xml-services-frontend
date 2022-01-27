@@ -194,6 +194,26 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     }
   }
 
+  "removeOrganisation" should {
+    "return true when backend returns NO CONTENT" in new Setup {
+      removeOrganisationStub(organisation.organisationId, NO_CONTENT)
+
+      val result = await(objInTest.removeOrganisation(organisation.organisationId))
+
+      result mustBe true
+
+    }
+
+    "return false when backend returns NOT FOUND" in new Setup {
+      removeOrganisationStub(organisation.organisationId, NOT_FOUND)
+
+      val result = await(objInTest.removeOrganisation(organisation.organisationId))
+
+      result mustBe false
+
+    }
+  }
+
 
   "AddTeamMember" should {
     "return AddCollaboratorSuccessfulResult when add collaborator call is successful" in new Setup {
