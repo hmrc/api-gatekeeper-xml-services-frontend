@@ -128,23 +128,27 @@ class OrganisationController @Inject() (
     implicit request =>
 
       def handleRemoveOrganisation(organisation: Organisation) ={
-            Ok(organisationRemoveSuccessView(organisation))
+        xmlServicesConnector.removeOrganisation(organisation.organisationId).map{
+          case true => Ok(organisationRemoveSuccessView(organisation))
+          case false => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+        }
+            
       }
 
-      def handleValidForm(form: RemoveOrganisationConfirmationForm, organisation: Organisation): Result = {
+      def handleValidForm(form: RemoveOrganisationConfirmationForm, organisation: Organisation): Future[Result] = {
         form.confirm match {
           case Some("Yes") => handleRemoveOrganisation(organisation)
-          case _           => Redirect(routes.OrganisationController.viewOrganisationPage(organisationId).url)
+          case _           => Future.successful(Redirect(routes.OrganisationController.viewOrganisationPage(organisationId).url))
         }
       }
 
-      def handleInvalidForm(formWithErrors: Form[RemoveOrganisationConfirmationForm], organisation: Organisation) =
-        BadRequest(organisationRemoveView(formWithErrors, organisation))
+      def handleInvalidForm(formWithErrors: Form[RemoveOrganisationConfirmationForm], organisation: Organisation): Future[Result] =
+       Future.successful( BadRequest(organisationRemoveView(formWithErrors, organisation)))
 
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
-        .map {
+        .flatMap {
           case Right(org: Organisation) => removeOrganisationConfirmationForm.bindFromRequest.fold(handleInvalidForm(_, org), handleValidForm(_, org))
-          case Left(_)                  => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+          case Left(_)                  => Future.successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error")))
         }
 
   }

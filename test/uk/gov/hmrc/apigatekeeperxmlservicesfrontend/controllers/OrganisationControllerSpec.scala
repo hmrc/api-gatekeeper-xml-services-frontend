@@ -434,4 +434,20 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
   }
 
+  "removeOrganisationAction" should {
+    "returns removeOrganisationPage with errors when form is invalid" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*[HeaderCarrier]))
+        .thenReturn(Future.successful(Right(org1)))
+
+      val result = controller.removeOrganisationAction(organisationId1)(fakeRequest.withCSRFToken)
+      status(result) shouldBe BAD_REQUEST
+      
+      val document = Jsoup.parse(contentAsString(result))
+      validateRemoveOrganisationPage(document, org1.name)
+
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(org1.organisationId))(*)
+    }
+  }
+
 }

@@ -150,6 +150,16 @@ trait XmlServicesStub {
       ))
   }
 
+    def removeOrganisationStub(organisationId: OrganisationId,  status: Int) = {
+
+    stubFor(delete(urlEqualTo(updateOrganistionDetailsUrl(organisationId)))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+         
+      ))
+  }
+
   def addTeamMemberReturnsResponse(organisationId: OrganisationId, email: String, status: Int, response: Organisation) = {
 
     stubFor(post(urlEqualTo(addTeamMemberUrl(organisationId)))

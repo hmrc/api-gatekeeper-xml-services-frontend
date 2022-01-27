@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
-
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.scalatest.BeforeAndAfterEach
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.http.HeaderNames.CONTENT_TYPE
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
-import play.api.test.Helpers.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, OK}
+import play.api.test.Helpers.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, NO_CONTENT, OK, SEE_OTHER}
 import play.filters.csrf.CSRF.TokenProvider
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.XmlServicesStub
@@ -57,6 +57,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
     val organisation = Organisation(organisationId, vendorId = vendorId, name = "Org name")
 
     val collaborator = Collaborator("userId", "collaborator1@mail.com")
+
     val organisationWithTeamMembers = Organisation(
       organisationId = organisationId,
       vendorId = VendorId(14),
@@ -171,7 +172,6 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         result.status mustBe BAD_REQUEST
       }
 
-
       "respond with 200 and render organisation search page when both searchType and searchText query parameters are empty" in new Setup {
         primeAuthServiceSuccess()
 
@@ -240,7 +240,6 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
     }
 
-
     "GET  /:organisationId/update" should {
       "return 200 and organisationDetails EditPage when auth is successful and organisationId exists" in new Setup {
         primeAuthServiceSuccess()
@@ -268,7 +267,6 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
       }
 
-
       "return 403 when not authorised" in new Setup {
         primeAuthServiceFail()
 
@@ -278,5 +276,81 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       }
     }
 
+    "GET /:organisationId/remove" should {
+      "return the removeOrganisationView when organisationId exists" in new Setup {
+        primeAuthServiceSuccess()
+        getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
+
+        val result = callGetEndpoint(s"$url/organisations/${organisationId.value.toString}/remove")
+
+        result.status mustBe OK
+      }
+
+      "return the error page when organisationId does not exist" in new Setup {
+        primeAuthServiceSuccess()
+        getOrganisationByOrganisationIdReturnsError(organisationId, NOT_FOUND)
+
+        val result = callGetEndpoint(s"$url/organisations/${organisationId.value.toString}/remove")
+
+        result.status mustBe INTERNAL_SERVER_ERROR
+      }
+
+      "return 403 when not authorised" in new Setup {
+        primeAuthServiceFail()
+
+        val result = callGetEndpoint(s"$url/organisations/${organisationId.value.toString}/remove")
+        result.status mustBe FORBIDDEN
+      }
+    }
+
+    "POST /:organisationId/remove" should {
+      "return OK when organisation exists, confirm is YES and remove call is successful" in new Setup {
+        primeAuthServiceSuccess()
+        getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
+        removeOrganisationStub(organisation.organisationId, NO_CONTENT)
+
+        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", List(CONTENT_TYPE -> "application/x-www-form-urlencoded"), s"confirm=Yes;")
+
+        result.status mustBe OK
+      }
+
+      "return INTERNAL SERVER ERROR when organisation exists, confirm is YES and remove call fails" in new Setup {
+        primeAuthServiceSuccess()
+        getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
+        removeOrganisationStub(organisation.organisationId, NOT_FOUND)
+
+        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", List(CONTENT_TYPE -> "application/x-www-form-urlencoded"), s"confirm=Yes;")
+
+        result.status mustBe INTERNAL_SERVER_ERROR
+      }
+
+      "return SEE_OTHER when organisation exists and confirm is No" in new Setup {
+        primeAuthServiceSuccess()
+        getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
+
+        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", List(CONTENT_TYPE -> "application/x-www-form-urlencoded"), s"confirm=No;")
+
+        result.status mustBe SEE_OTHER
+      }
+
+      "return INTERNALSERVER ERROR when organisation does not exists" in new Setup {
+        primeAuthServiceSuccess()
+        getOrganisationByOrganisationIdReturnsError(organisationId, NOT_FOUND)
+
+        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", List(CONTENT_TYPE -> "application/x-www-form-urlencoded"), s"confirm=Yes;")
+
+        result.status mustBe INTERNAL_SERVER_ERROR
+      }
+
+      "return FORBIDDEN when auth fails" in new Setup {
+        primeAuthServiceFail()
+
+        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", List(CONTENT_TYPE -> "application/x-www-form-urlencoded"), s"confirm=Yes;")
+
+        result.status mustBe FORBIDDEN
+      }
+
+    }
   }
+
 }

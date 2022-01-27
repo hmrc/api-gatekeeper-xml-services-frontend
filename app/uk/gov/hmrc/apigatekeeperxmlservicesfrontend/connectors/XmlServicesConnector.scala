@@ -22,10 +22,12 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, UpstreamErrorResponse}
+import play.api.http.Status.NO_CONTENT
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
+import uk.gov.hmrc.http.HttpResponse
 
 @Singleton
 class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(implicit ec: ExecutionContext) extends Logging {
@@ -75,6 +77,17 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
       case Left(err) => UpdateOrganisationDetailsFailure(err)
     }
 
+  }
+
+  def removeOrganisation(organisationId: OrganisationId)(implicit hc: HeaderCarrier): Future[Boolean] = {
+    http.DELETE[HttpResponse](
+      url = s"$baseUrl/organisations/${organisationId.value}")
+    .map(_.status == NO_CONTENT)
+    .recover {
+      case NonFatal(e) =>
+        logger.error(e.getMessage)
+        false
+    }
   }
 
   def addTeamMember(organisationId: OrganisationId, email: String)(implicit hc: HeaderCarrier) = {
