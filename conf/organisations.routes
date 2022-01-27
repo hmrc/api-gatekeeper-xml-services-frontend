@@ -14,6 +14,8 @@ GET         /:organisationId                                    uk.gov.hmrc.apig
 GET         /:organisationId/update                               uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.updateOrganisationsDetailsPage(organisationId: uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId)
 POST        /:organisationId/update                               uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.updateOrganisationsDetailsAction(organisationId: uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId)
 
+GET         /:organisationId/remove                               uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.removeOrganisationPage(organisationId: uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId)
+POST        /:organisationId/remove                               uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.removeOrganisationAction(organisationId: uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId)
 
 #Team member routes
 GET         /:organisationId/team-members                       uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.TeamMembersController.manageTeamMembers(organisationId: uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId)

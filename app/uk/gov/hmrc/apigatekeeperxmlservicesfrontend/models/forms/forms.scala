@@ -46,6 +46,16 @@ object Forms {
 
   }
 
+  final case class RemoveOrganisationConfirmationForm(confirm: Option[String] = Some(""))
+
+  object RemoveOrganisationConfirmationForm {
+    val form: Form[RemoveOrganisationConfirmationForm] = Form(
+      mapping(
+        "confirm" -> optional(text).verifying("organisation.error.confirmation.no.choice.field", _.isDefined)
+      )(RemoveOrganisationConfirmationForm.apply)(RemoveOrganisationConfirmationForm.unapply)
+    )
+  }
+
   case class AddTeamMemberForm(emailAddress: Option[String] = Some(""))
 
   object AddTeamMemberForm {

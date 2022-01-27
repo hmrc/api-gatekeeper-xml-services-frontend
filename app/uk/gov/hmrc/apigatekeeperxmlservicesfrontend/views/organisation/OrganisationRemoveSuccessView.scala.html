@@ -1,0 +1,41 @@
+@*
+ * Copyright 2022 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include._
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.RemoveOrganisationConfirmationForm
+
+@this(layout: Layout)
+
+
+@(organisation: Organisation)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+
+@layout(pageTitle = Some("Remove organisation success- HMRC API Gatekeeper")) {
+    <div class="govuk-panel govuk-panel--confirmation">
+
+        <h1 id="panel-heading" class="govuk-panel__body">
+          You removed<br><span class="govuk-!-font-weight-bold">@organisation.name</span>
+        </h1>
+      </div>
+
+      <p id="back-to-xml-link" class="govuk-body"><a href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsPage().url" class="govuk-link govuk-link--no-visited-state">
+        Back to XML organisations</a>
+      </p>
+    
+
+
+}

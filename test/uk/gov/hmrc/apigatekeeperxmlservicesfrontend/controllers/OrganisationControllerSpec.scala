@@ -45,6 +45,8 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     private lazy val organisationDetailsView = app.injector.instanceOf[OrganisationDetailsView]
     private lazy val organisationAddView = app.injector.instanceOf[OrganisationAddView]
     private lazy val organisationUpdateView = app.injector.instanceOf[OrganisationUpdateView]
+    private lazy val organisationRemoveView = app.injector.instanceOf[OrganisationRemoveView]
+    private lazy val organisationRemoveSuccessView = app.injector.instanceOf[OrganisationRemoveSuccessView]
 
     val mockXmlServiceConnector = mock[XmlServicesConnector]
 
@@ -54,6 +56,8 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       organisationDetailsView,
       organisationAddView,
       organisationUpdateView,
+      organisationRemoveView,
+      organisationRemoveSuccessView,
       mockAuthConnector,
       forbiddenView,
       errorTemplate,

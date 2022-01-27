@@ -8,4 +8,7 @@ emailAddress.error.required = Enter an email address
 teammember.add.email.error.required = Enter an email address
 teammember.remove.email.error.required = Invalid Email provided
 
+team.member.error.confirmation.no.choice.field = Please select an option
+organisation.error.confirmation.no.choice.field = Please select an option
+
 csvdata.error.required = Enter CSV data
