@@ -32,12 +32,13 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToke
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ErrorTemplate
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.{OrganisationCsvUploadView, UsersCsvUploadView}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.ViewSpecHelpers
 import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
+class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken with ViewSpecHelpers {
 
   trait Setup extends ControllerSetupBase with OrganisationTestData {
     val fakeRequest = FakeRequest("GET", "/organisation-page")
@@ -81,7 +82,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
     }
   }
 
-  "GET /organisations-page" should {
+  "organisationPage" should {
     "return 200" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       validatePageIsRendered(controller.organisationPage(fakeRequest.withCSRFToken))
@@ -152,6 +153,24 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
 
       verify(mockCsvService).mapToOrganisationFromCsv(*)
       verify(mockXmlServiceConnector).bulkFindAndCreateOrUpdate(*)(*)
+    }
+  }
+
+  "usersPage" should {
+    "return 200 and render the page" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+      val result = controller.usersPage()(fakeRequest.withCSRFToken)
+
+      status(result) shouldBe OK
+      val document = Jsoup.parse(contentAsString(result))
+      validateUsersCSVUploadPage(document)
+    }
+
+    "return forbidden view when not authorised" in new Setup {
+      givenAUnsuccessfulLogin()
+      val result = controller.usersPage()(fakeRequest.withCSRFToken)
+      status(result) shouldBe Status.SEE_OTHER
     }
   }
 }

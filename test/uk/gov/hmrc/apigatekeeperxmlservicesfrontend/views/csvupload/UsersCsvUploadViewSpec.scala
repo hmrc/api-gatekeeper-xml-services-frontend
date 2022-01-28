@@ -21,15 +21,16 @@ import org.jsoup.nodes.Document
 import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.OrganisationCsvUploadView
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.UsersCsvUploadView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.CsvData
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.ViewSpecHelpers
 
-class OrganisationCsvUploadViewSpec extends CommonViewSpec with WithCSRFAddToken {
+class UsersCsvUploadViewSpec extends CommonViewSpec with WithCSRFAddToken with ViewSpecHelpers {
 
   trait Setup {
     val mockAppConfig = mock[AppConfig]
-    val organisationCsvUploadView = app.injector.instanceOf[OrganisationCsvUploadView]
+    val usersCsvUploadView = app.injector.instanceOf[UsersCsvUploadView]
 
   }
 
@@ -43,30 +44,24 @@ class OrganisationCsvUploadViewSpec extends CommonViewSpec with WithCSRFAddToken
       Option(document.getElementById("data-field-error-csv-data-input")).isDefined shouldBe isError
     }
 
-    "render the organisation csv upload page correctly when no errors" in new Setup {
-      val page = organisationCsvUploadView.render(CsvData.form, FakeRequest().withCSRFToken, messagesProvider.messages)
+    "render the users csv upload page correctly when no errors" in new Setup {
+      val page = usersCsvUploadView.render(CsvData.form, FakeRequest().withCSRFToken, messagesProvider.messages)
       val document: Document = Jsoup.parse(page.body)
 
       validateFormErrors(document, false)
-
-      document.getElementById("page-heading").text() shouldBe "Upload organisations as CSV"
-      document.getElementById("csv-data-input-label").text() shouldBe "Provide CSV input here please"
-      Option(document.getElementById("csv-data-input")).isDefined shouldBe true
-      Option(document.getElementById("upload-csv-button")).isDefined shouldBe true
+      validateUsersCSVUploadPage(document)
+     
     }
 
-    "render the organisation csv upload page correctly when errors exist" in new Setup {
+    "render the users csv upload page correctly when errors exist" in new Setup {
 
-      val page = organisationCsvUploadView.render(CsvData.form.withError("csv-data-input", "csvdata.error.required"), 
+      val page = usersCsvUploadView.render(CsvData.form.withError("csv-data-input", "csvdata.error.required"), 
                                       FakeRequest().withCSRFToken, messagesProvider.messages)
       val document: Document = Jsoup.parse(page.body)
 
       validateFormErrors(document, true)
 
-      document.getElementById("page-heading").text() shouldBe "Upload organisations as CSV"
-      document.getElementById("csv-data-input-label").text() shouldBe "Provide CSV input here please"
-      Option(document.getElementById("csv-data-input")).isDefined shouldBe true
-      Option(document.getElementById("upload-csv-button")).isDefined shouldBe true
+      validateUsersCSVUploadPage(document)
     }
   }
 }
