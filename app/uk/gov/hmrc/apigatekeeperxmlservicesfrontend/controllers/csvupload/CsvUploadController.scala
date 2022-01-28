@@ -44,7 +44,7 @@ import uk.gov.hmrc.http.UpstreamErrorResponse
 class CsvUploadController @Inject() (
     mcc: MessagesControllerComponents,
     organisationCsvUploadView: OrganisationCsvUploadView,
-        usersCsvUploadView: UsersCsvUploadView,
+    usersCsvUploadView: UsersCsvUploadView,
     errorTemplate: ErrorTemplate,
     override val authConnector: AuthConnector,
     val forbiddenView: ForbiddenView,

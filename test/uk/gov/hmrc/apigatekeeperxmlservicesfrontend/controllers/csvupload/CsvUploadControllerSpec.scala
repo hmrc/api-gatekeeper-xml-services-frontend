@@ -31,7 +31,7 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ErrorTemplate
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.OrganisationCsvUploadView
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.{OrganisationCsvUploadView, UsersCsvUploadView}
 import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -45,6 +45,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
     private lazy val forbiddenView = app.injector.instanceOf[ForbiddenView]
     private lazy val errorTemplate = app.injector.instanceOf[ErrorTemplate]
     private lazy val organisationCsvUploadView = app.injector.instanceOf[OrganisationCsvUploadView]
+    private lazy val usersCsvUploadView = app.injector.instanceOf[UsersCsvUploadView]
 
     val mockCsvService = mock[CsvService]
     val mockXmlServiceConnector = mock[XmlServicesConnector]
@@ -52,6 +53,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
     val controller = new CsvUploadController(
       mcc,
       organisationCsvUploadView,
+      usersCsvUploadView,
       errorTemplate,
       mockAuthConnector,
       forbiddenView,

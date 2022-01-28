@@ -38,14 +38,14 @@ class CsvService @Inject() () extends Logging {
   def mapToOrganisationFromCsv(csvData: String): Seq[OrganisationWithNameAndVendorId] = {
     val reader = new InputStreamReader(IOUtils.toInputStream(csvData, StandardCharsets.UTF_8))
 
-    def validateHeader(header: List[String]) = {
+    def validateHeader(header: List[String]): Unit = {
       if (!header.contains(s"${OrganisationHeader.VENDORID}") || !header.contains(s"${OrganisationHeader.NAME}")) {
         throw new IllegalArgumentException(s"Invalid Header - expected ${OrganisationHeader.VENDORID},${OrganisationHeader.NAME}")
       }
     }
 
-    def validateRecords(records: List[CSVRecord]) = {
-      if (records.size == 0) throw new RuntimeException("No record(s) found")
+    def validateRecords(records: List[CSVRecord]): Unit = {
+      if (records.isEmpty) throw new RuntimeException("No record(s) found")
     }
 
     val csvFormat = org.apache.commons.csv.CSVFormat.EXCEL
@@ -66,30 +66,25 @@ class CsvService @Inject() () extends Logging {
     val expectedValues = 2
     if (record.size() < expectedValues) throw new RuntimeException(s"Expected $expectedValues values on row ${record.getRecordNumber}")
 
-    def parseString(s: String): String = {
-      Option(s) match {
-        case Some(s: String) if s.trim.nonEmpty => s.trim()
-        case _                             => throw new RuntimeException(s"Organisation name cannot be empty on row ${record.getRecordNumber}")
-      }
-    }
-
-    def parseLong(s: String): Long = {
-      Option(s) match {
-        case Some(s: String) if s.trim.nonEmpty =>
-          try{
-             s.trim().toLong
-          }catch{
-            case e: NumberFormatException =>  throw new NumberFormatException(s"Invalid VendorId value on row ${record.getRecordNumber}")
-          }
-        case _                             => throw new RuntimeException(s"VendorId cannot be empty on row ${record.getRecordNumber}")
-      }
-    }
-
     OrganisationWithNameAndVendorId(
-      vendorId = VendorId(parseLong(record.get(s"${OrganisationHeader.VENDORID}"))),
-      name = OrganisationName(parseString(record.get(s"${OrganisationHeader.NAME}")))
+      vendorId = VendorId(parseLongFromCsv(record, s"${OrganisationHeader.VENDORID}")),
+      name = OrganisationName(parseStringFromCsv( record, s"${OrganisationHeader.NAME}"))
     )
 
+  }
 
+  private def parseStringFromCsv(record: CSVRecord, columnKey: String): String = {
+    Option(record.get(columnKey)) match {
+      case Some(s: String) if s.trim.nonEmpty => s.trim()
+      case _                             => throw new RuntimeException(s"$columnKey cannot be empty on row ${record.getRecordNumber}")
+    }
+  }
+
+  private def parseLongFromCsv(record: CSVRecord, columnKey: String): Long = {
+   try {
+     parseStringFromCsv(record, columnKey).toLong
+    } catch {
+      case _: NumberFormatException =>  throw new NumberFormatException(s"Invalid $columnKey value on row ${record.getRecordNumber}")
+    }
   }
 }
