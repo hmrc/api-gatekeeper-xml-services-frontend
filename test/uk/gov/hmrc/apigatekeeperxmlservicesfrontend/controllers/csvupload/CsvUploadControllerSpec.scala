@@ -37,6 +37,7 @@ import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.ParsedUser
 
 class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken with ViewSpecHelpers {
 
@@ -73,6 +74,17 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
       OrganisationWithNameAndVendorId(OrganisationName("Test Organsation One"), VendorId(101)),
       OrganisationWithNameAndVendorId(OrganisationName("Test Organsation Two"), VendorId(102))
     )
+
+    val email = "a@b.com"
+    val firstName = "Joe"
+    val lastName = "Bloggs"
+    val servicesString = "service1;service2;"
+    val vendorIds = "20001;20002;"
+
+    val csvUsersTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+    $email, $firstName, $lastName, $servicesString, $vendorIds"""
+
+    val parsedUser = ParsedUser(email, firstName, lastName, servicesString, vendorIds) 
 
     def validatePageIsRendered(result: Future[Result]) = {
       status(result) shouldBe Status.OK
@@ -172,5 +184,37 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
       val result = controller.usersPage()(fakeRequest.withCSRFToken)
       status(result) shouldBe Status.SEE_OTHER
     }
+  }
+
+  "uploadUsersCsvAction" should {
+
+    "Redirect to the users page when users are successfully parsed" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      when(mockCsvService.mapToUsersFromCsv(*)).thenReturn(Seq(parsedUser))
+
+      val result = controller.uploadUsersCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> csvUsersTestData))
+      status(result) shouldBe SEE_OTHER
+
+      verify(mockCsvService).mapToUsersFromCsv(*)
+    }
+
+    "display users page with error messages when invalid form provided" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+      val result = controller.uploadUsersCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> ""))
+      status(result) shouldBe BAD_REQUEST
+
+      verifyZeroInteractions(mockCsvService)
+    }
+
+    "return forbidden view when not authorised" in new Setup {
+      givenAUnsuccessfulLogin()
+
+      val result = controller.uploadUsersCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> ""))
+      status(result) shouldBe Status.SEE_OTHER
+
+      verifyZeroInteractions(mockCsvService)
+    }
+
   }
 }

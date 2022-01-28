@@ -60,15 +60,32 @@ class CsvUploadController @Inject() (
 
   def organisationPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request => Future.successful(Ok(organisationCsvUploadView(csvDataForm)))
-  }  
-  
+  }
+
   def usersPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request => Future.successful(Ok(usersCsvUploadView(csvDataForm)))
   }
 
   def uploadUsersCsvAction(): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request =>
-      Future.successful(Ok("hello"))
+      csvDataForm.bindFromRequest.fold(
+        formWithErrors => {
+          Future.successful(BadRequest(usersCsvUploadView(formWithErrors)))
+        },
+        csvData => {
+          try {
+            val users: Seq[ParsedUser] = csvService.mapToUsersFromCsv(csvData.csv)
+
+            logger.info(s"Number of Users successfully parsed: ${users.size}")
+            logger.info(s"Users successfully parsed: ${users}")
+
+            Future.successful(Redirect(routes.CsvUploadController.usersPage()))
+
+          } catch {
+            case exception: Throwable => Future.successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", exception.getMessage)))
+          }
+        }
+      )
 
   }
 
@@ -84,9 +101,9 @@ class CsvUploadController @Inject() (
 
             logger.info(s"Number of Organisations successfully parsed: ${organisations.size}")
             logger.info(s"About to persist Organisations, check api-platform-xml-services logs for progress")
-            
+
             xmlServicesConnector.bulkFindAndCreateOrUpdate(organisations).map {
-              case Right(_) => Redirect(routes.CsvUploadController.organisationPage())
+              case Right(_)                       => Redirect(routes.CsvUploadController.organisationPage())
               case Left(e: UpstreamErrorResponse) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", e.getMessage))
             }
 

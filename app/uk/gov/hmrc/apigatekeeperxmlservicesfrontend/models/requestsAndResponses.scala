@@ -22,6 +22,8 @@ case class UpdateOrganisationDetailsRequest(organisationName: String)
 case class OrganisationWithNameAndVendorId(name: OrganisationName, vendorId: VendorId)
 case class BulkFindAndCreateOrUpdateRequest(organisations: Seq[OrganisationWithNameAndVendorId])
 
+case class ParsedUser(email: String, firstName: String, lastName: String, services: String, vendorIds: String)
+
 sealed trait CreateOrganisationResult
 case class CreateOrganisationSuccess(organisation: Organisation) extends CreateOrganisationResult
 case class CreateOrganisationFailure(error: Throwable) extends CreateOrganisationResult

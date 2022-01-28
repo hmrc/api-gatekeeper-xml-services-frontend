@@ -35,56 +35,94 @@ class CsvService @Inject() () extends Logging {
     val VENDORID, NAME = Value
   }
 
+  object UsersHeader extends Enumeration {
+    type UsersHeader = Value
+
+    val EMAIL, FIRSTNAME, LASTNAME, SERVICES, VENDORIDS = Value
+  }
+
+  def mapToUsersFromCsv(csvData: String): Seq[ParsedUser] = {
+    val expectedHeaders = UsersHeader.values.toList.map(_.toString())
+    def validateUsersHeaders(headers: List[String]) =
+      validateHeaders(headers, expectedHeaders)
+
+    def parseUser(record: CSVRecord): ParsedUser = {
+       val expectedValues = 5
+      if (record.size() < expectedValues) throw new RuntimeException(s"Expected $expectedValues values on row ${record.getRecordNumber}")
+
+      ParsedUser(
+        email = parseStringFromCsv(record, s"${UsersHeader.EMAIL}"),
+        firstName = parseStringFromCsv(record, s"${UsersHeader.FIRSTNAME}"),
+        lastName = parseStringFromCsv(record, s"${UsersHeader.LASTNAME}"),
+        services = parseStringFromCsv(record, s"${UsersHeader.SERVICES}"),
+        vendorIds = parseStringFromCsv(record, s"${UsersHeader.VENDORIDS}")
+        )
+    }
+
+    val records = extractCsvRecords(csvData, expectedHeaders, validateUsersHeaders)
+    records.map(parseUser)
+  }
+
   def mapToOrganisationFromCsv(csvData: String): Seq[OrganisationWithNameAndVendorId] = {
+    val expectedHeaders = OrganisationHeader.values.toList.map(_.toString())
+    def validateOrganisationHeaders(headers: List[String]) =
+      validateHeaders(headers, expectedHeaders)
+
+    def parseOrganisation(record: CSVRecord): OrganisationWithNameAndVendorId = {
+      val expectedValues = 2
+      if (record.size() < expectedValues) throw new RuntimeException(s"Expected $expectedValues values on row ${record.getRecordNumber}")
+
+      OrganisationWithNameAndVendorId(
+        vendorId = VendorId(parseLongFromCsv(record, s"${OrganisationHeader.VENDORID}")),
+        name = OrganisationName(parseStringFromCsv(record, s"${OrganisationHeader.NAME}"))
+      )
+
+    }
+
+    val records = extractCsvRecords(csvData, expectedHeaders, validateOrganisationHeaders)
+    records.map(parseOrganisation)
+  }
+
+  private def extractCsvRecords(csvData: String, headerList: List[String], validateHeaderFunc: List[String] => Unit) = {
+
     val reader = new InputStreamReader(IOUtils.toInputStream(csvData, StandardCharsets.UTF_8))
 
-    def validateHeader(header: List[String]): Unit = {
-      if (!header.contains(s"${OrganisationHeader.VENDORID}") || !header.contains(s"${OrganisationHeader.NAME}")) {
-        throw new IllegalArgumentException(s"Invalid Header - expected ${OrganisationHeader.VENDORID},${OrganisationHeader.NAME}")
-      }
-    }
-
-    def validateRecords(records: List[CSVRecord]): Unit = {
-      if (records.isEmpty) throw new RuntimeException("No record(s) found")
-    }
-
     val csvFormat = org.apache.commons.csv.CSVFormat.EXCEL
-      .withHeader(s"${OrganisationHeader.VENDORID}", s"${OrganisationHeader.NAME}")
+      .withHeader(headerList: _*)
       .withFirstRecordAsHeader()
       .parse(reader)
 
-    validateHeader(csvFormat.getHeaderNames.asScala.toList)
+    validateHeaderFunc.apply(csvFormat.getHeaderNames.asScala.toList)
 
     val records = csvFormat.getRecords.asScala.toList
 
     validateRecords(records)
-
-    records.map(parseOrganisation)
-  }
-
-  def parseOrganisation(record: CSVRecord): OrganisationWithNameAndVendorId = {
-    val expectedValues = 2
-    if (record.size() < expectedValues) throw new RuntimeException(s"Expected $expectedValues values on row ${record.getRecordNumber}")
-
-    OrganisationWithNameAndVendorId(
-      vendorId = VendorId(parseLongFromCsv(record, s"${OrganisationHeader.VENDORID}")),
-      name = OrganisationName(parseStringFromCsv( record, s"${OrganisationHeader.NAME}"))
-    )
-
+    records
   }
 
   private def parseStringFromCsv(record: CSVRecord, columnKey: String): String = {
     Option(record.get(columnKey)) match {
       case Some(s: String) if s.trim.nonEmpty => s.trim()
-      case _                             => throw new RuntimeException(s"$columnKey cannot be empty on row ${record.getRecordNumber}")
+      case _                                  => throw new RuntimeException(s"$columnKey cannot be empty on row ${record.getRecordNumber}")
     }
   }
 
   private def parseLongFromCsv(record: CSVRecord, columnKey: String): Long = {
-   try {
-     parseStringFromCsv(record, columnKey).toLong
+    try {
+      parseStringFromCsv(record, columnKey).toLong
     } catch {
-      case _: NumberFormatException =>  throw new NumberFormatException(s"Invalid $columnKey value on row ${record.getRecordNumber}")
+      case _: NumberFormatException => throw new NumberFormatException(s"Invalid $columnKey value on row ${record.getRecordNumber}")
     }
+  }
+
+  private def validateHeaders(headers: List[String], expectedHeaders: List[String]): Unit = {
+    expectedHeaders.foreach(x => {
+      if (!headers.contains(x)) throw new IllegalArgumentException(s"Invalid Header - expected $x")
+      else ()
+    })
+  }
+
+  private def validateRecords(records: List[CSVRecord]): Unit = {
+    if (records.isEmpty) throw new RuntimeException("No record(s) found")
   }
 }

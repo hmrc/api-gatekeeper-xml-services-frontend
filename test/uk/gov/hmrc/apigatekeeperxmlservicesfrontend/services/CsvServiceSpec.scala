@@ -19,6 +19,7 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.services
 import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationWithNameAndVendorId
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.HmrcSpec
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.ParsedUser
 
 class CsvServiceSpec extends HmrcSpec with BeforeAndAfterEach {
 
@@ -37,6 +38,14 @@ class CsvServiceSpec extends HmrcSpec with BeforeAndAfterEach {
 
       actualOrganisation.name.value shouldBe organisationName
       actualOrganisation.vendorId.value shouldBe vendorId
+    }
+
+
+    "throw an exception when payload has valid headers but no data" in {
+      val csvTestData = s"""VENDORID,NAME"""
+
+      val exception = intercept[RuntimeException] { csvService.mapToOrganisationFromCsv(csvTestData) }
+      exception.getMessage() shouldBe "No record(s) found"
     }
 
     "throw an exception when payload is missing vendorId value" in {
@@ -70,6 +79,7 @@ class CsvServiceSpec extends HmrcSpec with BeforeAndAfterEach {
       val exception = intercept[RuntimeException] { csvService.mapToOrganisationFromCsv(csvTestData) }
       exception.getMessage() shouldBe "Expected 2 values on row 1"
     }
+    
 
     "throw an exception when payload has empty organisation name value" in {
       val csvTestData = s"""VENDORID,NAME
@@ -79,13 +89,22 @@ class CsvServiceSpec extends HmrcSpec with BeforeAndAfterEach {
       exception.getMessage() shouldBe "NAME cannot be empty on row 1"
     }
 
-    "throw an exception when payload contains invalid column header(s)" in {
+    "throw an exception when payload contains invalid vendorId header(s)" in {
 
-      val csvTestData = """INVALID_FIRST_HEADER,INVALID_SECOND_HEADER
-    SomeInvalidData,SomeInvalidData"""
+      val csvTestData = """INVALID_FIRST_HEADER,NAME
+    IGNORED,IGNORED"""
 
       val exception = intercept[IllegalArgumentException] { csvService.mapToOrganisationFromCsv(csvTestData) }
-      exception.getMessage() shouldBe "Invalid Header - expected VENDORID,NAME"
+      exception.getMessage() shouldBe "Invalid Header - expected VENDORID"
+    }
+
+    "throw an exception when payload contains invalid name header(s)" in {
+
+      val csvTestData = """VENDORID,INVALIDHEADER
+    IGNORED,IGNORED"""
+
+      val exception = intercept[IllegalArgumentException] { csvService.mapToOrganisationFromCsv(csvTestData) }
+      exception.getMessage() shouldBe "Invalid Header - expected NAME"
     }
 
     "throw an exception when payload is missing a column header" in {
@@ -93,7 +112,7 @@ class CsvServiceSpec extends HmrcSpec with BeforeAndAfterEach {
       val csvTestData = """VENDORID"""
 
       val exception = intercept[RuntimeException] { csvService.mapToOrganisationFromCsv(csvTestData) }
-      exception.getMessage() shouldBe "Invalid Header - expected VENDORID,NAME"
+      exception.getMessage() shouldBe "Invalid Header - expected NAME"
     }
 
     "throw an exception when no payload" in {
@@ -101,7 +120,46 @@ class CsvServiceSpec extends HmrcSpec with BeforeAndAfterEach {
       val csvTestData = """"""
 
       val exception = intercept[RuntimeException] { csvService.mapToOrganisationFromCsv(csvTestData) }
-      exception.getMessage() shouldBe "Invalid Header - expected VENDORID,NAME"
+      exception.getMessage() shouldBe "Invalid Header - expected VENDORID"
+    }
+  }
+
+  "mapToUsersFromCsv" should {
+      val email = "a@b.com"
+      val firstName = "Joe"
+      val lastName = "Bloggs"
+      val servicesString = "service1;service2;"
+      val vendorIds = "20001;20002;"
+
+    "return a list of users" in {
+
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+    $email, $firstName, $lastName, $servicesString, $vendorIds"""
+
+      val result: Seq[ParsedUser] = csvService.mapToUsersFromCsv(csvTestData)
+      val actualUser = result.head
+
+      actualUser.email shouldBe email
+      actualUser.firstName shouldBe firstName
+      actualUser.lastName shouldBe lastName
+      actualUser.services shouldBe servicesString
+      actualUser.vendorIds shouldBe vendorIds
+    }
+
+    "throw an exception when payload has empty vendorIds value" in {
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+    $email, $firstName, $lastName, $servicesString,"""
+
+      val exception = intercept[RuntimeException] { csvService.mapToUsersFromCsv(csvTestData) }
+      exception.getMessage() shouldBe "VENDORIDS cannot be empty on row 1"
+    }
+
+    "throw an exception when payload is missing vendorIds value" in {
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+    $email, $firstName, $lastName, $servicesString"""
+
+      val exception = intercept[RuntimeException] { csvService.mapToUsersFromCsv(csvTestData) }
+      exception.getMessage() shouldBe "Expected 5 values on row 1"
     }
   }
 }
