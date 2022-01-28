@@ -188,6 +188,21 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
 
   "uploadUsersCsvAction" should {
 
+    "Redirect to the error page when service throws an exception" in new Setup {
+      val exceptionMessage = "parse error"
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      when(mockCsvService.mapToUsersFromCsv(*)).thenThrow(new RuntimeException(exceptionMessage))
+
+      val result = controller.uploadUsersCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> csvUsersTestData))
+      status(result) shouldBe INTERNAL_SERVER_ERROR
+
+      val document = Jsoup.parse(contentAsString(result))
+      document.getElementById("page-heading").text() shouldBe "Internal Server Error"
+      document.getElementById("page-body").text() shouldBe exceptionMessage
+
+      verify(mockCsvService).mapToUsersFromCsv(*)
+    }
+
     "Redirect to the users page when users are successfully parsed" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       when(mockCsvService.mapToUsersFromCsv(*)).thenReturn(Seq(parsedUser))
