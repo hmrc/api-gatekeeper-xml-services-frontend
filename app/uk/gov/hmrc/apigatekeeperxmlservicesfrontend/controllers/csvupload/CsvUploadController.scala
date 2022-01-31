@@ -72,17 +72,20 @@ class CsvUploadController @Inject() (
         formWithErrors => {
           Future.successful(BadRequest(usersCsvUploadView(formWithErrors)))
         },
-        csvData => {
+        formData => {
           try {
-            val users: Seq[ParsedUser] = csvService.mapToUsersFromCsv(csvData.csv)
+            val users: Seq[ParsedUser] = csvService.mapToUsersFromCsv(formData.csv)
 
             logger.info(s"Number of Users successfully parsed: ${users.size}")
             logger.info(s"Users successfully parsed: ${users}")
-
-            Future.successful(Redirect(routes.CsvUploadController.usersPage()))
-
+            xmlServicesConnector.bulkAddUsers(users).map {
+              case Right(_)                       => Redirect(routes.CsvUploadController.usersPage())
+              case Left(e: UpstreamErrorResponse) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", e.getMessage))
+            }
           } catch {
-            case exception: Throwable => Future.successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", exception.getMessage)))
+            case exception: Throwable => 
+              logger.error("Error during upload", exception)
+              Future.successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", exception.getMessage)))
           }
         }
       )

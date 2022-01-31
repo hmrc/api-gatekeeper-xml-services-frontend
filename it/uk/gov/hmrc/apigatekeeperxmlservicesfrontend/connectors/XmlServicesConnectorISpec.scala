@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors
 
-
 import org.scalatest.BeforeAndAfterEach
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
@@ -55,7 +54,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
   trait Setup extends XmlServicesStub {
     val objInTest: XmlServicesConnector = app.injector.instanceOf[XmlServicesConnector]
     val vendorId: VendorId = VendorId(12)
-     val emailAddress = "email@email.com"
+    val emailAddress = "email@email.com"
     val organisation = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = vendorId, name = "Org name")
     val organisation2 = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = VendorId(13), name = "Org name2")
 
@@ -71,6 +70,19 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     val organisationsWithNameAndVendorIds = Seq(
       OrganisationWithNameAndVendorId(OrganisationName("Test Organsation One"), VendorId(101)),
       OrganisationWithNameAndVendorId(OrganisationName("Test Organsation Two"), VendorId(102))
+    )
+
+    val email = "a@b.com"
+    val firstName = "Joe"
+    val lastName = "Bloggs"
+    val servicesString = "service1;service2;"
+    val vendorIds = "20001;20002;"
+
+    val parsedUser = ParsedUser(email, firstName, lastName, servicesString, vendorIds)
+
+    val users = Seq(
+      ParsedUser(email, firstName, lastName, servicesString, vendorIds),
+      ParsedUser("b@b.com", firstName + 1, lastName + 1, servicesString, vendorIds)
     )
   }
 
@@ -154,8 +166,8 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
   "addOrganisation" should {
 
     "return CreateOrganisationSuccess when back end returns Organisation" in new Setup {
-     
-      addOrganisationReturnsResponse(organisation.name, emailAddress,  OK, organisation)
+
+      addOrganisationReturnsResponse(organisation.name, emailAddress, OK, organisation)
       val result = await(objInTest.addOrganisation(organisation.name, emailAddress))
 
       result mustBe CreateOrganisationSuccess(organisation)
@@ -163,12 +175,12 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     }
 
     "return CreateOrganisationFailure when back end returns error" in new Setup {
-      addOrganisationReturnsError(organisation.name, emailAddress,  INTERNAL_SERVER_ERROR)
+      addOrganisationReturnsError(organisation.name, emailAddress, INTERNAL_SERVER_ERROR)
       val result = await(objInTest.addOrganisation(organisation.name, emailAddress))
 
       result match {
         case CreateOrganisationFailure(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed
-        case _                                                                                      => fail()
+        case _                                                                                => fail()
       }
     }
   }
@@ -176,7 +188,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
   "updateOrganisationDetails" should {
 
     "return UpdateOrganisationSuccess when back end returns Organisation" in new Setup {
-      updateOrganisationDetailsReturnsResponse(organisation.name, organisation.organisationId,  OK, organisation)
+      updateOrganisationDetailsReturnsResponse(organisation.name, organisation.organisationId, OK, organisation)
       val result = await(objInTest.updateOrganisationDetails(organisation.organisationId, organisation.name))
 
       result mustBe UpdateOrganisationDetailsSuccess(organisation)
@@ -189,7 +201,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case UpdateOrganisationDetailsFailure(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed
-        case _                                                                                      => fail()
+        case _                                                                                       => fail()
       }
     }
   }
@@ -214,18 +226,17 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     }
   }
 
-
   "AddTeamMember" should {
     "return AddCollaboratorSuccessfulResult when add collaborator call is successful" in new Setup {
 
-      val updatedCollaboratorList =  collaboratorList ++ List(Collaborator(emailAddress, "someUserId"))
+      val updatedCollaboratorList = collaboratorList ++ List(Collaborator(emailAddress, "someUserId"))
 
       addTeamMemberReturnsResponse(
         organisationWithTeamMembers.organisationId,
         emailAddress,
-      OK,
-      organisationWithTeamMembers.copy(collaborators = updatedCollaboratorList))
-
+        OK,
+        organisationWithTeamMembers.copy(collaborators = updatedCollaboratorList)
+      )
 
       val result = await(objInTest.addTeamMember(organisationWithTeamMembers.organisationId, emailAddress))
 
@@ -234,19 +245,20 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
     "return AddCollaboratorFailure when add collaborator call is successful" in new Setup {
 
-      val expectedErrorMessage =   s"POST of 'http://localhost:$wireMockPort/api-platform-xml-services/organisations/" +
+      val expectedErrorMessage = s"POST of 'http://localhost:$wireMockPort/api-platform-xml-services/organisations/" +
         s"${organisationWithTeamMembers.organisationId.value.toString}/add-collaborator' returned 404. Response body: ''"
 
       addTeamMemberReturnsError(
         organisationWithTeamMembers.organisationId,
         emailAddress,
-        NOT_FOUND)
+        NOT_FOUND
+      )
 
       val result = await(objInTest.addTeamMember(organisationWithTeamMembers.organisationId, emailAddress))
 
       result match {
         case AddCollaboratorFailure(UpstreamErrorResponse(message, NOT_FOUND, _, _)) => message mustBe expectedErrorMessage
-        case _ => fail
+        case _                                                                       => fail
       }
     }
 
@@ -279,7 +291,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case RemoveCollaboratorFailure(e) => e.getMessage
-        case _                                  => fail
+        case _                            => fail
       }
 
     }
@@ -296,7 +308,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case RemoveCollaboratorFailure(e) => e.getMessage
-        case _                                  => fail
+        case _                            => fail
       }
     }
 
@@ -310,7 +322,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
         result mustBe Right(())
       }
 
-      "return Left when bulkFindAndCreateOrUpdate call is successful" in new Setup {
+      "return Left when bulkFindAndCreateOrUpdate call fails" in new Setup {
         bulkFindAndCreateOrUpdateReturnsResponse(organisationsWithNameAndVendorIds, INTERNAL_SERVER_ERROR)
 
         val result = await(objInTest.bulkFindAndCreateOrUpdate(organisationsWithNameAndVendorIds))
@@ -321,5 +333,29 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
         }
       }
     }
+
+    "bulkAddUsers" should {
+
+      "return Right when bulkAddUsers call is successful" in new Setup {
+
+        bulkAddUsersReturnsResponse(users, OK)
+
+        val result = await(objInTest.bulkAddUsers(users))
+
+        result mustBe Right(())
+      }
+
+      "return Left when bulkAddUsers call fails" in new Setup {
+        bulkAddUsersReturnsResponse(users, INTERNAL_SERVER_ERROR)
+
+        val result = await(objInTest.bulkAddUsers(users))
+
+        result match {
+          case Left(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed
+          case _                                                           => fail
+        }
+      }
+    }
+
   }
 }

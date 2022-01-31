@@ -128,8 +128,8 @@ class CsvServiceSpec extends HmrcSpec with BeforeAndAfterEach {
       val email = "a@b.com"
       val firstName = "Joe"
       val lastName = "Bloggs"
-      val servicesString = "service1;service2;"
-      val vendorIds = "20001;20002;"
+      val servicesString = "service1|service2"
+      val vendorIds = "20001|20002"
 
     "return a list of users" in {
 

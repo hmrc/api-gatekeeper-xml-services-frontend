@@ -28,6 +28,8 @@ trait XmlServicesStub {
 
   val organisationUrl = s"$baseUrl/organisations"
 
+  val csvuploadUrl = s"$baseUrl/csvupload"
+
   def  updateOrganistionDetailsUrl(organisationId: OrganisationId) ={
     s"$organisationUrl/${organisationId.value.toString}"
   }
@@ -61,6 +63,10 @@ trait XmlServicesStub {
 
   def bulkFindAndCreateOrUpdateRequestAsString(organisationsWithNameAndVendorIds: Seq[OrganisationWithNameAndVendorId]): String = {
     Json.toJson(BulkFindAndCreateOrUpdateRequest(organisationsWithNameAndVendorIds)).toString
+  }
+
+  def bulAddUsersRequestAsString(users: Seq[ParsedUser]): String ={
+    Json.toJson((BulkAddUsersRequest(users))).toString()
   }
 
   def removeCollaboratorRequestAsString(email: String, gateKeeperId: String): String = {
@@ -204,8 +210,18 @@ trait XmlServicesStub {
 
   def bulkFindAndCreateOrUpdateReturnsResponse(organisationsWithNameAndVendorIds: Seq[OrganisationWithNameAndVendorId], status: Int) = {
 
-    stubFor(post(urlEqualTo(s"$organisationUrl/bulk"))
+    stubFor(post(urlEqualTo(s"$csvuploadUrl/bulk"))
       .withRequestBody(equalToJson(bulkFindAndCreateOrUpdateRequestAsString(organisationsWithNameAndVendorIds)))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+      ))
+  }
+
+    def bulkAddUsersReturnsResponse(users: Seq[ParsedUser], status: Int) = {
+
+    stubFor(post(urlEqualTo(s"$csvuploadUrl/bulkusers"))
+      .withRequestBody(equalToJson(bulAddUsersRequestAsString(users)))
       .willReturn(
         aResponse()
           .withStatus(status)

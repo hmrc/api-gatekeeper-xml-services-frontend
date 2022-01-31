@@ -78,13 +78,13 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
     val email = "a@b.com"
     val firstName = "Joe"
     val lastName = "Bloggs"
-    val servicesString = "service1;service2;"
-    val vendorIds = "20001;20002;"
+    val servicesString = "service1|service2"
+    val vendorIds = "20001|20002"
 
     val csvUsersTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
     $email, $firstName, $lastName, $servicesString, $vendorIds"""
 
-    val parsedUser = ParsedUser(email, firstName, lastName, servicesString, vendorIds) 
+    val parsedUser = ParsedUser(email, firstName, lastName, servicesString, vendorIds)
 
     def validatePageIsRendered(result: Future[Result]) = {
       status(result) shouldBe Status.OK
@@ -188,6 +188,32 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
 
   "uploadUsersCsvAction" should {
 
+    "Redirect to the users page when users are successfully parsed" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      when(mockCsvService.mapToUsersFromCsv(*)).thenReturn(Seq(parsedUser))
+      when(mockXmlServiceConnector.bulkAddUsers(eqTo(Seq(parsedUser)))(*))
+        .thenReturn(Future.successful(Right(())))
+
+      val result = controller.uploadUsersCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> csvUsersTestData))
+      status(result) shouldBe SEE_OTHER
+
+      verify(mockCsvService).mapToUsersFromCsv(*)
+      verify(mockXmlServiceConnector).bulkAddUsers(*)(*)
+    }
+
+    "show error page when call to upload users fails" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      when(mockCsvService.mapToUsersFromCsv(*)).thenReturn(Seq(parsedUser))
+      when(mockXmlServiceConnector.bulkAddUsers(eqTo(Seq(parsedUser)))(*))
+        .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, 1, Map.empty))))
+
+      val result = controller.uploadUsersCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> csvUsersTestData))
+      status(result) shouldBe INTERNAL_SERVER_ERROR
+
+      verify(mockCsvService).mapToUsersFromCsv(*)
+      verify(mockXmlServiceConnector).bulkAddUsers(*)(*)
+    }
+
     "Redirect to the error page when service throws an exception" in new Setup {
       val exceptionMessage = "parse error"
       givenTheGKUserIsAuthorisedAndIsANormalUser()
@@ -201,16 +227,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
       document.getElementById("page-body").text() shouldBe exceptionMessage
 
       verify(mockCsvService).mapToUsersFromCsv(*)
-    }
-
-    "Redirect to the users page when users are successfully parsed" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
-      when(mockCsvService.mapToUsersFromCsv(*)).thenReturn(Seq(parsedUser))
-
-      val result = controller.uploadUsersCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> csvUsersTestData))
-      status(result) shouldBe SEE_OTHER
-
-      verify(mockCsvService).mapToUsersFromCsv(*)
+      verifyZeroInteractions(mockXmlServiceConnector)
     }
 
     "display users page with error messages when invalid form provided" in new Setup {
@@ -220,6 +237,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
       status(result) shouldBe BAD_REQUEST
 
       verifyZeroInteractions(mockCsvService)
+      verifyZeroInteractions(mockXmlServiceConnector)
     }
 
     "return forbidden view when not authorised" in new Setup {
@@ -229,6 +247,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
       status(result) shouldBe Status.SEE_OTHER
 
       verifyZeroInteractions(mockCsvService)
+      verifyZeroInteractions(mockXmlServiceConnector)
     }
 
   }

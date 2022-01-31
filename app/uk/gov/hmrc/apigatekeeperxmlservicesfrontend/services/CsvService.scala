@@ -49,7 +49,7 @@ class CsvService @Inject() () extends Logging {
     def parseUser(record: CSVRecord): ParsedUser = {
        val expectedValues = 5
       if (record.size() < expectedValues) throw new RuntimeException(s"Expected $expectedValues values on row ${record.getRecordNumber}")
-
+      
       ParsedUser(
         email = parseStringFromCsv(record, s"${UsersHeader.EMAIL}"),
         firstName = parseStringFromCsv(record, s"${UsersHeader.FIRSTNAME}"),
@@ -87,8 +87,9 @@ class CsvService @Inject() () extends Logging {
 
     val reader = new InputStreamReader(IOUtils.toInputStream(csvData, StandardCharsets.UTF_8))
 
-    val csvFormat = org.apache.commons.csv.CSVFormat.EXCEL
+    val csvFormat = org.apache.commons.csv.CSVFormat.DEFAULT
       .withHeader(headerList: _*)
+      .withIgnoreSurroundingSpaces()
       .withFirstRecordAsHeader()
       .parse(reader)
 

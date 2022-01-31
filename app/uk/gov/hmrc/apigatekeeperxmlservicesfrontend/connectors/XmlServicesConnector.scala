@@ -34,7 +34,8 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
 
   val baseUrl: String = s"${config.serviceBaseUrl}/api-platform-xml-services"
 
-  def findOrganisationsByParams(vendorId: Option[VendorId], organisationName: Option[String])(implicit hc: HeaderCarrier): Future[Either[Throwable, List[Organisation]]] = {
+  def findOrganisationsByParams(vendorId: Option[VendorId], organisationName: Option[String])
+                               (implicit hc: HeaderCarrier): Future[Either[Throwable, List[Organisation]]] = {
     val vendorIdParams = vendorId.map(v => Seq("vendorId" -> v.value.toString)).getOrElse(Seq.empty)
     val orgNameParams = organisationName.map(o => Seq("organisationName" -> o)).getOrElse(Seq.empty)
     val sortByParams = (vendorId, organisationName) match {
@@ -103,7 +104,13 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
 
   def bulkFindAndCreateOrUpdate(organisations: Seq[OrganisationWithNameAndVendorId])(implicit hc: HeaderCarrier) = {
     http.POST[BulkFindAndCreateOrUpdateRequest, Either[UpstreamErrorResponse, Unit]](
-      url = s"$baseUrl/organisations/bulk", BulkFindAndCreateOrUpdateRequest(organisations)
+      url = s"$baseUrl/csvupload/bulk", BulkFindAndCreateOrUpdateRequest(organisations)
+    )
+  }
+
+  def bulkAddUsers(users: Seq[ParsedUser])(implicit hc: HeaderCarrier) = {
+    http.POST[BulkAddUsersRequest, Either[UpstreamErrorResponse, Unit]](
+      url = s"$baseUrl/csvupload/bulkusers", BulkAddUsersRequest(users)
     )
   }
 
