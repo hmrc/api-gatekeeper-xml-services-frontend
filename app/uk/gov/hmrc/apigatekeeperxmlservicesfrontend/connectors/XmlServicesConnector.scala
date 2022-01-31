@@ -104,7 +104,7 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
 
   def bulkFindAndCreateOrUpdate(organisations: Seq[OrganisationWithNameAndVendorId])(implicit hc: HeaderCarrier) = {
     http.POST[BulkFindAndCreateOrUpdateRequest, Either[UpstreamErrorResponse, Unit]](
-      url = s"$baseUrl/csvupload/bulk", BulkFindAndCreateOrUpdateRequest(organisations)
+      url = s"$baseUrl/csvupload/bulkorganisations", BulkFindAndCreateOrUpdateRequest(organisations)
     )
   }
 

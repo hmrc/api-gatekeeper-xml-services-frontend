@@ -210,7 +210,7 @@ trait XmlServicesStub {
 
   def bulkFindAndCreateOrUpdateReturnsResponse(organisationsWithNameAndVendorIds: Seq[OrganisationWithNameAndVendorId], status: Int) = {
 
-    stubFor(post(urlEqualTo(s"$csvuploadUrl/bulk"))
+    stubFor(post(urlEqualTo(s"$csvuploadUrl/bulkorganisations"))
       .withRequestBody(equalToJson(bulkFindAndCreateOrUpdateRequestAsString(organisationsWithNameAndVendorIds)))
       .willReturn(
         aResponse()
