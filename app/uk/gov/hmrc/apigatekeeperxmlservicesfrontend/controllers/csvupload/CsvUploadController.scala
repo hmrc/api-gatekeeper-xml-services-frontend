@@ -105,7 +105,7 @@ class CsvUploadController @Inject() (
             logger.info(s"Number of Organisations successfully parsed: ${organisations.size}")
             logger.info(s"About to persist Organisations, check api-platform-xml-services logs for progress")
 
-            xmlServicesConnector.bulkFindAndCreateOrUpdate(organisations).map {
+            xmlServicesConnector.bulkAddOrganisations(organisations).map {
               case Right(_)                       => Redirect(routes.CsvUploadController.organisationPage())
               case Left(e: UpstreamErrorResponse) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", e.getMessage))
             }

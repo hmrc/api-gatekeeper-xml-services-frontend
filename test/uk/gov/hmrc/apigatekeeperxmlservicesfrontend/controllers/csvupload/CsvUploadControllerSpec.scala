@@ -145,26 +145,26 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
 
     "Redirect to the organisation page when organisations are successfully parsed and the connector returns Right" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-      when(mockXmlServiceConnector.bulkFindAndCreateOrUpdate(*)(*)).thenReturn(Future.successful(Right(())))
+      when(mockXmlServiceConnector.bulkAddOrganisations(*)(*)).thenReturn(Future.successful(Right(())))
       when(mockCsvService.mapToOrganisationFromCsv(*)).thenReturn(organisationsWithNameAndVendorIds)
 
       val result = controller.uploadOrganisationsCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> validCsvPayloadWithTwoRows))
       status(result) shouldBe SEE_OTHER
 
       verify(mockCsvService).mapToOrganisationFromCsv(*)
-      verify(mockXmlServiceConnector).bulkFindAndCreateOrUpdate(*)(*)
+      verify(mockXmlServiceConnector).bulkAddOrganisations(*)(*)
     }
 
     "Show error page when organisations are successfully parsed but the connector returns Left" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-      when(mockXmlServiceConnector.bulkFindAndCreateOrUpdate(*)(*)).thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, 1, Map.empty))))
+      when(mockXmlServiceConnector.bulkAddOrganisations(*)(*)).thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, 1, Map.empty))))
       when(mockCsvService.mapToOrganisationFromCsv(*)).thenReturn(organisationsWithNameAndVendorIds)
 
       val result = controller.uploadOrganisationsCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> validCsvPayloadWithTwoRows))
       status(result) shouldBe INTERNAL_SERVER_ERROR
 
       verify(mockCsvService).mapToOrganisationFromCsv(*)
-      verify(mockXmlServiceConnector).bulkFindAndCreateOrUpdate(*)(*)
+      verify(mockXmlServiceConnector).bulkAddOrganisations(*)(*)
     }
   }
 

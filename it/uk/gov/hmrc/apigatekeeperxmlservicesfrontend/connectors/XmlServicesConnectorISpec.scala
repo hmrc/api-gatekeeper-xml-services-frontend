@@ -317,7 +317,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       "return Right when bulkFindAndCreateOrUpdate call is successful" in new Setup {
         bulkFindAndCreateOrUpdateReturnsResponse(organisationsWithNameAndVendorIds, OK)
 
-        val result = await(objInTest.bulkFindAndCreateOrUpdate(organisationsWithNameAndVendorIds))
+        val result = await(objInTest.bulkAddOrganisations(organisationsWithNameAndVendorIds))
 
         result mustBe Right(())
       }
@@ -325,7 +325,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       "return Left when bulkFindAndCreateOrUpdate call fails" in new Setup {
         bulkFindAndCreateOrUpdateReturnsResponse(organisationsWithNameAndVendorIds, INTERNAL_SERVER_ERROR)
 
-        val result = await(objInTest.bulkFindAndCreateOrUpdate(organisationsWithNameAndVendorIds))
+        val result = await(objInTest.bulkAddOrganisations(organisationsWithNameAndVendorIds))
 
         result match {
           case Left(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed

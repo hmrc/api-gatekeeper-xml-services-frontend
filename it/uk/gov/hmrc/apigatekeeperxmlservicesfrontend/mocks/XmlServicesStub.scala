@@ -61,8 +61,8 @@ trait XmlServicesStub {
     Json.toJson(AddCollaboratorRequest(email)).toString
   }
 
-  def bulkFindAndCreateOrUpdateRequestAsString(organisationsWithNameAndVendorIds: Seq[OrganisationWithNameAndVendorId]): String = {
-    Json.toJson(BulkFindAndCreateOrUpdateRequest(organisationsWithNameAndVendorIds)).toString
+  def bulkUploadOrganisationsRequestAsString(organisationsWithNameAndVendorIds: Seq[OrganisationWithNameAndVendorId]): String = {
+    Json.toJson(BulkUploadOrganisationsRequest(organisationsWithNameAndVendorIds)).toString
   }
 
   def bulAddUsersRequestAsString(users: Seq[ParsedUser]): String ={
@@ -211,7 +211,7 @@ trait XmlServicesStub {
   def bulkFindAndCreateOrUpdateReturnsResponse(organisationsWithNameAndVendorIds: Seq[OrganisationWithNameAndVendorId], status: Int) = {
 
     stubFor(post(urlEqualTo(s"$csvuploadUrl/bulkorganisations"))
-      .withRequestBody(equalToJson(bulkFindAndCreateOrUpdateRequestAsString(organisationsWithNameAndVendorIds)))
+      .withRequestBody(equalToJson(bulkUploadOrganisationsRequestAsString(organisationsWithNameAndVendorIds)))
       .willReturn(
         aResponse()
           .withStatus(status)
