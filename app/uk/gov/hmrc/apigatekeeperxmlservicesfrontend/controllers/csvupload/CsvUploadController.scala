@@ -77,7 +77,6 @@ class CsvUploadController @Inject() (
             val users: Seq[ParsedUser] = csvService.mapToUsersFromCsv(formData.csv)
 
             logger.info(s"Number of Users successfully parsed: ${users.size}")
-            logger.info(s"Users successfully parsed: ${users}")
             xmlServicesConnector.bulkAddUsers(users).map {
               case Right(_)                       => Redirect(routes.CsvUploadController.usersPage())
               case Left(e: UpstreamErrorResponse) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", e.getMessage))
