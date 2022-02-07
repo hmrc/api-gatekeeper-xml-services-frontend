@@ -25,6 +25,7 @@ import play.api.test.Helpers.{FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, S
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{OrganisationName, OrganisationWithNameAndVendorId, VendorId}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{AuthServiceStub, ServerBaseISpec}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.ParsedUser
 
 class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with AuthServiceStub {
 
@@ -58,6 +59,24 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
     val organisationsWithNameAndVendorIds = Seq(
       OrganisationWithNameAndVendorId(OrganisationName("TestOrganisation101"), VendorId(1110)),
       OrganisationWithNameAndVendorId(OrganisationName("TestOrganisation102"), VendorId(1111))
+    )
+
+    val email = "a@b.com"
+    val firstName = "Joe"
+    val lastName = "Bloggs"
+    val servicesString = "service1|service2"
+    val vendorIds = "20001|20002"
+
+    val csvUsersTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+    $email,$firstName,$lastName,$servicesString,$vendorIds"""
+
+    val validUserCsvPayload = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+        a@b.com,Joe,Bloggs,service1|service2,20001|20002"""
+
+    val parsedUser = ParsedUser(email, firstName, lastName, servicesString, vendorIds)
+
+    val users = Seq(
+      ParsedUser(email, firstName, lastName, servicesString, vendorIds)
     )
 
     def callGetEndpoint(url: String, headers: List[(String, String)] = List.empty): WSResponse =
@@ -139,6 +158,68 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
         val result = callPostEndpoint(
           url = s"$url/csvupload/organisation-action",
+          List(CONTENT_TYPE -> "application/x-www-form-urlencoded"),
+          s"csv-data-input=${invalidCsvPayload};"
+        )
+
+        result.status mustBe INTERNAL_SERVER_ERROR
+      }
+    }
+
+    "GET /csvupload/users-page" should {
+      "respond with 200 and render organisation page" in new Setup {
+        primeAuthServiceSuccess()
+        val result = callGetEndpoint(s"$url/csvupload/users-page")
+        result.status mustBe OK
+        val content = Jsoup.parse(result.body)
+        content.getElementById("page-heading").text() mustBe "Upload users as CSV"
+      }
+
+      "respond with 403 and render the Forbidden view" in new Setup {
+        primeAuthServiceFail()
+        val result = callGetEndpoint(s"$url/csvupload/users-page")
+        result.status mustBe FORBIDDEN
+        val content = Jsoup.parse(result.body)
+        content.getElementById("page-heading").text() mustBe "You do not have permission to access Gatekeeper"
+      }
+
+      "respond with 404 and render errorTemplate Correctly when path invalid" in new Setup {
+        val result = callGetEndpoint(s"$url/unknown-path")
+        result.status mustBe NOT_FOUND
+      }
+    }
+
+    "POST /csvupload/users-action" should {
+
+      "redirect to users page when valid form provided and connector returns 200" in new Setup {
+        primeAuthServiceSuccess()
+        bulkAddUsersReturnsResponse(users, OK)
+
+        val result = callPostEndpoint(
+          url = s"$url/csvupload/users-action",
+          List(CONTENT_TYPE -> "application/x-www-form-urlencoded"),
+          s"csv-data-input=${validUserCsvPayload};"
+        )
+        result.status mustBe SEE_OTHER
+      }
+
+      "show error page when valid form provided but connector returns error" in new Setup {
+        primeAuthServiceSuccess()
+        bulkAddUsersReturnsResponse(users, INTERNAL_SERVER_ERROR)
+
+        val result = callPostEndpoint(
+          url = s"$url/csvupload/users-action",
+          List(CONTENT_TYPE -> "application/x-www-form-urlencoded"),
+          s"csv-data-input=${csvUsersTestData};"
+        )
+        result.status mustBe INTERNAL_SERVER_ERROR
+      }
+
+      "show error page when invalid form provided" in new Setup {
+        primeAuthServiceSuccess()
+
+        val result = callPostEndpoint(
+          url = s"$url/csvupload/users-action",
           List(CONTENT_TYPE -> "application/x-www-form-urlencoded"),
           s"csv-data-input=${invalidCsvPayload};"
         )

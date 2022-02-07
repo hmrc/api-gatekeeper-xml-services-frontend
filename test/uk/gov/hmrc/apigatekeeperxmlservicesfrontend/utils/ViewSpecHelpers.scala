@@ -108,4 +108,12 @@ trait ViewSpecHelpers extends Matchers {
     }
 
   }
+
+  //CSV PAGES
+  def validateUsersCSVUploadPage(document: Document) ={
+     document.getElementById("page-heading").text() shouldBe "Upload users as CSV"
+      document.getElementById("csv-data-input-label").text() shouldBe "Provide CSV input here please"
+      Option(document.getElementById("csv-data-input")).isDefined shouldBe true
+      Option(document.getElementById("upload-csv-button")).isDefined shouldBe true
+  }
 }

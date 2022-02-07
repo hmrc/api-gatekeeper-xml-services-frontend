@@ -30,7 +30,7 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.services.CsvService
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ErrorTemplate
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.OrganisationCsvUploadView
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.{OrganisationCsvUploadView, UsersCsvUploadView}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.Inject
@@ -44,6 +44,7 @@ import uk.gov.hmrc.http.UpstreamErrorResponse
 class CsvUploadController @Inject() (
     mcc: MessagesControllerComponents,
     organisationCsvUploadView: OrganisationCsvUploadView,
+    usersCsvUploadView: UsersCsvUploadView,
     errorTemplate: ErrorTemplate,
     override val authConnector: AuthConnector,
     val forbiddenView: ForbiddenView,
@@ -61,6 +62,36 @@ class CsvUploadController @Inject() (
     implicit request => Future.successful(Ok(organisationCsvUploadView(csvDataForm)))
   }
 
+  def usersPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+    implicit request => Future.successful(Ok(usersCsvUploadView(csvDataForm)))
+  }
+
+  def uploadUsersCsvAction(): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+    implicit request =>
+      csvDataForm.bindFromRequest.fold(
+        formWithErrors => {
+          Future.successful(BadRequest(usersCsvUploadView(formWithErrors)))
+        },
+        formData => {
+          try {
+            val users: Seq[ParsedUser] = csvService.mapToUsersFromCsv(formData.csv)
+
+            logger.info(s"Number of Users successfully parsed: ${users.size}")
+            logger.info(s"Users successfully parsed: ${users}")
+            xmlServicesConnector.bulkAddUsers(users).map {
+              case Right(_)                       => Redirect(routes.CsvUploadController.usersPage())
+              case Left(e: UpstreamErrorResponse) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", e.getMessage))
+            }
+          } catch {
+            case exception: Throwable => 
+              logger.error("Error during upload", exception)
+              Future.successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", exception.getMessage)))
+          }
+        }
+      )
+
+  }
+
   def uploadOrganisationsCsvAction(): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request =>
       csvDataForm.bindFromRequest.fold(
@@ -73,9 +104,9 @@ class CsvUploadController @Inject() (
 
             logger.info(s"Number of Organisations successfully parsed: ${organisations.size}")
             logger.info(s"About to persist Organisations, check api-platform-xml-services logs for progress")
-            
-            xmlServicesConnector.bulkFindAndCreateOrUpdate(organisations).map {
-              case Right(_) => Redirect(routes.CsvUploadController.organisationPage())
+
+            xmlServicesConnector.bulkAddOrganisations(organisations).map {
+              case Right(_)                       => Redirect(routes.CsvUploadController.organisationPage())
               case Left(e: UpstreamErrorResponse) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", e.getMessage))
             }
 
