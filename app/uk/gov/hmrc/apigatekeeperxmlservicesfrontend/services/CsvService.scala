@@ -55,7 +55,7 @@ class CsvService @Inject() () extends Logging {
         firstName = parseStringFromCsv(record, s"${UsersHeader.FIRSTNAME}"),
         lastName = parseStringFromCsv(record, s"${UsersHeader.LASTNAME}"),
         services = parseStringFromCsv(record, s"${UsersHeader.SERVICES}"),
-        vendorIds = parseStringFromCsv(record, s"${UsersHeader.VENDORIDS}")
+        vendorIds = parseVendorIds(record)
         )
     }
 
@@ -114,6 +114,17 @@ class CsvService @Inject() () extends Logging {
     } catch {
       case _: NumberFormatException => throw new NumberFormatException(s"Invalid $columnKey value on row ${record.getRecordNumber}")
     }
+  }
+
+  private def parseVendorIds(record: CSVRecord): List[VendorId] = {
+    val vendorIds = parseStringFromCsv(record, s"${UsersHeader.VENDORIDS}")
+    vendorIds.split('|').map(x =>
+      try {
+      VendorId(x.toLong)
+    } catch {
+      case _: NumberFormatException => throw new NumberFormatException(s"Invalid ${UsersHeader.VENDORIDS} value on row ${record.getRecordNumber}")
+    }).toList
+
   }
 
   private def validateHeaders(headers: List[String], expectedHeaders: List[String]): Unit = {

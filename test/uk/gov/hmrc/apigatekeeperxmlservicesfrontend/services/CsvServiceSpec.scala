@@ -19,7 +19,7 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.services
 import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationWithNameAndVendorId
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.HmrcSpec
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.ParsedUser
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{ParsedUser, VendorId}
 
 class CsvServiceSpec extends HmrcSpec with BeforeAndAfterEach {
 
@@ -130,6 +130,7 @@ class CsvServiceSpec extends HmrcSpec with BeforeAndAfterEach {
       val lastName = "Bloggs"
       val servicesString = "service1|service2"
       val vendorIds = "20001|20002"
+      val vendorIdsList = List(VendorId(20001), VendorId(20002))
 
     "return a list of users" in {
 
@@ -143,7 +144,23 @@ class CsvServiceSpec extends HmrcSpec with BeforeAndAfterEach {
       actualUser.firstName shouldBe firstName
       actualUser.lastName shouldBe lastName
       actualUser.services shouldBe servicesString
-      actualUser.vendorIds shouldBe vendorIds
+      actualUser.vendorIds shouldBe vendorIdsList
+    }
+
+    "throw an exception when invaild vendorIds separator" in {
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+    $email, $firstName, $lastName, $servicesString, 1000;2000"""
+
+      val exception = intercept[RuntimeException] { csvService.mapToUsersFromCsv(csvTestData) }
+      exception.getMessage() shouldBe "Invalid VENDORIDS value on row 1"
+    }
+
+    "throw an exception when invaild vendorId value" in {
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+    $email, $firstName, $lastName, $servicesString, notAnumber"""
+
+      val exception = intercept[RuntimeException] { csvService.mapToUsersFromCsv(csvTestData) }
+      exception.getMessage() shouldBe "Invalid VENDORIDS value on row 1"
     }
 
     "throw an exception when payload has empty vendorIds value" in {

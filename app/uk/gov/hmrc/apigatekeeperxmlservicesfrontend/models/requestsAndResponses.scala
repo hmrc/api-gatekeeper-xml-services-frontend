@@ -22,7 +22,7 @@ case class UpdateOrganisationDetailsRequest(organisationName: String)
 case class OrganisationWithNameAndVendorId(name: OrganisationName, vendorId: VendorId)
 case class BulkUploadOrganisationsRequest(organisations: Seq[OrganisationWithNameAndVendorId])
 case class BulkAddUsersRequest(users: Seq[ParsedUser])
-case class ParsedUser(email: String, firstName: String, lastName: String, services: String, vendorIds: String)
+case class ParsedUser(email: String, firstName: String, lastName: String, services: String, vendorIds: List[VendorId])
 
 sealed trait CreateOrganisationResult
 case class CreateOrganisationSuccess(organisation: Organisation) extends CreateOrganisationResult
