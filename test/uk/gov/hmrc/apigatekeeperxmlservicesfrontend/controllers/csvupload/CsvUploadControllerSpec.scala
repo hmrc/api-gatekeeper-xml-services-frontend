@@ -79,7 +79,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
     val firstName = "Joe"
     val lastName = "Bloggs"
     val servicesString = "service1|service2"
-    val vendorIds = "20001|20002"
+    val vendorIds = List(VendorId(20001), VendorId(20002))
 
     val csvUsersTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
     $email, $firstName, $lastName, $servicesString, $vendorIds"""

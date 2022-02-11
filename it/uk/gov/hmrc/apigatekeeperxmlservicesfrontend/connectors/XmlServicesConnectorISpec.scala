@@ -76,13 +76,14 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     val firstName = "Joe"
     val lastName = "Bloggs"
     val servicesString = "service1;service2;"
-    val vendorIds = "20001;20002;"
+    val vendorIds = "20001|20002"
+    val vendorIdsList = List(VendorId(20001), VendorId(20002))
 
-    val parsedUser = ParsedUser(email, firstName, lastName, servicesString, vendorIds)
+    val parsedUser = ParsedUser(email, firstName, lastName, servicesString, vendorIdsList)
 
     val users = Seq(
-      ParsedUser(email, firstName, lastName, servicesString, vendorIds),
-      ParsedUser("b@b.com", firstName + 1, lastName + 1, servicesString, vendorIds)
+      ParsedUser(email, firstName, lastName, servicesString, vendorIdsList),
+      ParsedUser("b@b.com", firstName + 1, lastName + 1, servicesString, vendorIdsList)
     )
   }
 
