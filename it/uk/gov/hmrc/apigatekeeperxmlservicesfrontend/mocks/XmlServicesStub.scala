@@ -94,6 +94,27 @@ trait XmlServicesStub {
       ))
   }
 
+  def getAllApisResponseWithBody(status: Int, responseBody: String) = {
+
+    stubFor(get(urlEqualTo(s"$baseUrl/xml/apis"))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withHeader("Content-Type", "application/json")
+          .withBody(responseBody)
+      ))
+  }
+
+  def getAllApisReturnsError(status: Int) = {
+
+    stubFor(get(urlEqualTo(s"$baseUrl/xml/apis"))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withHeader("Content-Type", "application/json")
+      ))
+  }
+
   def getOrganisationByOrganisationIdReturnsResponseWithBody(orgId: OrganisationId, status: Int, responseBody: String) = {
 
     stubFor(get(urlEqualTo(s"$baseUrl/organisations/${orgId.value.toString}"))

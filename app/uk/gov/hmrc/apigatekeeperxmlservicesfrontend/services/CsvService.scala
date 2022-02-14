@@ -25,9 +25,15 @@ import java.nio.charset.StandardCharsets
 import javax.inject.{Inject, Singleton}
 import scala.collection.JavaConverters._
 import play.api.Logging
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
+import uk.gov.hmrc.http.HeaderCarrier
+
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CsvService @Inject() () extends Logging {
+class CsvService @Inject()
+(xmlServicesConnector: XmlServicesConnector)
+(implicit val ec: ExecutionContext) extends Logging {
 
   object OrganisationHeader extends Enumeration {
     type OrganisationHeader = Value
@@ -41,30 +47,35 @@ class CsvService @Inject() () extends Logging {
     val EMAIL, FIRSTNAME, LASTNAME, SERVICES, VENDORIDS = Value
   }
 
-  def mapToUsersFromCsv(csvData: String): Seq[ParsedUser] = {
+  def mapToUsersFromCsv(csvData: String)(implicit hc: HeaderCarrier): Future[Seq[ParsedUser]] = {
     val expectedHeaders = UsersHeader.values.toList.map(_.toString())
+
     def validateUsersHeaders(headers: List[String]) =
       validateHeaders(headers, expectedHeaders)
 
-    def parseUser(record: CSVRecord): ParsedUser = {
-       val expectedValues = 5
+    def parseUser(record: CSVRecord, xmlApis: Seq[String]): ParsedUser = {
+      val expectedValues = 5
       if (record.size() < expectedValues) throw new RuntimeException(s"Expected $expectedValues values on row ${record.getRecordNumber}")
-      
+
       ParsedUser(
         email = parseStringFromCsv(record, s"${UsersHeader.EMAIL}"),
         firstName = parseStringFromCsv(record, s"${UsersHeader.FIRSTNAME}"),
         lastName = parseStringFromCsv(record, s"${UsersHeader.LASTNAME}"),
-        services = parseStringFromCsv(record, s"${UsersHeader.SERVICES}"),
+        services = parseServiceNames(record, xmlApis),
         vendorIds = parseVendorIds(record)
-        )
+      )
     }
 
     val records = extractCsvRecords(csvData, expectedHeaders, validateUsersHeaders)
-    records.map(parseUser)
+
+    handleGetAllApis.map( allServices =>
+      records.map(x => parseUser(x, allServices))
+    )
   }
 
   def mapToOrganisationFromCsv(csvData: String): Seq[OrganisationWithNameAndVendorId] = {
     val expectedHeaders = OrganisationHeader.values.toList.map(_.toString())
+
     def validateOrganisationHeaders(headers: List[String]) =
       validateHeaders(headers, expectedHeaders)
 
@@ -104,7 +115,7 @@ class CsvService @Inject() () extends Logging {
   private def parseStringFromCsv(record: CSVRecord, columnKey: String): String = {
     Option(record.get(columnKey)) match {
       case Some(s: String) if s.trim.nonEmpty => s.trim()
-      case _                                  => throw new RuntimeException(s"$columnKey cannot be empty on row ${record.getRecordNumber}")
+      case _ => throw new RuntimeException(s"$columnKey cannot be empty on row ${record.getRecordNumber}")
     }
   }
 
@@ -120,11 +131,30 @@ class CsvService @Inject() () extends Logging {
     val vendorIds = parseStringFromCsv(record, s"${UsersHeader.VENDORIDS}")
     vendorIds.split('|').map(x =>
       try {
-      VendorId(x.toLong)
-    } catch {
-      case _: NumberFormatException => throw new NumberFormatException(s"Invalid ${UsersHeader.VENDORIDS} value on row ${record.getRecordNumber}")
-    }).toList
+        VendorId(x.toLong)
+      } catch {
+        case _: NumberFormatException => throw new NumberFormatException(s"Invalid ${UsersHeader.VENDORIDS} value on row ${record.getRecordNumber}")
+      }).toList
+  }
 
+  private def parseServiceNames(record: CSVRecord, allServices: Seq[String]): List[ServiceName] = {
+    val serviceNames = parseStringFromCsv(record, s"${UsersHeader.SERVICES}")
+    serviceNames.split('|').toList.map(
+      service => if (!allServices.contains(service)) {
+        throw new RuntimeException(s"Invalid service [$service] on row ${record.getRecordNumber}")
+      }
+      else {
+        ServiceName(service)
+      }
+    )
+  }
+
+  private def handleGetAllApis()(implicit hc: HeaderCarrier): Future[Seq[String]] = {
+    xmlServicesConnector.getAllApis.map {
+      case Right(Nil) => throw new RuntimeException("No XML APIs found")
+      case Right(allApis: Seq[XmlApi]) => allApis.map(x => x.serviceName.value)
+      case Left(error: Throwable) => throw new RuntimeException(s"Error getting XML APIs from backend - ${error.getMessage}")
+    }
   }
 
   private def validateHeaders(headers: List[String], expectedHeaders: List[String]): Unit = {

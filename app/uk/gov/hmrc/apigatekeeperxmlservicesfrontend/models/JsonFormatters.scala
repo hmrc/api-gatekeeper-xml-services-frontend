@@ -23,8 +23,12 @@ object JsonFormatters {
   implicit val formatOrganisationId = Json.valueFormat[OrganisationId]
   implicit val formatOrganisationName = Json.valueFormat[OrganisationName]
   implicit val formatVendorId = Json.valueFormat[VendorId]
+  implicit val formatServiceName = Json.valueFormat[ServiceName]
   implicit val formatCollaborator = Json.format[Collaborator]
   implicit val formatOrganisation = Json.format[Organisation]
+
+  implicit val formatXmlApi = Json.format[XmlApi]
+
   implicit val formatCreateOrganisationRequest = Json.format[CreateOrganisationRequest]
   implicit val formatUpdateOrganisationDetailsRequest = Json.format[UpdateOrganisationDetailsRequest]
   implicit val formatAddCollaboratorRequest = Json.format[AddCollaboratorRequest]
@@ -34,4 +38,6 @@ object JsonFormatters {
   implicit val formatBulkUploadOrganisationsRequest = Json.format[BulkUploadOrganisationsRequest]
   implicit val formatParsedUserRequest = Json.format[ParsedUser]
   implicit val formatBulkAddUsersRequest = Json.format[BulkAddUsersRequest]
+
+
 }

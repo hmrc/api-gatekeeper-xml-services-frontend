@@ -23,7 +23,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.Helpers.{FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SEE_OTHER}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.XmlServicesStub
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{OrganisationName, OrganisationWithNameAndVendorId, VendorId}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{OrganisationName, OrganisationWithNameAndVendorId, VendorId, ServiceName}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{AuthServiceStub, ServerBaseISpec}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.ParsedUser
 
@@ -61,6 +61,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
       OrganisationWithNameAndVendorId(OrganisationName("TestOrganisation102"), VendorId(1111))
     )
 
+    val services = List(ServiceName("service1"), ServiceName("service2"))
     val email = "a@b.com"
     val firstName = "Joe"
     val lastName = "Bloggs"
@@ -74,10 +75,10 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
     val validUserCsvPayload = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
         a@b.com,Joe,Bloggs,service1|service2,20001|20002"""
 
-    val parsedUser = ParsedUser(email, firstName, lastName, servicesString, vendorIdsList)
+    val parsedUser = ParsedUser(email, firstName, lastName, services, vendorIdsList)
 
     val users = Seq(
-      ParsedUser(email, firstName, lastName, servicesString, vendorIdsList)
+      ParsedUser(email, firstName, lastName, services, vendorIdsList)
     )
 
     def callGetEndpoint(url: String, headers: List[(String, String)] = List.empty): WSResponse =
