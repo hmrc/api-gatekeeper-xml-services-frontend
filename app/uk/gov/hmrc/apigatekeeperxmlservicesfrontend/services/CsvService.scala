@@ -47,7 +47,7 @@ class CsvService @Inject()
     val EMAIL, FIRSTNAME, LASTNAME, SERVICES, VENDORIDS = Value
   }
 
-  def mapToUsersFromCsv(csvData: String)(implicit hc: HeaderCarrier): Future[Seq[ParsedUser]] = {
+  def mapToUsersFromCsv(csvData: String)(implicit hc: HeaderCarrier): Future[List[ParsedUser]] = {
     val expectedHeaders = UsersHeader.values.toList.map(_.toString())
 
     def validateUsersHeaders(headers: List[String]) =

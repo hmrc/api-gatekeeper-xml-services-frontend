@@ -38,6 +38,7 @@ import uk.gov.hmrc.http.UpstreamErrorResponse
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.ParsedUser
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.ServiceName
 
 class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken with ViewSpecHelpers {
 
@@ -84,7 +85,8 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
     val csvUsersTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
     $email, $firstName, $lastName, $servicesString, $vendorIds"""
 
-    val parsedUser = ParsedUser(email, firstName, lastName, servicesString, vendorIds)
+    val parsedServices = List(ServiceName("service1"), ServiceName("service2"))
+    val parsedUser = ParsedUser(email, firstName, lastName, parsedServices, vendorIds)
 
     def validatePageIsRendered(result: Future[Result]) = {
       status(result) shouldBe Status.OK
@@ -190,7 +192,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
 
     "Redirect to the users page when users are successfully parsed" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-      when(mockCsvService.mapToUsersFromCsv(*)).thenReturn(Seq(parsedUser))
+      when(mockCsvService.mapToUsersFromCsv(*)(*)).thenReturn(Future.successful(List(parsedUser)))
       when(mockXmlServiceConnector.bulkAddUsers(eqTo(Seq(parsedUser)))(*))
         .thenReturn(Future.successful(Right(())))
 
@@ -203,7 +205,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
 
     "show error page when call to upload users fails" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-      when(mockCsvService.mapToUsersFromCsv(*)).thenReturn(Seq(parsedUser))
+      when(mockCsvService.mapToUsersFromCsv(*)(*)).thenReturn(Future.successful(List(parsedUser)))
       when(mockXmlServiceConnector.bulkAddUsers(eqTo(Seq(parsedUser)))(*))
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, 1, Map.empty))))
 
