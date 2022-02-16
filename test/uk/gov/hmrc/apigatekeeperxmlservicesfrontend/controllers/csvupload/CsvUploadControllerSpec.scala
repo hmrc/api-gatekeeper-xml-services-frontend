@@ -199,7 +199,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
       val result = controller.uploadUsersCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> csvUsersTestData))
       status(result) shouldBe SEE_OTHER
 
-      verify(mockCsvService).mapToUsersFromCsv(*)
+      verify(mockCsvService).mapToUsersFromCsv(*)(*)
       verify(mockXmlServiceConnector).bulkAddUsers(*)(*)
     }
 
@@ -212,14 +212,14 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
       val result = controller.uploadUsersCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> csvUsersTestData))
       status(result) shouldBe INTERNAL_SERVER_ERROR
 
-      verify(mockCsvService).mapToUsersFromCsv(*)
+      verify(mockCsvService).mapToUsersFromCsv(*)(*)
       verify(mockXmlServiceConnector).bulkAddUsers(*)(*)
     }
 
     "Redirect to the error page when service throws an exception" in new Setup {
       val exceptionMessage = "parse error"
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-      when(mockCsvService.mapToUsersFromCsv(*)).thenThrow(new RuntimeException(exceptionMessage))
+      when(mockCsvService.mapToUsersFromCsv(*)(*)).thenThrow(new RuntimeException(exceptionMessage))
 
       val result = controller.uploadUsersCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> csvUsersTestData))
       status(result) shouldBe INTERNAL_SERVER_ERROR
@@ -228,7 +228,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
       document.getElementById("page-heading").text() shouldBe "Internal Server Error"
       document.getElementById("page-body").text() shouldBe exceptionMessage
 
-      verify(mockCsvService).mapToUsersFromCsv(*)
+      verify(mockCsvService).mapToUsersFromCsv(*)(*)
       verifyZeroInteractions(mockXmlServiceConnector)
     }
 

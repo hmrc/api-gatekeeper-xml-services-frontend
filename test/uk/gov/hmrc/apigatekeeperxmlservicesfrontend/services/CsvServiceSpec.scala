@@ -134,19 +134,23 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
     val email = "a@b.com"
     val firstName = "Joe"
     val lastName = "Bloggs"
-    val servicesString = "vat-and-ec-sales-list"
+    val servicesString = "vat-and-ec-sales-list|stamp-taxes-online"
     val vendorIds = "20001|20002"
     val vendorIdsList = List(VendorId(20001), VendorId(20002))
+    val serviceName1 = ServiceName("vat-and-ec-sales-list")
+    val serviceName2 = ServiceName("stamp-taxes-online")
 
-    val xmlApi1 = XmlApi(name = "xml api 1",
-      serviceName = ServiceName("vat-and-ec-sales-list"),
-      context = "/government/collections/vat-and-ec-sales-list-online-support-for-software-developers",
+    val xmlApi1 = XmlApi(name = "xml api",
+      serviceName = serviceName1,
+      context = "context",
       description = "description",
       categories  = Some(Seq(ApiCategory.CUSTOMS)))
-    val xmlApi2 = xmlApi1.copy(serviceName = ServiceName("vat-and-ec-sales-list"))
+    val xmlApi2 = xmlApi1.copy(serviceName = serviceName2)
+    val xmlApis = Seq(xmlApi1, xmlApi2)
+    
 
     "return a list of users" in new Setup {
-      when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(Seq(xmlApi))))
+      when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(xmlApis)))
 
       val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
     $email, $firstName, $lastName, $servicesString, $vendorIds"""
@@ -157,47 +161,88 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
       actualUser.email shouldBe email
       actualUser.firstName shouldBe firstName
       actualUser.lastName shouldBe lastName
-      actualUser.services shouldBe servicesString
+      actualUser.services shouldBe List(serviceName1, serviceName2)
       actualUser.vendorIds shouldBe vendorIdsList
     }
 
-    "throw an exception when invaild vendorIds separator" in new Setup {
-      when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(Seq(xmlApi))))
+    "throw an exception when xml connector returns an empty list of xml apis" in new Setup {
+      when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(Nil)))
 
       val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
     $email, $firstName, $lastName, $servicesString, 1000;2000"""
 
-      val exception = intercept[RuntimeException] { csvService.mapToUsersFromCsv(csvTestData) }
+      val exception = intercept[RuntimeException] { await(csvService.mapToUsersFromCsv(csvTestData)) }
+      exception.getMessage() shouldBe "No XML APIs found"
+    }
+
+
+    "throw an exception when xml connector returns error" in new Setup {
+      when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Left(new RuntimeException("error"))))
+
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+    $email, $firstName, $lastName, $servicesString, 1000;2000"""
+
+      val exception = intercept[RuntimeException] { await(csvService.mapToUsersFromCsv(csvTestData)) }
+      exception.getMessage() shouldBe "Error getting XML APIs from backend - error"
+    }
+
+    "throw an exception when invaild services separator" in new Setup {
+      when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(xmlApis)))
+
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+    $email, $firstName, $lastName, service1;service2, 1000|2000"""
+
+      val exception = intercept[RuntimeException] { await(csvService.mapToUsersFromCsv(csvTestData)) }
+      exception.getMessage() shouldBe "Invalid service [service1;service2] on row 1"
+    }
+
+    "throw an exception when invaild serviceName" in new Setup {
+      when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(xmlApis)))
+
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+    $email, $firstName, $lastName, service1|vat-and-ec-sales-list, 1000|2000"""
+
+      val exception = intercept[RuntimeException] { await(csvService.mapToUsersFromCsv(csvTestData)) }
+      exception.getMessage() shouldBe "Invalid service [service1] on row 1"
+    }
+
+    "throw an exception when invaild vendorIds separator" in new Setup {
+      when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(xmlApis)))
+
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+    $email, $firstName, $lastName, $servicesString, 1000;2000"""
+
+      val exception = intercept[RuntimeException] { await(csvService.mapToUsersFromCsv(csvTestData)) }
       exception.getMessage() shouldBe "Invalid VENDORIDS value on row 1"
     }
 
     "throw an exception when invaild vendorId value" in new Setup {
-      when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(Seq(xmlApi))))
+      when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(xmlApis)))
 
       val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
     $email, $firstName, $lastName, $servicesString, notAnumber"""
 
-      val exception = intercept[RuntimeException] { csvService.mapToUsersFromCsv(csvTestData) }
+      val exception = intercept[RuntimeException] { await(csvService.mapToUsersFromCsv(csvTestData)) }
       exception.getMessage() shouldBe "Invalid VENDORIDS value on row 1"
     }
 
     "throw an exception when payload has empty vendorIds value" in new Setup {
-      when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(Seq(xmlApi))))
+      when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(xmlApis)))
 
       val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
     $email, $firstName, $lastName, $servicesString,"""
 
-      val exception = intercept[RuntimeException] { csvService.mapToUsersFromCsv(csvTestData) }
+      val exception = intercept[RuntimeException] { await(csvService.mapToUsersFromCsv(csvTestData)) }
       exception.getMessage() shouldBe "VENDORIDS cannot be empty on row 1"
     }
 
     "throw an exception when payload is missing vendorIds value" in new Setup {
-      when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(Seq(xmlApi))))
+      when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(xmlApis)))
 
       val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
     $email, $firstName, $lastName, $servicesString"""
 
-      val exception = intercept[RuntimeException] { csvService.mapToUsersFromCsv(csvTestData) }
+      val exception = intercept[RuntimeException] { await(csvService.mapToUsersFromCsv(csvTestData)) }
       exception.getMessage() shouldBe "Expected 5 values on row 1"
     }
   }
