@@ -72,6 +72,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       OrganisationWithNameAndVendorId(OrganisationName("Test Organsation Two"), VendorId(102))
     )
 
+    val services = List(ServiceName("service1"), ServiceName("service2"))
     val email = "a@b.com"
     val firstName = "Joe"
     val lastName = "Bloggs"
@@ -79,11 +80,11 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     val vendorIds = "20001|20002"
     val vendorIdsList = List(VendorId(20001), VendorId(20002))
 
-    val parsedUser = ParsedUser(email, firstName, lastName, servicesString, vendorIdsList)
+    val parsedUser = ParsedUser(email, firstName, lastName, services, vendorIdsList)
 
     val users = Seq(
-      ParsedUser(email, firstName, lastName, servicesString, vendorIdsList),
-      ParsedUser("b@b.com", firstName + 1, lastName + 1, servicesString, vendorIdsList)
+      ParsedUser(email, firstName, lastName, services, vendorIdsList),
+      ParsedUser("b@b.com", firstName + 1, lastName + 1, services, vendorIdsList)
     )
   }
 
@@ -358,5 +359,34 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       }
     }
 
+    "getAllApis" should {
+
+      val xmlApi = XmlApi(name = "xml api 1",
+      serviceName = ServiceName("vat-and-ec-sales-list"),
+      context = "/government/collections/vat-and-ec-sales-list-online-support-for-software-developers",
+      description = "description",
+      categories  = Some(Seq(ApiCategory.CUSTOMS)))
+
+      "return Right when getAllApis call is successful" in new Setup {
+
+        getAllApisResponseWithBody(OK, Json.toJson(Seq(xmlApi)).toString)
+
+        val result = await(objInTest.getAllApis())
+
+        result mustBe Right((Seq(xmlApi)))
+      }
+
+      "return Left when getAllApis call is unsuccessful" in new Setup {
+
+        getAllApisReturnsError(INTERNAL_SERVER_ERROR)
+
+        val result = await(objInTest.getAllApis())
+
+        result match {
+          case Left(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed
+          case _                                                           => fail
+        }
+      }
+    }
   }
 }

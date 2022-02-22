@@ -125,6 +125,10 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
 
   }
 
+  def getAllApis()(implicit hc: HeaderCarrier): Future[Either[Throwable, Seq[XmlApi]]] = {
+    handleResult(http.GET[Seq[XmlApi]](url = s"$baseUrl/xml/apis"))
+  }
+
   private def handleResult[A](result: Future[A]): Future[Either[Throwable, A]] = {
     result.map(x => Right(x))
       .recover {

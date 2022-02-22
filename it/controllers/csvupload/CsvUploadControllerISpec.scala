@@ -23,9 +23,13 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.Helpers.{FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SEE_OTHER}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.XmlServicesStub
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{OrganisationName, OrganisationWithNameAndVendorId, VendorId}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{OrganisationName, OrganisationWithNameAndVendorId, VendorId, ServiceName}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{AuthServiceStub, ServerBaseISpec}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.ParsedUser
+import play.api.libs.json.Json
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.XmlApi
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.ApiCategory
 
 class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with AuthServiceStub {
 
@@ -61,23 +65,31 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
       OrganisationWithNameAndVendorId(OrganisationName("TestOrganisation102"), VendorId(1111))
     )
 
+    val serviceName1 = ServiceName("vat-and-ec-sales-list")
+    val serviceName2 = ServiceName("stamp-taxes-online")
+    val xmlApi1 = XmlApi(name = "xml api",
+      serviceName = serviceName1,
+      context = "context",
+      description = "description",
+      categories  = Some(Seq(ApiCategory.CUSTOMS)))
+    val xmlApi2 = xmlApi1.copy(serviceName = serviceName2)
+    val xmlApis = Seq(xmlApi1, xmlApi2)
+
+    val services = List(serviceName1, serviceName2)
     val email = "a@b.com"
     val firstName = "Joe"
     val lastName = "Bloggs"
-    val servicesString = "service1|service2"
+    val servicesString = "vat-and-ec-sales-list|stamp-taxes-online"
     val vendorIds = "20001|20002"
     val vendorIdsList = List(VendorId(20001), VendorId(20002))
 
-    val csvUsersTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
-    $email,$firstName,$lastName,$servicesString,$vendorIds"""
-
     val validUserCsvPayload = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
-        a@b.com,Joe,Bloggs,service1|service2,20001|20002"""
+        a@b.com,Joe,Bloggs,$servicesString,$vendorIds"""
 
-    val parsedUser = ParsedUser(email, firstName, lastName, servicesString, vendorIdsList)
+    val parsedUser = ParsedUser(email, firstName, lastName, services, vendorIdsList)
 
     val users = Seq(
-      ParsedUser(email, firstName, lastName, servicesString, vendorIdsList)
+      ParsedUser(email, firstName, lastName, services, vendorIdsList)
     )
 
     def callGetEndpoint(url: String, headers: List[(String, String)] = List.empty): WSResponse =
@@ -194,6 +206,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
       "redirect to users page when valid form provided and connector returns 200" in new Setup {
         primeAuthServiceSuccess()
+        getAllApisResponseWithBody(OK, (Json.toJson(xmlApis)).toString)
         bulkAddUsersReturnsResponse(users, OK)
 
         val result = callPostEndpoint(
@@ -211,7 +224,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
         val result = callPostEndpoint(
           url = s"$url/csvupload/users-action",
           List(CONTENT_TYPE -> "application/x-www-form-urlencoded"),
-          s"csv-data-input=${csvUsersTestData};"
+          s"csv-data-input=${validUserCsvPayload};"
         )
         result.status mustBe INTERNAL_SERVER_ERROR
       }

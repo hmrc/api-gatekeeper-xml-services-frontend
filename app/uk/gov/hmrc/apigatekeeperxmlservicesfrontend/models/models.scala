@@ -39,3 +39,8 @@ case class Collaborator(userId: String, email: String)
 case class OrganisationName(value: String) extends AnyVal
 
 case class Organisation(organisationId: OrganisationId, vendorId: VendorId, name: String, collaborators: List[Collaborator] = List.empty)
+
+case class ServiceName(value: String) extends AnyVal
+
+case class XmlApi(name: String, serviceName: ServiceName, context: String, description: String, categories: Option[Seq[ApiCategory]] = None)
+
