@@ -85,7 +85,7 @@ trait ViewSpecHelpers extends Matchers {
   def validateAddTeamMemberPage(document: Document) = {
     document.getElementById("page-heading").text() shouldBe "Add a team member"
     document.getElementById("email-address-label").text() shouldBe "Email address"
-    Option(document.getElementById("email-address-input")).isDefined shouldBe true
+    Option(document.getElementById("emailAddress")).isDefined shouldBe true
     Option(document.getElementById("continue-button")).isDefined shouldBe true
   }
 
