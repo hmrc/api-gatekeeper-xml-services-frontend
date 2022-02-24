@@ -37,9 +37,11 @@ appConfig: AppConfig)
     uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.updateOrganisationsDetailsAction(organisationId)) {
         @helper.CSRF.formField
     <div id="form-group" class="govuk-form-group @if(form.errors("organisationName").nonEmpty) {govuk-form-group--error}">
-        <label id="organisation-name-label" class="govuk-label govuk-label--l" for="organisationName">
-            Change organisation name
-        </label>
+        <h1 class="govuk-label-wrapper">
+            <label id="organisation-name-label" class="govuk-label govuk-label--l" for="organisationName">
+                Change organisation name
+            </label>
+        </h1>
         @FieldError(form.errors, "organisationName")
         <input class="govuk-input govuk-input--width-20" id="organisationName" name="organisationName" type="text"
             aria-describedby="organisationName">
