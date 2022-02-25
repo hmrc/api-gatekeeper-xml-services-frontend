@@ -31,9 +31,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CsvService @Inject()
-(xmlServicesConnector: XmlServicesConnector)
-(implicit val ec: ExecutionContext) extends Logging {
+class CsvService @Inject() (xmlServicesConnector: XmlServicesConnector)(implicit val ec: ExecutionContext) extends Logging {
 
   object OrganisationHeader extends Enumeration {
     type OrganisationHeader = Value
@@ -68,9 +66,7 @@ class CsvService @Inject()
 
     val records = extractCsvRecords(csvData, expectedHeaders, validateUsersHeaders)
 
-    handleGetAllApis.map( allServices =>
-      records.map(x => parseUser(x, allServices))
-    )
+    handleGetAllApis.map(allServices => records.map(x => parseUser(x, allServices)))
   }
 
   def mapToOrganisationFromCsv(csvData: String): Seq[OrganisationWithNameAndVendorId] = {
@@ -115,7 +111,7 @@ class CsvService @Inject()
   private def parseStringFromCsv(record: CSVRecord, columnKey: String): String = {
     Option(record.get(columnKey)) match {
       case Some(s: String) if s.trim.nonEmpty => s.trim()
-      case _ => throw new RuntimeException(s"$columnKey cannot be empty on row ${record.getRecordNumber}")
+      case _                                  => throw new RuntimeException(s"$columnKey cannot be empty on row ${record.getRecordNumber}")
     }
   }
 
@@ -134,26 +130,35 @@ class CsvService @Inject()
         VendorId(x.toLong)
       } catch {
         case _: NumberFormatException => throw new NumberFormatException(s"Invalid ${UsersHeader.VENDORIDS} value on row ${record.getRecordNumber}")
-      }).toList
+      }
+    ).toList
   }
 
   private def parseServiceNames(record: CSVRecord, allServices: Seq[String]): List[ServiceName] = {
-    val serviceNames = parseStringFromCsv(record, s"${UsersHeader.SERVICES}")
-    serviceNames.split('|').toList.map(
-      service => if (!allServices.contains(service)) {
-        throw new RuntimeException(s"Invalid service [$service] on row ${record.getRecordNumber}")
-      }
-      else {
-        ServiceName(service)
-      }
-    )
+    val columnKey = s"${UsersHeader.SERVICES}"
+
+    def splitServiceNames(serviceNames: String): List[ServiceName] = {
+      serviceNames.split('|').toList.map(service =>
+        if (!allServices.contains(service)) {
+          throw new RuntimeException(s"Invalid service [$service] on row ${record.getRecordNumber}")
+        } else {
+          ServiceName(service)
+        }
+      )
+    }
+
+    Option(record.get(columnKey)) match {
+      case Some(s: String) => if (s.trim().nonEmpty) splitServiceNames(s) else List.empty[ServiceName]
+      case None            => List.empty[ServiceName]
+      case _               => throw new RuntimeException(s"Failed while getting $columnKey on row ${record.getRecordNumber}")
+    }
   }
 
   private def handleGetAllApis()(implicit hc: HeaderCarrier): Future[Seq[String]] = {
     xmlServicesConnector.getAllApis.map {
-      case Right(Nil) => throw new RuntimeException("No XML APIs found")
+      case Right(Nil)                  => throw new RuntimeException("No XML APIs found")
       case Right(allApis: Seq[XmlApi]) => allApis.map(x => x.serviceName.value)
-      case Left(error: Throwable) => throw new RuntimeException(s"Error getting XML APIs from backend - ${error.getMessage}")
+      case Left(error: Throwable)      => throw new RuntimeException(s"Error getting XML APIs from backend - ${error.getMessage}")
     }
   }
 
