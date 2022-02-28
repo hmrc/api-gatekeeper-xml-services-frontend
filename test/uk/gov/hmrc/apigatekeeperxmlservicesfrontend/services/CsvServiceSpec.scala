@@ -165,6 +165,38 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
       actualUser.vendorIds shouldBe vendorIdsList
     }
 
+    "return a list of users when empty (no white space) services specified" in new Setup {
+      when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(xmlApis)))
+
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+    $email, $firstName, $lastName,, $vendorIds"""
+
+      val result: Seq[ParsedUser] = await(csvService.mapToUsersFromCsv(csvTestData))
+      val actualUser = result.head
+
+      actualUser.email shouldBe email
+      actualUser.firstName shouldBe firstName
+      actualUser.lastName shouldBe lastName
+      actualUser.services shouldBe List.empty
+      actualUser.vendorIds shouldBe vendorIdsList
+    }
+
+    "return a list of users when blank (with white space) services specified" in new Setup {
+      when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(xmlApis)))
+
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+    $email, $firstName, $lastName, , $vendorIds"""
+
+      val result: Seq[ParsedUser] = await(csvService.mapToUsersFromCsv(csvTestData))
+      val actualUser = result.head
+
+      actualUser.email shouldBe email
+      actualUser.firstName shouldBe firstName
+      actualUser.lastName shouldBe lastName
+      actualUser.services shouldBe List.empty
+      actualUser.vendorIds shouldBe vendorIdsList
+    }
+
     "throw an exception when xml connector returns an empty list of xml apis" in new Setup {
       when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(Nil)))
 
