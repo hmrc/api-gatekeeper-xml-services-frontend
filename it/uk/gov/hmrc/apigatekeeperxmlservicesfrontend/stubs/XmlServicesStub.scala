@@ -49,16 +49,16 @@ trait XmlServicesStub {
       case _                     => s"$baseUrl/organisations"
     }
 
-  def createOrganisationRequestAsString(organisationName: String, email: String): String = {
-    Json.toJson(CreateOrganisationRequest(organisationName, email)).toString
+  def createOrganisationRequestAsString(organisationName: String, email: String, firstName: Option[String], lastName: Option[String]): String = {
+    Json.toJson(CreateOrganisationRequest(organisationName, email, firstName, lastName)).toString
   }
 
   def updateOrganisationDetailsRequestAsString(organisationName: String): String = {
     Json.toJson(UpdateOrganisationDetailsRequest(organisationName)).toString
   }
 
-  def addCollaboratorRequestAsString(email: String): String = {
-    Json.toJson(AddCollaboratorRequest(email)).toString
+  def addCollaboratorRequestAsString(email: String, firstName: String, lastName: String): String = {
+    Json.toJson(AddCollaboratorRequest(email, firstName, lastName)).toString
   }
 
   def bulkUploadOrganisationsRequestAsString(organisationsWithNameAndVendorIds: Seq[OrganisationWithNameAndVendorId]): String = {
@@ -136,10 +136,10 @@ trait XmlServicesStub {
       ))
   }
 
-  def addOrganisationReturnsResponse(organisationName: String, email: String, status: Int, response: Organisation) = {
+  def addOrganisationReturnsResponse(organisationName: String, email: String, firstName: Option[String], lastName: Option[String], status: Int, response: Organisation) = {
 
     stubFor(post(urlEqualTo(organisationUrl))
-      .withRequestBody(equalToJson(createOrganisationRequestAsString(organisationName, email)))
+      .withRequestBody(equalToJson(createOrganisationRequestAsString(organisationName, email, firstName, lastName)))
       .willReturn(
         aResponse()
           .withStatus(status)
@@ -147,10 +147,10 @@ trait XmlServicesStub {
       ))
   }
 
-  def addOrganisationReturnsError(organisationName: String, email: String, status: Int) = {
+  def addOrganisationReturnsError(organisationName: String, email: String, firstName: Option[String], lastName: Option[String],  status: Int) = {
 
     stubFor(post(urlEqualTo(organisationUrl))
-      .withRequestBody(equalToJson(createOrganisationRequestAsString(organisationName, email)))
+      .withRequestBody(equalToJson(createOrganisationRequestAsString(organisationName, email, firstName, lastName)))
       .willReturn(
         aResponse()
           .withStatus(status)
@@ -187,10 +187,10 @@ trait XmlServicesStub {
       ))
   }
 
-  def addTeamMemberReturnsResponse(organisationId: OrganisationId, email: String, status: Int, response: Organisation) = {
+  def addTeamMemberReturnsResponse(organisationId: OrganisationId, email: String, firstName: String, lastName:String,  status: Int, response: Organisation) = {
 
     stubFor(post(urlEqualTo(addTeamMemberUrl(organisationId)))
-      .withRequestBody(equalToJson(addCollaboratorRequestAsString(email)))
+      .withRequestBody(equalToJson(addCollaboratorRequestAsString(email, firstName, lastName)))
       .willReturn(
         aResponse()
           .withStatus(status)
@@ -198,10 +198,10 @@ trait XmlServicesStub {
       ))
   }
 
-  def addTeamMemberReturnsError(organisationId: OrganisationId, email: String, status: Int) = {
+  def addTeamMemberReturnsError(organisationId: OrganisationId, email: String,  firstName: String, lastName:String, status: Int) = {
 
     stubFor(post(urlEqualTo(addTeamMemberUrl(organisationId)))
-      .withRequestBody(equalToJson(addCollaboratorRequestAsString(email)))
+      .withRequestBody(equalToJson(addCollaboratorRequestAsString(email, firstName, lastName)))
       .willReturn(
         aResponse()
           .withStatus(status)

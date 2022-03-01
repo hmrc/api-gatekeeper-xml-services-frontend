@@ -79,7 +79,7 @@ object Forms {
 
     val form = Form(
       mapping(
-        "emailAddress" -> optional(nonEmptyText).verifying("email.error.required", x => x.isDefined)
+        "emailAddress" -> optional(nonEmptyText).verifying("emailAddress.error.required", x => x.isDefined)
       )(AddTeamMemberForm.apply)(AddTeamMemberForm.unapply)
     )
 
@@ -90,7 +90,7 @@ object Forms {
   object CreateAndAddTeamMemberForm {
     val form = Form(
       mapping(
-        "emailAddress" -> text.verifying("email.error.required", x => x.trim.nonEmpty),
+        "emailAddress" -> text.verifying("emailAddress.error.required", x => x.trim.nonEmpty),
         "firstName" -> text.verifying("firstname.error.required", x => x.trim.nonEmpty),
         "lastName" ->  text.verifying("lastname.error.required", x => x.trim.nonEmpty)
       )(CreateAndAddTeamMemberForm.apply)(CreateAndAddTeamMemberForm.unapply)

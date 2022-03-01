@@ -34,7 +34,7 @@ Request[_],
         @helper.form(action =
             uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.TeamMembersController.createTeamMemberAction(organisationId)) {
             @helper.CSRF.formField
-            <div id="form-group" class="govuk-form-group @if(form.errors("emailAddress").nonEmpty) {govuk-form-group--error}">
+            <div id="form-group" class="govuk-form-group @if(form.hasErrors) {govuk-form-group--error}">
                 <fieldset class="govuk-fieldset">
                     <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
                         <h1 id="page-heading" class="govuk-fieldset__heading">
@@ -43,14 +43,14 @@ Request[_],
                     </legend>
 
                     <div class="govuk-form-group">
-                        <label class="govuk-label" for="firstName">
+                        <label id="first-name-label" class="govuk-label" for="firstName">
                             First name
                         </label>
                         <input class="govuk-input govuk-input--width-10" id="firstName" name="firstName" type="text">
                     </div>
 
                     <div class="govuk-form-group">
-                        <label class="govuk-label" for="lastName">
+                        <label  id="last-name-label" class="govuk-label" for="lastName">
                             Last name
                         </label>
                         <input class="govuk-input govuk-input--width-10" id="lastName" name="lastName" type="text">
@@ -58,7 +58,7 @@ Request[_],
 
                     <div>
 
-                        <input id="emailAddress" name="emailAddress" type="hidden"
+                        <input id="email-hidden" name="emailAddress" type="hidden"
                             @if(email.isDefined) {
                                 value="@email.getOrElse("")"
                             } else {

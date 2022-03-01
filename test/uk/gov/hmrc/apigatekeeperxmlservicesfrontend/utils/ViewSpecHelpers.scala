@@ -89,6 +89,14 @@ trait ViewSpecHelpers extends Matchers {
     Option(document.getElementById("continue-button")).isDefined shouldBe true
   }
 
+  def validateCreateTeamMemberPage(document: Document, expectedEmail: String) = {
+    document.getElementById("page-heading").text() shouldBe "Add the team member’s name"
+    document.getElementById("first-name-label").text() shouldBe "First name"
+    document.getElementById("last-name-label").text() shouldBe "Last name"
+    document.getElementById("email-hidden").`val`() shouldBe expectedEmail
+    Option(document.getElementById("continue-button")).isDefined shouldBe true
+  }
+
   def validateRemoveTeamMemberPage(document: Document) = {
     document.getElementById("page-heading").text() shouldBe "Are you sure you want to remove email1?"
     Option(document.getElementById("yes")).isDefined shouldBe true
