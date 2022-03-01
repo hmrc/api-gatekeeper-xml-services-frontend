@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support
 
-import play.api.inject.Module
-import play.api.{Configuration, Environment}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{ThirdPartyDeveloperConnector, XmlServicesConnector}
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
 
-class ConfigurationModule extends Module {
-
-  override def bindings(environment: Environment, configuration: Configuration) = {
-    Seq (
-      bind[XmlServicesConnector.Config].toProvider[XmlServicesConnectorProvider],
-      bind[ThirdPartyDeveloperConnector.Config].toProvider[ThirdPartyDeveloperConnectorProvider]
-    )
-  }
-
+trait AwaitTestSupport {
+  def await[A](future: Future[A], timeout: Duration = 5 seconds): A = Await.result(future, timeout)
 }

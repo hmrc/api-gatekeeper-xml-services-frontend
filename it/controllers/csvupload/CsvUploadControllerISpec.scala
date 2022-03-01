@@ -22,7 +22,7 @@ import play.api.http.HeaderNames.CONTENT_TYPE
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.Helpers.{FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SEE_OTHER}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.XmlServicesStub
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{OrganisationName, OrganisationWithNameAndVendorId, VendorId, ServiceName}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{AuthServiceStub, ServerBaseISpec}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.ParsedUser

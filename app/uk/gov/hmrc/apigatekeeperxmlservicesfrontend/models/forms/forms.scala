@@ -34,6 +34,22 @@ object Forms {
 
   }
 
+  case class AddOrganisationWithNewUserForm(organisationName: String, emailAddress: String, firstName: String, lastName: String)
+
+  object AddOrganisationWithNewUserForm {
+
+    val form = Form(
+      mapping(
+        "organisationName" -> text.verifying(error = "organisationname.error.required", x => x.trim.nonEmpty),
+        "emailAddress" -> text.verifying(error = "emailAddress.error.required", x => x.trim.nonEmpty),
+        "firstName" -> text.verifying("firstname.error.required", x => x.trim.nonEmpty),
+        "lastName" ->  text.verifying("lastname.error.required", x => x.trim.nonEmpty)
+
+      )(AddOrganisationWithNewUserForm.apply)(AddOrganisationWithNewUserForm.unapply)
+    )
+
+  }
+
   case class UpdateOrganisationDetailsForm(organisationName: String )
 
   object UpdateOrganisationDetailsForm {
@@ -58,14 +74,27 @@ object Forms {
 
   case class AddTeamMemberForm(emailAddress: Option[String] = Some(""))
 
+
   object AddTeamMemberForm {
 
     val form = Form(
       mapping(
-        "emailAddress" -> optional(nonEmptyText).verifying("teammember.add.email.error.required", x => x.isDefined)
+        "emailAddress" -> optional(nonEmptyText).verifying("email.error.required", x => x.isDefined)
       )(AddTeamMemberForm.apply)(AddTeamMemberForm.unapply)
     )
 
+  }
+
+  case class CreateAndAddTeamMemberForm(emailAddress: String , firstName: String, lastName:String)
+
+  object CreateAndAddTeamMemberForm {
+    val form = Form(
+      mapping(
+        "emailAddress" -> text.verifying("email.error.required", x => x.trim.nonEmpty),
+        "firstName" -> text.verifying("firstname.error.required", x => x.trim.nonEmpty),
+        "lastName" ->  text.verifying("lastname.error.required", x => x.trim.nonEmpty)
+      )(CreateAndAddTeamMemberForm.apply)(CreateAndAddTeamMemberForm.unapply)
+    )
   }
 
   final case class RemoveTeamMemberConfirmationForm(email: String, confirm: Option[String] = Some(""))
