@@ -404,7 +404,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     "redirect to organisation page, call add organisation when user is authorised and form is valid" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
-      when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name), eqTo(collaborator1.email), eqTo(Some(firstName)), eqTo(Some(lastName)))(*))
+      when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name), eqTo(collaborator1.email), eqTo(firstName), eqTo(lastName))(*))
         .thenReturn(Future.successful(CreateOrganisationSuccess(org1)))
 
       val result = controller.organisationsAddWithNewUserAction()(fakeRequest
@@ -416,7 +416,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).getOrElse("") shouldBe s"/api-gatekeeper-xml-services/organisations/${org1.organisationId.value}"
 
-      verify(mockXmlServiceConnector).addOrganisation(eqTo(org1.name), eqTo(collaborator1.email), eqTo(Some(firstName)), eqTo(Some(lastName)))(*)
+      verify(mockXmlServiceConnector).addOrganisation(eqTo(org1.name), eqTo(collaborator1.email), eqTo(firstName), eqTo(lastName))(*)
 
     }
 
@@ -442,7 +442,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     "return 500 when call to add organisation fails but the user is authorised and form is valid" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
-      when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name), eqTo(collaborator1.email), eqTo(Some(firstName)), eqTo(Some(lastName)))(*))
+      when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name), eqTo(collaborator1.email), eqTo(firstName), eqTo(lastName))(*))
         .thenReturn(Future.successful(CreateOrganisationFailure(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
 
       val result = controller.organisationsAddWithNewUserAction()(fakeRequest
@@ -453,7 +453,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
 
       status(result) shouldBe INTERNAL_SERVER_ERROR
 
-      verify(mockXmlServiceConnector).addOrganisation(eqTo(org1.name), eqTo(collaborator1.email), eqTo(Some(firstName)), eqTo(Some(lastName)))(*)
+      verify(mockXmlServiceConnector).addOrganisation(eqTo(org1.name), eqTo(collaborator1.email), eqTo(firstName), eqTo(lastName))(*)
 
     }
   }

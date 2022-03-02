@@ -169,16 +169,16 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
     "return CreateOrganisationSuccess when back end returns Organisation" in new Setup {
 
-      addOrganisationReturnsResponse(organisation.name, emailAddress, Some(firstName), Some(lastName), OK, organisation)
-      val result = await(objInTest.addOrganisation(organisation.name, emailAddress, Some(firstName), Some(lastName)))
+      addOrganisationReturnsResponse(organisation.name, emailAddress, firstName, lastName, OK, organisation)
+      val result = await(objInTest.addOrganisation(organisation.name, emailAddress, firstName, lastName))
 
       result mustBe CreateOrganisationSuccess(organisation)
 
     }
 
     "return CreateOrganisationFailure when back end returns error" in new Setup {
-      addOrganisationReturnsError(organisation.name, emailAddress, Some(firstName), Some(lastName), INTERNAL_SERVER_ERROR)
-      val result = await(objInTest.addOrganisation(organisation.name, emailAddress, Some(firstName), Some(lastName)))
+      addOrganisationReturnsError(organisation.name, emailAddress, firstName, lastName, INTERNAL_SERVER_ERROR)
+      val result = await(objInTest.addOrganisation(organisation.name, emailAddress, firstName, lastName))
 
       result match {
         case CreateOrganisationFailure(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed

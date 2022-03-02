@@ -79,7 +79,7 @@ class OrganisationController @Inject()(
             case Right(Nil) =>
               successful(Ok(organisationAddNewUserView(addOrganisationWithNewUserForm, Some(formData.organisationName), Some(formData.emailAddress))))
             case Right(users: List[UserResponse]) =>
-              addOrganisation(formData.organisationName, formData.emailAddress, Some(users.head.firstName), Some(users.head.lastName))
+              addOrganisation(formData.organisationName, formData.emailAddress, users.head.firstName, users.head.lastName)
             case Left(_) =>
               successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error")))
 
@@ -91,11 +91,11 @@ class OrganisationController @Inject()(
   def organisationsAddWithNewUserAction(): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request => addOrganisationWithNewUserForm.bindFromRequest.fold(
       formWithErrors => successful(BadRequest(organisationAddNewUserView(formWithErrors, None, None))),
-      formData => addOrganisation(formData.organisationName, formData.emailAddress,  Some(formData.firstName),  Some(formData.lastName))
+      formData => addOrganisation(formData.organisationName, formData.emailAddress, formData.firstName,  formData.lastName)
     )
   }
 
- private def addOrganisation(organisationName: String, emailAddress: String, firstName: Option[String], lastName: Option[String])
+ private def addOrganisation(organisationName: String, emailAddress: String, firstName: String, lastName: String)
                             (implicit hc: HeaderCarrier, loggedInRequest: LoggedInRequest[_]): Future[Result] ={
    xmlServicesConnector
      .addOrganisation(organisationName, emailAddress, firstName, lastName)
