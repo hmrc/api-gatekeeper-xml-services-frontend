@@ -30,7 +30,7 @@ import scala.util.control.NonFatal
 import uk.gov.hmrc.http.HttpResponse
 
 @Singleton
-class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(implicit ec: ExecutionContext) extends Logging {
+class XmlServicesConnector @Inject()(val http: HttpClient, val config: Config)(implicit ec: ExecutionContext) extends Logging {
 
   val baseUrl: String = s"${config.serviceBaseUrl}/api-platform-xml-services"
 
@@ -41,7 +41,7 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
     val sortByParams = (vendorId, organisationName) match {
       case (Some(_), None) => Seq("sortBy" -> "VENDOR_ID")
       case (None, Some(_)) => Seq("sortBy" -> "ORGANISATION_NAME")
-      case _               => Seq.empty
+      case _ => Seq.empty
     }
 
     val params = vendorIdParams ++ orgNameParams ++ sortByParams
@@ -53,8 +53,9 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
     handleResult(http.GET[Organisation](url = s"$baseUrl/organisations/${organisationId.value}"))
   }
 
-  def addOrganisation(organisationName: String, email: String)(implicit hc: HeaderCarrier): Future[CreateOrganisationResult] = {
-    val createOrganisationRequest: CreateOrganisationRequest = CreateOrganisationRequest(organisationName, email)
+  def addOrganisation(organisationName: String, email: String, firstName: String, lastName: String)
+                     (implicit hc: HeaderCarrier): Future[CreateOrganisationResult] = {
+    val createOrganisationRequest: CreateOrganisationRequest = CreateOrganisationRequest(organisationName, email, firstName, lastName)
 
     http.POST[CreateOrganisationRequest, Either[UpstreamErrorResponse, Organisation]](
       url = s"$baseUrl/organisations",
@@ -83,18 +84,19 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
   def removeOrganisation(organisationId: OrganisationId)(implicit hc: HeaderCarrier): Future[Boolean] = {
     http.DELETE[HttpResponse](
       url = s"$baseUrl/organisations/${organisationId.value}")
-    .map(_.status == NO_CONTENT)
-    .recover {
-      case NonFatal(e) =>
-        logger.error(e.getMessage)
-        false
-    }
+      .map(_.status == NO_CONTENT)
+      .recover {
+        case NonFatal(e) =>
+          logger.error(e.getMessage)
+          false
+      }
   }
 
-  def addTeamMember(organisationId: OrganisationId, email: String)(implicit hc: HeaderCarrier) = {
+  def addTeamMember(organisationId: OrganisationId, email: String, firstname: String, lastname: String)
+                   (implicit hc: HeaderCarrier): Future[AddCollaboratorResult] = {
     http.POST[AddCollaboratorRequest, Either[UpstreamErrorResponse, Organisation]](
       url = s"$baseUrl/organisations/${organisationId.value}/add-collaborator",
-      AddCollaboratorRequest(email)
+      AddCollaboratorRequest(email, firstname, lastname)
     ).map {
       case Right(x: Organisation) => AddCollaboratorSuccess(x)
       case Left(err) => AddCollaboratorFailure(err)
@@ -102,19 +104,20 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
 
   }
 
-  def bulkAddOrganisations(organisations: Seq[OrganisationWithNameAndVendorId])(implicit hc: HeaderCarrier) = {
+  def bulkAddOrganisations(organisations: Seq[OrganisationWithNameAndVendorId])(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, Unit]] = {
     http.POST[BulkUploadOrganisationsRequest, Either[UpstreamErrorResponse, Unit]](
       url = s"$baseUrl/csvupload/bulkorganisations", BulkUploadOrganisationsRequest(organisations)
     )
   }
 
-  def bulkAddUsers(users: Seq[ParsedUser])(implicit hc: HeaderCarrier) = {
+  def bulkAddUsers(users: Seq[ParsedUser])(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, Unit]] = {
     http.POST[BulkAddUsersRequest, Either[UpstreamErrorResponse, Unit]](
       url = s"$baseUrl/csvupload/bulkusers", BulkAddUsersRequest(users)
     )
   }
 
-  def removeTeamMember(organisationId: OrganisationId, email: String, gateKeeperUserId: String)(implicit hc: HeaderCarrier) = {
+  def removeTeamMember(organisationId: OrganisationId, email: String, gateKeeperUserId: String)
+                      (implicit hc: HeaderCarrier): Future[RemoveCollaboratorResult] = {
     http.POST[RemoveCollaboratorRequest, Either[UpstreamErrorResponse, Organisation]](
       url = s"$baseUrl/organisations/${organisationId.value}/remove-collaborator",
       RemoveCollaboratorRequest(email, gateKeeperUserId)
@@ -143,6 +146,6 @@ object XmlServicesConnector {
   case class Config(serviceBaseUrl: String)
 }
 
-case class AddCollaboratorRequest(email: String)
+case class AddCollaboratorRequest(email: String, firstName: String, lastName: String)
 
 case class RemoveCollaboratorRequest(email: String, gatekeeperUserId: String)

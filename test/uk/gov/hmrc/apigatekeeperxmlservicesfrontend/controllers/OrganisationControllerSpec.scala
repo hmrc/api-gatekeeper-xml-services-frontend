@@ -22,15 +22,17 @@ import play.api.http.Status
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{ThirdPartyDeveloperConnector, XmlServicesConnector}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.{UserId, UserResponse}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
+import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -44,24 +46,28 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     private lazy val organisationSearchView = app.injector.instanceOf[OrganisationSearchView]
     private lazy val organisationDetailsView = app.injector.instanceOf[OrganisationDetailsView]
     private lazy val organisationAddView = app.injector.instanceOf[OrganisationAddView]
+    private lazy val organisationAddNewUserView = app.injector.instanceOf[OrganisationAddNewUserView]
     private lazy val organisationUpdateView = app.injector.instanceOf[OrganisationUpdateView]
     private lazy val organisationRemoveView = app.injector.instanceOf[OrganisationRemoveView]
     private lazy val organisationRemoveSuccessView = app.injector.instanceOf[OrganisationRemoveSuccessView]
 
     val mockXmlServiceConnector = mock[XmlServicesConnector]
+    val mockThirdPartDeveloperConnector = mock[ThirdPartyDeveloperConnector]
 
     val controller = new OrganisationController(
       mcc,
       organisationSearchView,
       organisationDetailsView,
       organisationAddView,
+      organisationAddNewUserView,
       organisationUpdateView,
       organisationRemoveView,
       organisationRemoveSuccessView,
       mockAuthConnector,
       forbiddenView,
       errorTemplate,
-      mockXmlServiceConnector
+      mockXmlServiceConnector,
+      mockThirdPartDeveloperConnector
     )
 
     def validatePageIsRendered(result: Future[Result]) = {
@@ -289,16 +295,54 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
   }
 
   "organisationsAddAction" should {
-    "display organisation details page when create successful result returned from connector" in new Setup {
+
+    "display organisation details page when email is existing user and create successful result returned from connector" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-      when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name), eqTo(collaborator1.email))(*)).thenReturn(Future.successful(CreateOrganisationSuccess(org1)))
+
+      val userId = UserId(UUID.randomUUID())
+      val userResponse = UserResponse(collaborator1.email, firstName, lastName, verified = true,  userId)
+
+      when(mockThirdPartDeveloperConnector.getByEmails(eqTo(List(collaborator1.email)))(*)).thenReturn(Future.successful(Right(List(userResponse))))
+
+      when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name), eqTo(collaborator1.email), *, *)(*)).thenReturn(Future.successful(CreateOrganisationSuccess(org1)))
 
       val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> org1.name, "emailAddress" -> collaborator1.email))
       status(result) shouldBe SEE_OTHER
       redirectLocation(result).getOrElse("") shouldBe s"/api-gatekeeper-xml-services/organisations/${org1.organisationId.value}"
 
-      verify(mockXmlServiceConnector).addOrganisation(eqTo(org1.name), eqTo(collaborator1.email))(*)
+      verify(mockXmlServiceConnector).addOrganisation(eqTo(org1.name), eqTo(collaborator1.email), *, *)(*)
+      verify(mockThirdPartDeveloperConnector).getByEmails(eqTo(List(collaborator1.email)))(*)
     }
+
+
+    "display add new user page when user does not exist" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+      when(mockThirdPartDeveloperConnector.getByEmails(eqTo(List(collaborator1.email)))(*)).thenReturn(Future.successful(Right(List.empty)))
+
+      val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> org1.name, "emailAddress" -> collaborator1.email))
+      status(result) shouldBe OK
+      val document = Jsoup.parse(contentAsString(result))
+      validateOrganisationAddNewUserPage(document, org1.name, collaborator1.email)
+
+      verify(mockThirdPartDeveloperConnector).getByEmails(eqTo(List(collaborator1.email)))(*)
+      verifyZeroInteractions(mockXmlServiceConnector)
+
+    }
+
+    "return 500 when third party developer returns error" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+      when(mockThirdPartDeveloperConnector.getByEmails(eqTo(List(collaborator1.email)))(*)).thenReturn(Future.successful(Left(UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
+
+      val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> org1.name, "emailAddress" -> collaborator1.email))
+      status(result) shouldBe INTERNAL_SERVER_ERROR
+
+      verify(mockThirdPartDeveloperConnector).getByEmails(eqTo(List(collaborator1.email)))(*)
+      verifyZeroInteractions(mockXmlServiceConnector)
+
+    }
+
 
     "not allow spaces as organisation name" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
@@ -312,17 +356,25 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       validateFormErrors(document, Some("Enter an organisation name"))
       validateFormErrors(document, Some("Enter an email address"))
       verifyZeroInteractions(mockXmlServiceConnector)
+      verifyZeroInteractions(mockThirdPartDeveloperConnector)
     }
 
     "display internal server error when failure result returned from connector" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-      when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name), eqTo(collaborator1.email))(*))
+
+
+      val userId = UserId(UUID.randomUUID())
+      val userResponse = UserResponse(collaborator1.email, firstName, lastName, verified = true,  userId)
+
+      when(mockThirdPartDeveloperConnector.getByEmails(eqTo(List(collaborator1.email)))(*)).thenReturn(Future.successful(Right(List(userResponse))))
+
+      when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name), eqTo(collaborator1.email), *, *)(*))
         .thenReturn(Future.successful(CreateOrganisationFailure(UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
 
       val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> org1.name, "emailAddress" -> collaborator1.email))
       status(result) shouldBe INTERNAL_SERVER_ERROR
 
-      verify(mockXmlServiceConnector).addOrganisation(eqTo(org1.name), eqTo(collaborator1.email))(*)
+      verify(mockXmlServiceConnector).addOrganisation(eqTo(org1.name), eqTo(collaborator1.email), *, *)(*)
     }
 
     "display add page with error messages when invalid form provided" in new Setup {
@@ -344,6 +396,64 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       val result = controller.organisationsAddAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> org1.name))
 
       status(result) shouldBe Status.SEE_OTHER
+
+    }
+  }
+
+  "organisationsAddWithNewUserAction" should {
+    "redirect to organisation page, call add organisation when user is authorised and form is valid" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+      when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name), eqTo(collaborator1.email), eqTo(firstName), eqTo(lastName))(*))
+        .thenReturn(Future.successful(CreateOrganisationSuccess(org1)))
+
+      val result = controller.organisationsAddWithNewUserAction()(fakeRequest
+        .withCSRFToken.withFormUrlEncodedBody("organisationName" -> organisationWithCollaborators.name,
+      "emailAddress" -> collaborator1.email,
+      "firstName" -> firstName,
+      "lastName" -> lastName))
+
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).getOrElse("") shouldBe s"/api-gatekeeper-xml-services/organisations/${org1.organisationId.value}"
+
+      verify(mockXmlServiceConnector).addOrganisation(eqTo(org1.name), eqTo(collaborator1.email), eqTo(firstName), eqTo(lastName))(*)
+
+    }
+
+    "display the add new user page with errors when user is authorised but form is invalid" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+      val result = controller.organisationsAddWithNewUserAction()(fakeRequest
+        .withCSRFToken.withFormUrlEncodedBody("organisationName" -> organisationWithCollaborators.name,
+        "emailAddress" -> collaborator1.email,
+        "firstName" -> "",
+        "lastName" -> ""))
+
+      status(result) shouldBe BAD_REQUEST
+      val document = Jsoup.parse(contentAsString(result))
+      validateFormErrors(document, Some("Enter a first name"))
+      validateFormErrors(document, Some("Enter a last name"))
+      validateOrganisationAddNewUserPage(document, organisationWithCollaborators.name, collaborator1.email)
+
+      verifyZeroInteractions(mockXmlServiceConnector)
+
+    }
+
+    "return 500 when call to add organisation fails but the user is authorised and form is valid" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+      when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name), eqTo(collaborator1.email), eqTo(firstName), eqTo(lastName))(*))
+        .thenReturn(Future.successful(CreateOrganisationFailure(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
+
+      val result = controller.organisationsAddWithNewUserAction()(fakeRequest
+        .withCSRFToken.withFormUrlEncodedBody("organisationName" -> organisationWithCollaborators.name,
+        "emailAddress" -> collaborator1.email,
+        "firstName" -> firstName,
+        "lastName" -> lastName))
+
+      status(result) shouldBe INTERNAL_SERVER_ERROR
+
+      verify(mockXmlServiceConnector).addOrganisation(eqTo(org1.name), eqTo(collaborator1.email), eqTo(firstName), eqTo(lastName))(*)
 
     }
   }

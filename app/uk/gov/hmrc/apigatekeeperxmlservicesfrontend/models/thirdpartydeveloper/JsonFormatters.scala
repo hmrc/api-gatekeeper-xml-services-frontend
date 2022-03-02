@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
-import scala.concurrent.Future
+import play.api.libs.json.Json
 
-trait AwaitTestSupport {
-  def await[A](future: Future[A], timeout: Duration = 5 seconds): A = Await.result(future, timeout)
+
+object JsonFormatters {
+  implicit val formatUserId = Json.valueFormat[UserId]
+  implicit  val formatUserResponse = Json.format[UserResponse]
 }

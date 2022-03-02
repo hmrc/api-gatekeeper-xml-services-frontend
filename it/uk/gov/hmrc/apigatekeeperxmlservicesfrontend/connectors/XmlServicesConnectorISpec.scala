@@ -21,7 +21,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import play.api.test.Helpers._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.XmlServicesStub
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
@@ -169,16 +169,16 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
     "return CreateOrganisationSuccess when back end returns Organisation" in new Setup {
 
-      addOrganisationReturnsResponse(organisation.name, emailAddress, OK, organisation)
-      val result = await(objInTest.addOrganisation(organisation.name, emailAddress))
+      addOrganisationReturnsResponse(organisation.name, emailAddress, firstName, lastName, OK, organisation)
+      val result = await(objInTest.addOrganisation(organisation.name, emailAddress, firstName, lastName))
 
       result mustBe CreateOrganisationSuccess(organisation)
 
     }
 
     "return CreateOrganisationFailure when back end returns error" in new Setup {
-      addOrganisationReturnsError(organisation.name, emailAddress, INTERNAL_SERVER_ERROR)
-      val result = await(objInTest.addOrganisation(organisation.name, emailAddress))
+      addOrganisationReturnsError(organisation.name, emailAddress, firstName, lastName, INTERNAL_SERVER_ERROR)
+      val result = await(objInTest.addOrganisation(organisation.name, emailAddress, firstName, lastName))
 
       result match {
         case CreateOrganisationFailure(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed
@@ -236,11 +236,13 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       addTeamMemberReturnsResponse(
         organisationWithTeamMembers.organisationId,
         emailAddress,
+        firstName,
+        lastName,
         OK,
         organisationWithTeamMembers.copy(collaborators = updatedCollaboratorList)
       )
 
-      val result = await(objInTest.addTeamMember(organisationWithTeamMembers.organisationId, emailAddress))
+      val result = await(objInTest.addTeamMember(organisationWithTeamMembers.organisationId, emailAddress, firstName, lastName))
 
       result mustBe AddCollaboratorSuccess(organisationWithTeamMembers.copy(collaborators = updatedCollaboratorList))
     }
@@ -253,10 +255,12 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       addTeamMemberReturnsError(
         organisationWithTeamMembers.organisationId,
         emailAddress,
+        firstName,
+        lastName,
         NOT_FOUND
       )
 
-      val result = await(objInTest.addTeamMember(organisationWithTeamMembers.organisationId, emailAddress))
+      val result = await(objInTest.addTeamMember(organisationWithTeamMembers.organisationId, emailAddress, firstName, lastName))
 
       result match {
         case AddCollaboratorFailure(UpstreamErrorResponse(message, NOT_FOUND, _, _)) => message mustBe expectedErrorMessage

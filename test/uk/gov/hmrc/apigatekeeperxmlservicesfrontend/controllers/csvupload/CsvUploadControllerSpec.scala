@@ -77,8 +77,8 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
     )
 
     val email = "a@b.com"
-    val firstName = "Joe"
-    val lastName = "Bloggs"
+    override val firstName = "Joe"
+    override val lastName = "Bloggs"
     val servicesString = "service1|service2"
     val vendorIds = List(VendorId(20001), VendorId(20002))
 

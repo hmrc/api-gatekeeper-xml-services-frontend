@@ -20,47 +20,51 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.AddTeamMemberForm
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.CreateAndAddTeamMemberForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.{CommonViewSpec, WithCSRFAddToken}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.AddTeamMemberView
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.CreateTeamMemberView
 
-class AddTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with ViewSpecHelpers {
+class CreateTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with ViewSpecHelpers {
 
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
-    val addTeamMemberView = app.injector.instanceOf[AddTeamMemberView]
+    val createTeamMemberView = app.injector.instanceOf[CreateTeamMemberView]
 
   }
 
-  "Add Team Member View" should {
+  "Create Team Member View" should {
 
 
-    "render the add team member page correctly when no errors" in new Setup {
+    "render the create team member page correctly when no errors" in new Setup {
 
-      val page = addTeamMemberView.render(AddTeamMemberForm.form,
+      val page = createTeamMemberView.render(CreateAndAddTeamMemberForm.form,
         org1.organisationId,
+        Some(emailAddress),
         FakeRequest().withCSRFToken,
         messagesProvider.messages, mockAppConfig)
 
       val document: Document = Jsoup.parse(page.body)
 
       validateFormErrors(document)
-      validateAddTeamMemberPage(document)
+      validateCreateTeamMemberPage(document, emailAddress)
     }
 
-    "render the add team member page correctly when errors exist" in new Setup {
+    "render the create team member page correctly when errors exist" in new Setup {
 
-      val page = addTeamMemberView.render(AddTeamMemberForm.form.withError("emailAddress", "emailAddress.error.required"),
+      val page = createTeamMemberView
+        .render(CreateAndAddTeamMemberForm.form.withError("firstName", "firstname.error.required").withError("lastName", "lastname.error.required"),
         org1.organisationId,
+        Some(emailAddress),
         FakeRequest().withCSRFToken,
         messagesProvider.messages,
         mockAppConfig)
 
       val document: Document = Jsoup.parse(page.body)
 
-      validateFormErrors(document, Some("Enter an email address"))
-      validateAddTeamMemberPage(document)
+      validateFormErrors(document, Some("Enter a first name"))
+      validateFormErrors(document, Some("Enter a last name"))
+      validateCreateTeamMemberPage(document, emailAddress)
     }
   }
 }

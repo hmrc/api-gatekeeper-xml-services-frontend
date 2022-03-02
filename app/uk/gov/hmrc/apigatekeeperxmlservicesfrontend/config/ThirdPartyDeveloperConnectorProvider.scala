@@ -16,17 +16,15 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config
 
-import play.api.inject.Module
-import play.api.{Configuration, Environment}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{ThirdPartyDeveloperConnector, XmlServicesConnector}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.ThirdPartyDeveloperConnector
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-class ConfigurationModule extends Module {
+import javax.inject.{Inject, Provider, Singleton}
 
-  override def bindings(environment: Environment, configuration: Configuration) = {
-    Seq (
-      bind[XmlServicesConnector.Config].toProvider[XmlServicesConnectorProvider],
-      bind[ThirdPartyDeveloperConnector.Config].toProvider[ThirdPartyDeveloperConnectorProvider]
-    )
+@Singleton
+class ThirdPartyDeveloperConnectorProvider @Inject()(servicesConfig: ServicesConfig) extends Provider[ThirdPartyDeveloperConnector.Config] {
+
+  override def get(): ThirdPartyDeveloperConnector.Config = {
+    ThirdPartyDeveloperConnector.Config(servicesConfig.baseUrl("third-party-developer"))
   }
-
 }

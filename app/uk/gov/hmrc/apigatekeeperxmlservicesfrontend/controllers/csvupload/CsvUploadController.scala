@@ -82,7 +82,7 @@ class CsvUploadController @Inject() (
                 case Left(e: UpstreamErrorResponse) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", e.getMessage))
               }}
           } catch {
-            case exception: Throwable => 
+            case exception: Throwable =>
               logger.error("Error during upload", exception)
               Future.successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", exception.getMessage)))
           }

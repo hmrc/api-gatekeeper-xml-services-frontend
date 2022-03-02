@@ -14,19 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper
 
-import play.api.inject.Module
-import play.api.{Configuration, Environment}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{ThirdPartyDeveloperConnector, XmlServicesConnector}
+case class UserId(value: java.util.UUID)
 
-class ConfigurationModule extends Module {
-
-  override def bindings(environment: Environment, configuration: Configuration) = {
-    Seq (
-      bind[XmlServicesConnector.Config].toProvider[XmlServicesConnectorProvider],
-      bind[ThirdPartyDeveloperConnector.Config].toProvider[ThirdPartyDeveloperConnectorProvider]
-    )
-  }
-
-}
+case class UserResponse(email: String,
+                        firstName: String,
+                        lastName: String,
+                        verified: Boolean = false,
+                        userId: UserId)

@@ -31,6 +31,9 @@ trait OrganisationTestData {
     val org2 = Organisation(organisationId2, VendorId(2), "Org 2")
     val org3 = Organisation(organisationId3, VendorId(3), "Org 3")
 
+    val emailAddress = "a@b.com"
+    val firstName = "bob"
+    val lastName = "hope"
     val collaborator1 = Collaborator("userId1", "email1")
     val collaborator2 =  Collaborator("userId2", "email2")
     val organisationWithCollaborators = org1.copy(collaborators = List(collaborator1, collaborator2))

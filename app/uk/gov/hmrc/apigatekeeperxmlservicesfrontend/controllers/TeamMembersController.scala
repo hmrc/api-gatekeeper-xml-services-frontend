@@ -19,9 +19,10 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 import play.api.data.Form
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{AuthConnector, XmlServicesConnector}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.{AddTeamMemberForm, RemoveTeamMemberConfirmationForm}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{AuthConnector, ThirdPartyDeveloperConnector, XmlServicesConnector}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.{AddTeamMemberForm, CreateAndAddTeamMemberForm, RemoveTeamMemberConfirmationForm}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
@@ -35,22 +36,24 @@ import scala.concurrent.{ExecutionContext, Future}
 class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
                                       manageTeamMembersView: ManageTeamMembersView,
                                       addTeamMemberView: AddTeamMemberView,
+                                      createTeamMemberView: CreateTeamMemberView,
                                       removeTeamMemberView: RemoveTeamMemberView,
                                       override val authConnector: AuthConnector,
                                       val forbiddenView: ForbiddenView,
                                       errorTemplate: ErrorTemplate,
-                                      xmlServicesConnector: XmlServicesConnector
+                                      xmlServicesConnector: XmlServicesConnector,
+                                      thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector
                                     )(implicit val ec: ExecutionContext,
                                       appConfig: AppConfig)
   extends FrontendController(mcc) with GatekeeperAuthWrapper {
 
   val addTeamMemberForm: Form[AddTeamMemberForm] = AddTeamMemberForm.form
+  val createAndAddTeamMemberForm: Form[CreateAndAddTeamMemberForm] = CreateAndAddTeamMemberForm.form
   val confirmRemoveForm: Form[RemoveTeamMemberConfirmationForm] = RemoveTeamMemberConfirmationForm.form
 
   def manageTeamMembers(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request => {
-      xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
-        .map {
+      xmlServicesConnector.getOrganisationByOrganisationId(organisationId).map {
           case Right(org: Organisation) => Ok(manageTeamMembersView(org))
           case Left(_) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
         }
@@ -64,19 +67,33 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
   def addTeamMemberAction(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request =>
       addTeamMemberForm.bindFromRequest.fold(
-        formWithErrors => {
-          successful(BadRequest(addTeamMemberView(formWithErrors, organisationId)))
-        },
+        formWithErrors => successful(BadRequest(addTeamMemberView(formWithErrors, organisationId))),
         teamMemberAddData => {
-          xmlServicesConnector
-            .addTeamMember(organisationId, teamMemberAddData.emailAddress.getOrElse(""))
-            .map {
-              case AddCollaboratorSuccess(x: Organisation) =>
-                Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.TeamMembersController.manageTeamMembers(x.organisationId))
-              case _ => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
-            }
+         thirdPartyDeveloperConnector.getByEmails(List(teamMemberAddData.emailAddress.getOrElse(""))).flatMap {
+           case Right(Nil) => successful(Ok(createTeamMemberView(createAndAddTeamMemberForm, organisationId, teamMemberAddData.emailAddress)))
+           case Right(users: List[UserResponse]) => addOrCreateTeamMember(organisationId, users.head.email,  users.head.firstName,  users.head.lastName)
+           case Left(_) => successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error")))
+         }
         }
       )
+  }
+
+  def createTeamMemberAction(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+    implicit request => createAndAddTeamMemberForm.bindFromRequest.fold(
+        formWithErrors => successful(BadRequest(createTeamMemberView(formWithErrors, organisationId, None))),
+        formData => addOrCreateTeamMember(organisationId, formData.emailAddress,  formData.firstName,  formData.lastName)
+      )
+  }
+
+  private def addOrCreateTeamMember(organisationId: OrganisationId, emailAddress: String, firstname: String, lastname: String )
+                                   (implicit hc: HeaderCarrier, request: LoggedInRequest[_]): Future[Result] ={
+    xmlServicesConnector
+      .addTeamMember(organisationId, emailAddress, firstname, lastname)
+      .map {
+        case AddCollaboratorSuccess(x: Organisation) =>
+          Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.TeamMembersController.manageTeamMembers(x.organisationId))
+        case _ => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+      }
   }
 
 
