@@ -37,7 +37,6 @@ class CreateTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with
 
 
     "render the create team member page correctly when no errors" in new Setup {
-      val emailAddress = "a@b.com"
 
       val page = createTeamMemberView.render(CreateAndAddTeamMemberForm.form,
         org1.organisationId,
@@ -52,7 +51,6 @@ class CreateTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with
     }
 
     "render the create team member page correctly when errors exist" in new Setup {
-      val emailAddress = "a@b.com"
 
       val page = createTeamMemberView
         .render(CreateAndAddTeamMemberForm.form.withError("firstName", "firstname.error.required").withError("lastName", "lastname.error.required"),

@@ -142,9 +142,6 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     "call add user with existing user details when they exist in third party developer" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
-      val emailAddress = "a@b.com"
-      val firstName = "bob"
-      val lastName = "hope"
       val userId = UserId(UUID.randomUUID())
       val userResponse = UserResponse(emailAddress, firstName, lastName, verified = true,  userId)
 
@@ -166,7 +163,6 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     "display the createTeamMemberView when  when the user does not exist in third party developer" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
-      val emailAddress = "a@b.com"
       when(mockThirdPartyDeveloperConnector.getByEmails(eqTo(List(emailAddress)))(*)).thenReturn(Future.successful(Right(List.empty)))
 
       val result = controller.addTeamMemberAction(organisationId1)(fakeRequest
@@ -185,7 +181,6 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     "display internal server error page when third party developer returns error" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
-      val emailAddress = "a@b.com"
       when(mockThirdPartyDeveloperConnector.getByEmails(eqTo(List(emailAddress)))(*)).thenReturn(Future.successful(Left(UpstreamErrorResponse("", NOT_FOUND, NOT_FOUND))))
 
       val result = controller.addTeamMemberAction(organisationId1)(fakeRequest
@@ -200,14 +195,10 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     "call add team member via connector, then show Internal server error page when call fails" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
-      val emailAddress = "a@b.com"
-      val firstName = "bob"
-      val lastName = "hope"
       val userId = UserId(UUID.randomUUID())
       val userResponse = UserResponse(emailAddress, firstName, lastName, verified = true,  userId)
 
       when(mockThirdPartyDeveloperConnector.getByEmails(eqTo(List(emailAddress)))(*)).thenReturn(Future.successful(Right(List(userResponse))))
-
 
       when(mockXmlServiceConnector.addTeamMember(eqTo(organisationId1), eqTo(emailAddress), *, *)(*[HeaderCarrier]))
         .thenReturn(Future.successful(AddCollaboratorFailure(UpstreamErrorResponse("", NOT_FOUND, NOT_FOUND))))
@@ -253,11 +244,6 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     "call add teamMember and redirect to the organisation page when form is valid and call is successful" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
-      val emailAddress = "a@b.com"
-      val firstName = "bob"
-      val lastName = "hope"
-
-
       when(mockXmlServiceConnector.addTeamMember(eqTo(organisationId1), eqTo(emailAddress), eqTo(firstName), eqTo(lastName))(*[HeaderCarrier]))
         .thenReturn(Future.successful(AddCollaboratorSuccess(org1)))
 
@@ -272,8 +258,6 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
 
     "return 400 and display the create team member page with errors when the form is invalid" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-
-      val emailAddress = "a@b.com"
 
       val result = controller.createTeamMemberAction(organisationId1)(fakeRequest
         .withCSRFToken.withFormUrlEncodedBody("emailAddress" -> emailAddress, "firstName" -> "", "lastName" -> ""))
@@ -290,11 +274,6 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     "return 500 when call to add team member fails" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
-      val emailAddress = "a@b.com"
-      val firstName = "bob"
-      val lastName = "hope"
-
-
       when(mockXmlServiceConnector.addTeamMember(eqTo(organisationId1), eqTo(emailAddress), eqTo(firstName), eqTo(lastName))(*[HeaderCarrier]))
         .thenReturn(Future.successful(AddCollaboratorFailure(UpstreamErrorResponse("", NOT_FOUND, NOT_FOUND))))
 
@@ -309,8 +288,6 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
 
     "return forbidden page when not authorised" in new Setup {
       givenAUnsuccessfulLogin()
-
-      val emailAddress = "a@b.com"
 
       val result = controller.createTeamMemberAction(organisationId1)(fakeRequest
         .withCSRFToken.withFormUrlEncodedBody("emailAddress" -> emailAddress))
