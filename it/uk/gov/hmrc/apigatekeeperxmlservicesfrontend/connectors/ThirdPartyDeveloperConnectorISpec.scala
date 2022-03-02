@@ -24,12 +24,11 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.J
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.{UserId, UserResponse}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.ThirdPartyDeveloperStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.AwaitTestSupport
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, Upstream5xxResponse}
 
 import java.{util => ju}
 
-class ThirdPartyDeveloperConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach with AwaitTestSupport with ThirdPartyDeveloperStub {
+class ThirdPartyDeveloperConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach with ThirdPartyDeveloperStub {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
