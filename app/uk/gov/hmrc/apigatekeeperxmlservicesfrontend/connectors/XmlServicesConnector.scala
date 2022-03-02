@@ -146,6 +146,6 @@ object XmlServicesConnector {
   case class Config(serviceBaseUrl: String)
 }
 
-case class AddCollaboratorRequest(email: String, firstname: String, lastname: String)
+case class AddCollaboratorRequest(email: String, firstName: String, lastName: String)
 
 case class RemoveCollaboratorRequest(email: String, gatekeeperUserId: String)
