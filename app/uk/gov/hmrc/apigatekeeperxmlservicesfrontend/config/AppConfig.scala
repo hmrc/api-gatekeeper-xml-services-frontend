@@ -36,6 +36,8 @@ trait AppConfig {
   def userRole: String
   def adminRole: String
 
+  def apiGatekeeperUrl: String
+
 }
 
 @Singleton
@@ -48,9 +50,11 @@ class AppConfigImpl @Inject() (config: Configuration) extends ServicesConfig(con
   val strideLoginUrl = s"${baseUrl("stride-auth-frontend")}/stride/sign-in"
 
   val gatekeeperSuccessUrl = getString("api-gatekeeper-frontend-success-url")
+  val apiGatekeeperUrl = s"${baseUrl("api-gatekeeper-frontend")}/api-gatekeeper"
 
   val superUserRole = getString("roles.super-user")
   val userRole = getString("roles.user")
   val adminRole = getString("roles.admin")
+
 
 }

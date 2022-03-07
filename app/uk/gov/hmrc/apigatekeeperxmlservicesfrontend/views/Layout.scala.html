@@ -37,7 +37,7 @@ scriptsBlock: Option[Html] = None)(contentBlock: Html)(implicit request: Request
 @govukLayout(
 pageTitle = pageTitle,
 headBlock = Some(hmrcHead()),
-headerBlock = Some(siteHeader()),
+headerBlock = Some(siteHeader(appConfig.apiGatekeeperUrl)),
 scriptsBlock = Some(scriptElem),
 beforeContentBlock = None,
 footerBlock = Some(hmrcFooter(new Footer(meta= None, language = En))),

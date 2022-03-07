@@ -29,11 +29,13 @@ class SiteHeaderSpec extends CommonViewSpec {
     val mockAppConfig = mock[AppConfig]
     val siteHeader = app.injector.instanceOf[SiteHeader]
 
+    val apiGatekeeperUrl = "/api-gatekeeper"
+
     val expectedMenuItems = Map(
-      "Applications" -> "#",
-      "Developers" -> "#",
-      "Email" -> "#",
-      "API Approvals" -> "#",
+      "Applications" -> s"$apiGatekeeperUrl/applications",
+      "Developers" -> s"$apiGatekeeperUrl/developers2",
+      "Email" -> s"$apiGatekeeperUrl/emails",
+      "API Approvals" -> s"$apiGatekeeperUrl/pending",
       "XML" -> "/api-gatekeeper-xml-services/organisations"
     )
   }
@@ -41,7 +43,7 @@ class SiteHeaderSpec extends CommonViewSpec {
   "SiteHeader" should {
 
     "render correctly" in new Setup {
-      val component = siteHeader.render(messagesProvider.messages)
+      val component = siteHeader.render(apiGatekeeperUrl, messagesProvider.messages)
       val document = Jsoup.parse(component.body)
       val navigation = document.getElementById("navigation")
 
