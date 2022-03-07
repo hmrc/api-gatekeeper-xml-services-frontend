@@ -38,7 +38,7 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
 
     "render the organisation details correctly and display the team member when present" in new Setup {
 
-      val page = organisationDetailsView.render(organisationWithCollaborators, ";", FakeRequest(), messagesProvider.messages, mockAppConfig)
+      val page = organisationDetailsView.render(organisationWithCollaborators, organisationUsers, FakeRequest(), messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
 
       document.getElementById("org-name-heading").text() shouldBe "Name"
@@ -48,18 +48,20 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
       document.getElementById("vendor-id-value").text() shouldBe org1.vendorId.value.toString
 
       document.getElementById("team-members-heading").text() shouldBe "Team members"
-      document.getElementById("team-members-value").text() shouldBe "email1 email2"
+      document.getElementById("user-email-0").text() shouldBe "a@b.com"
+      document.getElementById("user-services-0").text() shouldBe "xml api 1<BR/>xml api 3"
+
     }
 
       "render the organisation details correctly and display the team member when not present" in new Setup {
 
-      val page = organisationDetailsView.render(organisationWithCollaborators, "email1;email2;", FakeRequest(), messagesProvider.messages, mockAppConfig)
+      val page = organisationDetailsView.render(organisationWithCollaborators, organisationUsers, FakeRequest(), messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
 
 
       document.getElementById("team-members-heading").text() shouldBe "Team members"
-      document.getElementById("team-members-value").text() shouldBe "email1 email2"
-      document.getElementById("copy-emails").attr("onClick") shouldBe "copyToClipboard('email1;email2;');"
+
+      document.getElementById("copy-emails").attr("onClick") shouldBe "copyToClipboard('a@b.com;');"
     }
 
   }

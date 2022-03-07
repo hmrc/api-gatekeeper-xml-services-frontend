@@ -132,6 +132,11 @@ class XmlServicesConnector @Inject()(val http: HttpClient, val config: Config)(i
     handleResult(http.GET[Seq[XmlApi]](url = s"$baseUrl/xml/apis"))
   }
 
+  def getOrganisationUsersByOrganisationId(organisationId: OrganisationId)
+                                          (implicit hc: HeaderCarrier): Future[Either[Throwable, List[OrganisationUser]]] ={
+    handleResult(http.GET[List[OrganisationUser]](url = s"$baseUrl/organisations/${organisationId.value}/get-users"))
+  }
+
   private def handleResult[A](result: Future[A]): Future[Either[Throwable, A]] = {
     result.map(x => Right(x))
       .recover {

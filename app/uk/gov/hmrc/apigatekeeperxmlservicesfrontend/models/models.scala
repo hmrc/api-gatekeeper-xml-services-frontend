@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models
 
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
 import uk.gov.hmrc.http.SessionKeys
 
 import java.{util => ju}
@@ -44,3 +45,4 @@ case class ServiceName(value: String) extends AnyVal
 
 case class XmlApi(name: String, serviceName: ServiceName, context: String, description: String, categories: Option[Seq[ApiCategory]] = None)
 
+case class OrganisationUser(organisationId: OrganisationId, userId: UserId, email: String, firstName:String, lastName: String, xmlApis: List[XmlApi])

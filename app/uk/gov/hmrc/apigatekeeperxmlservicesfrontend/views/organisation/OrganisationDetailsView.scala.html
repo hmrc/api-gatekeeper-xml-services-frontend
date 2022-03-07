@@ -16,67 +16,91 @@
 
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationUser
 
 @this(layout: Layout)
 
-@(organisation: Organisation, emails: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+
+@(organisation: Organisation, users: List[OrganisationUser])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+
+@emails() = @{
+    users.map(_.email).mkString("", ";", ";")
+}
 
 @layout(pageTitle = Some("XML Organisation Details - HMRC API Gatekeeper")) {
 
 
-<h1 class="govuk-heading-l">
-  @organisation.name
-</h1>
-<dl class="govuk-summary-list govuk-!-margin-bottom-9">
-  <div class="govuk-summary-list__row">
-    <dt id="org-name-heading" class="govuk-summary-list__key">
-      Name
-    </dt>
-    <dd id="org-name-value" class="govuk-summary-list__value">
-      @organisation.name
-    </dd>
-    <dd class="govuk-summary-list__actions">
-      <a href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.updateOrganisationsDetailsPage(organisation.organisationId).url" class="govuk-link--no-visited-state">
-          Change
-          <span class="govuk-visually-hidden"> name</span>
-        </a>
-    </dd>
-  </div>
-  <div class="govuk-summary-list__row">
-    <dt id="vendor-id-heading" class="govuk-summary-list__key">
-      Vendor ID
-    </dt>
-    <dd id="vendor-id-value" class="govuk-summary-list__value">
-      @organisation.vendorId.value
-    </dd>
-    <dd class="govuk-summary-list__actions">
-    </dd>
-  </div>
-  <div class="govuk-summary-list__row">
-    <dt id="team-members-heading" class="govuk-summary-list__key">
-      Team members
-    </dt>
-    <dd id="team-members-value" class="govuk-summary-list__value">
-      @for(member
-      <- organisation.collaborators.zipWithIndex){ @member._1.email <br />
-      }
-    </dd>
-    <dd class="govuk-summary-list__actions">
-      <a href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.TeamMembersController.manageTeamMembers(organisation.organisationId).url" class="govuk-link--no-visited-state">
-        Manage
-        <span class="govuk-visually-hidden">contact information</span>
-      </a>
-    </dd>
-  </div>
-</dl>
+    <h1 class="govuk-heading-l">
+    @organisation.name
+    </h1>
+    <dl class="govuk-summary-list govuk-!-margin-bottom-9">
+        <div class="govuk-summary-list__row">
+            <dt id="org-name-heading" class="govuk-summary-list__key">
+                Name
+            </dt>
+            <dd id="org-name-value" class="govuk-summary-list__value">
+            @organisation.name
+            </dd>
+            <dd class="govuk-summary-list__actions">
+                <a href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.updateOrganisationsDetailsPage(organisation.organisationId).url" class="govuk-link--no-visited-state">
+                    Change
+                    <span class="govuk-visually-hidden"> name</span>
+                </a>
+            </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+            <dt id="vendor-id-heading" class="govuk-summary-list__key">
+                Vendor ID
+            </dt>
+            <dd id="vendor-id-value" class="govuk-summary-list__value">
+            @organisation.vendorId.value
+            </dd>
+            <dd class="govuk-summary-list__actions">
+            </dd>
+        </div>
+        </div>
 
-<div class="govuk-button-group">
-  <button id="copy-emails" onclick="copyToClipboard('@emails');" class="govuk-button" data-module="govuk-button">
-    Copy email addresses to clipboard
-  </button>
+        <div class="govuk-grid-column-full">
 
-  <a href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.removeOrganisationPage(organisation.organisationId).url" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
-    Remove organisation</a>
-</div>
+            <h2 class="govuk-heading-m govuk-!-margin-bottom-1">Team members</h2>
+
+            <p class="govuk-body govuk-!-margin-bottom-3">
+                <a href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.TeamMembersController.manageTeamMembers(organisation.organisationId).url" class="govuk-link--no-visited-state">
+                    Manage<span class="govuk-visually-hidden"> team members</span>
+                </a>
+            </p>
+
+            <table class="govuk-table govuk-!-margin-bottom-7">
+                <caption id="team-members-heading" class="govuk-table__caption govuk-visually-hidden" hidden="">Team members</caption>
+                <thead class="govuk-table__head">
+                    <tr class="govuk-table__row">
+                        <th scope="col" class="govuk-table__header">Email address</th>
+                        <th scope="col" class="govuk-table__header">XML email preferences</th>
+                    </tr>
+                </thead>
+                <tbody class="govuk-table__body">
+                @for(member <- users.zipWithIndex) {
+                    <tr class="govuk-table__row">
+                        <th id="user-email-@member._2" scope="row" class="govuk-table__header govuk-!-font-weight-regular"><a href="#" class="govuk-link govuk-link--no-visited-state">@member._1.email</a></th>
+                        <td id="user-services-@member._2" class="govuk-table__cell">@member._1.xmlApis.map(_.name).mkString("<BR/>")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+
+            <div class="govuk-button-group">
+                <button id="copy-emails" onclick="copyToClipboard('@emails');" class="govuk-button" data-module="govuk-button">
+                    Copy email addresses to clipboard
+                </button>
+
+                <a href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.removeOrganisationPage(organisation.organisationId).url" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+                    Remove organisation</a>
+            </div>
+
+        </div>
+
+
+    </dl>
+
 
 }

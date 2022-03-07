@@ -28,8 +28,11 @@ import play.filters.csrf.CSRF.TokenProvider
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Collaborator, Organisation, OrganisationId, VendorId}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{ApiCategory, Collaborator, Organisation, OrganisationId, OrganisationUser, ServiceName, VendorId, XmlApi}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{AuthServiceStub, ServerBaseISpec}
+
+import java.util.UUID
 
 class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with AuthServiceStub {
 
@@ -64,6 +67,26 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       name = "Org name3",
       collaborators = List(collaborator)
     )
+
+    val emailAddress = "a@b.com"
+    val firstName = "Joe"
+    val lastName = "Bloggs"
+
+    val xmlApi1 = XmlApi(name = "xml api 1",
+      serviceName = ServiceName("vat-and-ec-sales-list"),
+      context = "/government/collections/vat-and-ec-sales-list-online-support-for-software-developers",
+      description = "description",
+      categories  = Some(Seq(ApiCategory.CUSTOMS)))
+    val xmlApi2 = XmlApi(name = "xml api 3",
+      serviceName = ServiceName("customs-import"),
+      context = "/government/collections/customs-import",
+      description = "description",
+      categories  = Some(Seq(ApiCategory.CUSTOMS)))
+
+
+    val organisationUsers = List(OrganisationUser(organisationId, UserId(UUID.randomUUID()), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)))
+
+
 
     def callGetEndpoint(url: String, headers: List[(String, String)] = List.empty): WSResponse =
       wsClient
@@ -237,6 +260,62 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         val result = callGetEndpoint(s"$url/organisations/add")
         result.status mustBe FORBIDDEN
       }
+
+    }
+
+    "GET  /:organisationId" should {
+
+      "return 200 and display details page when authorised" in new Setup {
+        primeAuthServiceSuccess()
+        getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
+        getOrganisationUsersByOrganisationIdReturnsResponse(organisationId, OK, organisationUsers)
+
+        val result = callGetEndpoint(s"$url/organisations/${organisationId.value.toString}")
+
+        result.status mustBe OK
+        val document = Jsoup.parse(result.body)
+        document.getElementById("org-name-heading").text() mustBe "Name"
+        document.getElementById("org-name-value").text() mustBe organisationWithTeamMembers.name
+
+        document.getElementById("vendor-id-heading").text() mustBe "Vendor ID"
+        document.getElementById("vendor-id-value").text() mustBe organisationWithTeamMembers.vendorId.value.toString
+
+        document.getElementById("team-members-heading").text() mustBe "Team members"
+        document.getElementById("user-email-0").text() mustBe "a@b.com"
+        document.getElementById("user-services-0").text() mustBe "xml api 1<BR/>xml api 3"
+      }
+
+      "return 500 when organisation not found" in new Setup {
+        primeAuthServiceSuccess()
+        getOrganisationByOrganisationIdReturnsError(organisationId, NOT_FOUND)
+        getOrganisationUsersByOrganisationIdReturnsResponse(organisationId, OK, organisationUsers)
+
+        val result = callGetEndpoint(s"$url/organisations/${organisationId.value.toString}")
+
+        result.status mustBe INTERNAL_SERVER_ERROR
+
+      }
+
+      "return 500 when organisation users retrieve fails" in new Setup {
+        primeAuthServiceSuccess()
+        getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
+        getOrganisationUsersByOrganisationIdReturnsError(organisationId, NOT_FOUND)
+
+        val result = callGetEndpoint(s"$url/organisations/${organisationId.value.toString}")
+
+        result.status mustBe INTERNAL_SERVER_ERROR
+
+      }
+
+      "return 403 when not authorised" in new Setup {
+        primeAuthServiceFail()
+
+        val result = callGetEndpoint(s"$url/organisations/${organisationId.value.toString}")
+
+        result.status mustBe FORBIDDEN
+      }
+
+
 
     }
 

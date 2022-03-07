@@ -109,11 +109,14 @@ class OrganisationController @Inject()(
 
   def viewOrganisationPage(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request =>
-      xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
-        .map {
-          case Right(org: Organisation) => Ok(organisationDetailsView(org, getEmailString(org)))
-          // in theory this error
-          case Left(_) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+
+      (for{
+        getOrganisationResult <-  xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
+        getUsersResult <- xmlServicesConnector.getOrganisationUsersByOrganisationId(organisationId)
+      } yield (getOrganisationResult, getUsersResult)).map {
+          case (Right(org: Organisation), Right(users: List[OrganisationUser])) => Ok(organisationDetailsView(org, users))
+
+          case _ => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
         }
   }
 
@@ -206,10 +209,7 @@ class OrganisationController @Inject()(
       }
   }
 
-  private def getEmailString(org: Organisation): String = {
-    if (org.collaborators.isEmpty) ""
-    else org.collaborators.map(_.email).mkString("", ";", ";")
-  }
+
 }
 
 object OrganisationController {
