@@ -21,14 +21,14 @@
 @this(hmrcHeader: HmrcHeader)
 
 
-@()(implicit messages: Messages)
+@(apiGatekeeperUrl: String)(implicit messages: Messages)
 
 @navigation = @{
     Seq(
-        NavigationItem(content = Text("Applications"), href = Some("#")),
-        NavigationItem(content = Text("Developers"), href = Some("#")),
-        NavigationItem(content = Text("Email"), href = Some("#")),
-        NavigationItem(content = Text("API Approvals"), href = Some("#")),
+        NavigationItem(content = Text("Applications"), href = Some(s"$apiGatekeeperUrl/applications")),
+        NavigationItem(content = Text("Developers"), href = Some(s"$apiGatekeeperUrl/developers2")),
+        NavigationItem(content = Text("Email"), href = Some(s"$apiGatekeeperUrl/emails")),
+        NavigationItem(content = Text("API Approvals"), href = Some(s"$apiGatekeeperUrl/pending")),
         NavigationItem(content = Text("XML"), href = Some(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsPage.url)),
     )
 }
