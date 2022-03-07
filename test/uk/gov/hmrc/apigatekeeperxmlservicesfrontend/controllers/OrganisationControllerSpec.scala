@@ -223,6 +223,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       document.getElementById("team-members-heading").text() shouldBe "Team members"
 
       if (org.collaborators.nonEmpty) {
+
         document.getElementById("team-members-value").text() shouldBe "email1 email2"
         document.getElementById("copy-emails").attr("onClick") shouldBe "copyToClipboard('email1;email2;');"
       }
@@ -232,6 +233,9 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(*))
         .thenReturn(Future.successful(Right(org1)))
+
+      when(mockXmlServiceConnector.getOrganisationUsersByOrganisationId(eqTo(org1.organisationId))(*))
+        .thenReturn(Future.successful(Right(organisationUsers)))
 
       val result = controller.viewOrganisationPage(org1.organisationId)(fakeRequest)
       status(result) shouldBe Status.OK
@@ -244,6 +248,9 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(*))
         .thenReturn(Future.successful(Right(org1)))
+      when(mockXmlServiceConnector.getOrganisationUsersByOrganisationId(eqTo(org1.organisationId))(*))
+        .thenReturn(Future.successful(Right(List.empty)))
+
 
       val result = controller.viewOrganisationPage(org1.organisationId)(fakeRequest)
       status(result) shouldBe Status.OK
@@ -257,6 +264,8 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(*))
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
+      when(mockXmlServiceConnector.getOrganisationUsersByOrganisationId(eqTo(org1.organisationId))(*))
+        .thenReturn(Future.successful(Right(List.empty)))
 
       val result = controller.viewOrganisationPage(org1.organisationId)(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
@@ -270,6 +279,25 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       verifyNoMoreInteractions(mockXmlServiceConnector)
     }
 
+
+    "return 500 and render error page when connector returns error getting users" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(*))
+        .thenReturn(Future.successful(Right(org1)))
+      when(mockXmlServiceConnector.getOrganisationUsersByOrganisationId(eqTo(org1.organisationId))(*))
+        .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
+      val result = controller.viewOrganisationPage(org1.organisationId)(fakeRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+      contentType(result) shouldBe Some("text/html")
+      charset(result) shouldBe Some("utf-8")
+
+      val document = Jsoup.parse(contentAsString(result))
+      document.getElementById("page-heading").text() shouldBe "Internal Server Error"
+      document.getElementById("page-body").text() shouldBe "Internal Server Error"
+
+      verifyNoMoreInteractions(mockXmlServiceConnector)
+    }
     "return forbidden view" in new Setup {
       givenAUnsuccessfulLogin()
       val result = controller.viewOrganisationPage(org1.organisationId)(fakeRequest)

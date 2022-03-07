@@ -24,9 +24,11 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
 import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse, UpstreamErrorResponse}
 
+import java.util.UUID
 import java.{util => ju}
 
 class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach {
@@ -60,6 +62,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
     val collaboratorList = List(Collaborator("userId", "collaborator1@mail.com"))
 
+    val organisationId = OrganisationId(ju.UUID.randomUUID())
     val organisationWithTeamMembers = Organisation(
       organisationId = OrganisationId(ju.UUID.randomUUID()),
       vendorId = VendorId(14),
@@ -86,6 +89,21 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       ParsedUser(email, firstName, lastName, services, vendorIdsList),
       ParsedUser("b@b.com", firstName + 1, lastName + 1, services, vendorIdsList)
     )
+
+    val xmlApi1 = XmlApi(name = "xml api 1",
+      serviceName = ServiceName("vat-and-ec-sales-list"),
+      context = "/government/collections/vat-and-ec-sales-list-online-support-for-software-developers",
+      description = "description",
+      categories  = Some(Seq(ApiCategory.CUSTOMS)))
+    val xmlApi2 = XmlApi(name = "xml api 3",
+      serviceName = ServiceName("customs-import"),
+      context = "/government/collections/customs-import",
+      description = "description",
+      categories  = Some(Seq(ApiCategory.CUSTOMS)))
+
+
+    val organisationUsers = List(OrganisationUser(organisationId, UserId(UUID.randomUUID()), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)))
+
   }
 
   "findOrganisationsByParams" should {
@@ -392,5 +410,31 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
         }
       }
     }
+
+    "getOrganisationUsersByOrganisationId" should {
+      "return Right with list of users when connector receives 200 and list of users " in new Setup {
+
+        val organisationUser = OrganisationUser(organisationId, UserId(UUID.randomUUID()) , email, firstName, lastName, List(xmlApi1, xmlApi2))
+        getOrganisationUsersByOrganisationIdReturnsResponse(organisationId, OK, List(organisationUser))
+        val result = await(objInTest.getOrganisationUsersByOrganisationId(organisationId))
+
+        result match {
+          case Right(users : List[OrganisationUser]) => users mustBe List(organisationUser)
+          case _ => fail
+        }
+      }
+    }
+
+    "return Left and error when connector receives 500 " in new Setup {
+
+      getOrganisationUsersByOrganisationIdReturnsError(organisationId, INTERNAL_SERVER_ERROR)
+      val result = await(objInTest.getOrganisationUsersByOrganisationId(organisationId))
+
+      result match {
+        case Left(_ : UpstreamErrorResponse) => succeed
+        case _ => fail
+      }
+    }
+
   }
 }

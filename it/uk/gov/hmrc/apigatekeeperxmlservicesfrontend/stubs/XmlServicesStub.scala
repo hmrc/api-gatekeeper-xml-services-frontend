@@ -42,6 +42,10 @@ trait XmlServicesStub {
     s"$organisationUrl/${organisationId.value.toString}/add-collaborator"
   }
 
+  def getOrganisationUsersByOrganisationIdUrl(organisationId: OrganisationId) ={
+    s"$organisationUrl/${organisationId.value.toString}/get-users"
+  }
+
   def findOrganisationByParamsUrl(vendorId: Option[String], organisationName: Option[String]) =
     (vendorId, organisationName) match {
       case (Some(v), None)       => s"$baseUrl/organisations?vendorId=$v&sortBy=VENDOR_ID"
@@ -246,6 +250,25 @@ trait XmlServicesStub {
       .willReturn(
         aResponse()
           .withStatus(status)
+      ))
+  }
+
+  def getOrganisationUsersByOrganisationIdReturnsResponse(organisationId: OrganisationId, status: Int, users: List[OrganisationUser]): Unit = {
+    stubFor(get(urlEqualTo( getOrganisationUsersByOrganisationIdUrl(organisationId)))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withHeader("Content-Type", "application/json")
+          .withBody(Json.toJson(users).toString)
+      ))
+  }
+
+  def getOrganisationUsersByOrganisationIdReturnsError(organisationId: OrganisationId, status: Int): Unit = {
+    stubFor(get(urlEqualTo( getOrganisationUsersByOrganisationIdUrl(organisationId)))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withHeader("Content-Type", "application/json")
       ))
   }
 
