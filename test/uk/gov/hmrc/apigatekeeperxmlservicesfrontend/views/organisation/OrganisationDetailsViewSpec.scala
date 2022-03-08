@@ -31,7 +31,7 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
     val organisationDetailsView = app.injector.instanceOf[OrganisationDetailsView]
-
+    when(mockAppConfig.apiGatekeeperUrl).thenReturn("https://admin.qa.tax.service.gov.uk/api-gatekeeper")
   }
 
   "Organisation Details View" should {
@@ -49,6 +49,7 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
 
       document.getElementById("team-members-heading").text() shouldBe "Team members"
       document.getElementById("user-email-0").text() shouldBe "a@b.com"
+      document.getElementById("user-link-0").attr("href") shouldBe s"https://admin.qa.tax.service.gov.uk/api-gatekeeper/developer?developerId=${organisationUsers.head.userId.value}"
       document.getElementById("user-services-0").text() shouldBe "xml api 1<BR/>xml api 3"
 
     }
