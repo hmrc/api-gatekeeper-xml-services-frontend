@@ -17,6 +17,7 @@
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationUser
+@import play.twirl.api.HtmlFormat
 
 @this(layout: Layout)
 
@@ -33,7 +34,7 @@
     appConfig.apiGatekeeperUrl+"/developer?developerId="+user.userId.value
 }
 @combinedXMLPreferencesList() = @{
-       users.flatMap(_.xmlApis).distinct.map(_.name).mkString("<br/>")
+       users.flatMap(_.xmlApis).distinct.map(_.name).sorted.mkString("<br>")
 }
 
 
@@ -68,12 +69,13 @@
             <dd class="govuk-summary-list__actions">
             </dd>
         </div>
+
         <div class="govuk-summary-list__row">
-            <dt id="xml-preferences-heading" class="govuk-summary-list__key">
+            <dt id="xml-preferences-heading" class="govuk-summary-list__key" >
                 XML email preferences
             </dt>
             <dd id="xml-preferences-value" class="govuk-summary-list__value">
-                @combinedXMLPreferencesList
+                    @HtmlFormat.raw(combinedXMLPreferencesList)
             </dd>
             <dd class="govuk-summary-list__actions">
             </dd>
@@ -105,7 +107,7 @@
                             <a id="user-link-@member._2" href="@buildGatekeeperDeveloperUrl(member._1)" class="govuk-link govuk-link--no-visited-state">
                             @member._1.email</a>
                         </td>
-                        <td id="user-services-@member._2" class="govuk-table__cell">@member._1.xmlApis.map(_.name).mkString("<BR/>")</td>
+                        <td id="user-services-@member._2" class="govuk-table__cell">@HtmlFormat.raw(member._1.xmlApis.map(_.name).sorted.mkString("<br>"))</td>
                     </tr>
                 }
                 </tbody>
