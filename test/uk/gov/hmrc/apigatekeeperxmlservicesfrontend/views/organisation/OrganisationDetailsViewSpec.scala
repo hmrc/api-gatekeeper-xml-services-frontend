@@ -31,13 +31,13 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
     val organisationDetailsView = app.injector.instanceOf[OrganisationDetailsView]
-    when(mockAppConfig.apiGatekeeperUrl).thenReturn("https://admin.qa.tax.service.gov.uk/api-gatekeeper")
+
   }
 
   "Organisation Details View" should {
 
     "render the organisation details correctly and display the team member when present" in new Setup {
-
+      when(mockAppConfig.apiGatekeeperUrl).thenReturn("https://admin.qa.tax.service.gov.uk/api-gatekeeper")
       val page = organisationDetailsView.render(organisationWithCollaborators, organisationUsers, FakeRequest(), messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
 
@@ -47,22 +47,37 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
       document.getElementById("vendor-id-heading").text() shouldBe "Vendor ID"
       document.getElementById("vendor-id-value").text() shouldBe org1.vendorId.value.toString
 
+      document.getElementById("xml-preferences-heading").text() shouldBe "XML email preferences"
+      document.getElementById("xml-preferences-value").text() shouldBe "xml api 1<br/>xml api 2<br/>xml api 3"
+
+
       document.getElementById("team-members-heading").text() shouldBe "Team members"
       document.getElementById("user-email-0").text() shouldBe "a@b.com"
       document.getElementById("user-link-0").attr("href") shouldBe s"https://admin.qa.tax.service.gov.uk/api-gatekeeper/developer?developerId=${organisationUsers.head.userId.value}"
-      document.getElementById("user-services-0").text() shouldBe "xml api 1<BR/>xml api 3"
+      document.getElementById("user-services-0").text() shouldBe "xml api 1<BR/>xml api 2"
 
+      document.getElementById("user-email-1").text() shouldBe "a@b.com2"
+      document.getElementById("user-link-1").attr("href") shouldBe s"https://admin.qa.tax.service.gov.uk/api-gatekeeper/developer?developerId=${organisationUsers.tail.head.userId.value}"
+      document.getElementById("user-services-1").text() shouldBe "xml api 1<BR/>xml api 3"
     }
 
       "render the organisation details correctly and display the team member when not present" in new Setup {
 
-      val page = organisationDetailsView.render(organisationWithCollaborators, organisationUsers, FakeRequest(), messagesProvider.messages, mockAppConfig)
+      val page = organisationDetailsView.render(organisationWithCollaborators, List.empty, FakeRequest(), messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
 
+        document.getElementById("org-name-heading").text() shouldBe "Name"
+        document.getElementById("org-name-value").text() shouldBe org1.name
 
-      document.getElementById("team-members-heading").text() shouldBe "Team members"
+        document.getElementById("vendor-id-heading").text() shouldBe "Vendor ID"
+        document.getElementById("vendor-id-value").text() shouldBe org1.vendorId.value.toString
 
-      document.getElementById("copy-emails").attr("onClick") shouldBe "copyToClipboard('a@b.com;');"
+        document.getElementById("xml-preferences-heading").text() shouldBe "XML email preferences"
+        document.getElementById("xml-preferences-value").text() shouldBe ""
+
+        document.getElementById("team-members-heading").text() shouldBe "Team members"
+
+        Option(document.getElementById("copy-emails")) shouldBe None
     }
 
   }
