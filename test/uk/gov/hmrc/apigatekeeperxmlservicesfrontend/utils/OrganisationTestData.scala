@@ -42,15 +42,19 @@ trait OrganisationTestData {
         context = "/government/collections/vat-and-ec-sales-list-online-support-for-software-developers",
         description = "description",
         categories  = Some(Seq(ApiCategory.CUSTOMS)))
-    val xmlApi2 = XmlApi(name = "xml api 3",
+    val xmlApi2 = XmlApi(name = "xml api 2",
         serviceName = ServiceName("customs-import"),
         context = "/government/collections/customs-import",
         description = "description",
         categories  = Some(Seq(ApiCategory.CUSTOMS)))
+    val xmlApi3 = XmlApi(name = "xml api 3",
+        serviceName = ServiceName("paye-online"),
+        context = "/government/collections/paye-online",
+        description = "description",
+        categories  = Some(Seq(ApiCategory.PAYE)))
 
-
-    val organisationUsers = List(OrganisationUser(organisationId1, UserId(UUID.randomUUID()), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)))
+    val organisationUsers = List(OrganisationUser(organisationId1, UserId(UUID.randomUUID()), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)),
+        OrganisationUser(organisationId1, UserId(UUID.randomUUID()), emailAddress+2, firstName+2, lastName+2, List(xmlApi1, xmlApi3)))
 
     val organisations = List(org1, org2, org3)
-
 }
