@@ -48,17 +48,17 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
       document.getElementById("vendor-id-value").text() shouldBe org1.vendorId.value.toString
 
       document.getElementById("xml-preferences-heading").text() shouldBe "XML email preferences"
-      document.getElementById("xml-preferences-value").text() shouldBe "xml api 1<br/>xml api 2<br/>xml api 3"
+      document.getElementById("xml-preferences-value").text() shouldBe "xml api 1 xml api 2 xml api 3"
 
 
       document.getElementById("team-members-heading").text() shouldBe "Team members"
       document.getElementById("user-email-0").text() shouldBe "a@b.com"
       document.getElementById("user-link-0").attr("href") shouldBe s"https://admin.qa.tax.service.gov.uk/api-gatekeeper/developer?developerId=${organisationUsers.head.userId.value}"
-      document.getElementById("user-services-0").text() shouldBe "xml api 1<BR/>xml api 2"
+      document.getElementById("user-services-0").text() shouldBe "xml api 1 xml api 2"
 
       document.getElementById("user-email-1").text() shouldBe "a@b.com2"
       document.getElementById("user-link-1").attr("href") shouldBe s"https://admin.qa.tax.service.gov.uk/api-gatekeeper/developer?developerId=${organisationUsers.tail.head.userId.value}"
-      document.getElementById("user-services-1").text() shouldBe "xml api 1<BR/>xml api 3"
+      document.getElementById("user-services-1").text() shouldBe "xml api 1 xml api 3"
     }
 
       "render the organisation details correctly and display the team member when not present" in new Setup {

@@ -282,7 +282,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
         document.getElementById("team-members-heading").text() mustBe "Team members"
         document.getElementById("user-email-0").text() mustBe "a@b.com"
-        document.getElementById("user-services-0").text() mustBe "xml api 1<BR/>xml api 3"
+        document.getElementById("user-services-0").text() mustBe "xml api 1 xml api 3"
       }
 
       "return 500 when organisation not found" in new Setup {
