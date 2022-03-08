@@ -27,6 +27,10 @@
     users.map(_.email).mkString("", ";", ";")
 }
 
+@buildGatekeeperDeveloperUrl(user: OrganisationUser) = @{
+    appConfig.apiGatekeeperUrl+"/developer?developerId="+user.userId.value
+}
+
 @layout(pageTitle = Some("XML Organisation Details - HMRC API Gatekeeper")) {
 
 
@@ -81,7 +85,10 @@
                 <tbody class="govuk-table__body">
                 @for(member <- users.zipWithIndex) {
                     <tr class="govuk-table__row">
-                        <th id="user-email-@member._2" scope="row" class="govuk-table__header govuk-!-font-weight-regular"><a href="#" class="govuk-link govuk-link--no-visited-state">@member._1.email</a></th>
+                        <td id="user-email-@member._2" scope="row" class="govuk-table__header govuk-!-font-weight-regular">
+                            <a id="user-link-@member._2" href="@buildGatekeeperDeveloperUrl(member._1)" class="govuk-link govuk-link--no-visited-state">
+                            @member._1.email</a>
+                        </td>
                         <td id="user-services-@member._2" class="govuk-table__cell">@member._1.xmlApis.map(_.name).mkString("<BR/>")</td>
                     </tr>
                 }
