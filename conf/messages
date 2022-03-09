@@ -7,9 +7,10 @@ emailAddress.error.required = Enter an email address
 firstname.error.required = Enter a first name
 lastname.error.required = Enter a last name
 
-teammember.remove.email.error.required = Invalid Email provided
-
+team.member.remove.email.error.required = Invalid Email provided
+team.member.error.emailAddress.already.exists.field = This user is already a team member on this organisation
 team.member.error.confirmation.no.choice.field = Please select an option
+
 organisation.error.confirmation.no.choice.field = Please select an option
 
 csvdata.error.required = Enter CSV data

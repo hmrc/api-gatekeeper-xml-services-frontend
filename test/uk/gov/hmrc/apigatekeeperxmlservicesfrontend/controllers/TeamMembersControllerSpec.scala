@@ -139,12 +139,14 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
 
   }
   "addTeamMemberAction" should {
-    "call add user with existing user details when they exist in third party developer" in new Setup {
+    "call add user with existing user details when they are not linked to the organisation and they exist in third party developer" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
       val userId = UserId(UUID.randomUUID())
       val userResponse = UserResponse(emailAddress, firstName, lastName, verified = true,  userId)
 
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
+        .thenReturn(Future.successful(Right(org1)))
       when(mockThirdPartyDeveloperConnector.getByEmails(eqTo(List(emailAddress)))(*)).thenReturn(Future.successful(Right(List(userResponse))))
 
       when(mockXmlServiceConnector.addTeamMember(eqTo(organisationId1), eqTo(emailAddress), eqTo(firstName), eqTo(lastName))(*[HeaderCarrier]))
@@ -162,7 +164,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
 
     "display the createTeamMemberView when  when the user does not exist in third party developer" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
+        .thenReturn(Future.successful(Right(organisationWithCollaborators)))
       when(mockThirdPartyDeveloperConnector.getByEmails(eqTo(List(emailAddress)))(*)).thenReturn(Future.successful(Right(List.empty)))
 
       val result = controller.addTeamMemberAction(organisationId1)(fakeRequest
@@ -177,10 +180,31 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
 
     }
 
+    "return 400 and display the add team member page with errors when the collaborator already exists against the organisation" in new Setup {
+      givenTheGKUserIsAuthorisedAndIsANormalUser()
+
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*))
+        .thenReturn(Future.successful(Right(organisationWithCollaborators)))
+
+
+      val result = controller.addTeamMemberAction(organisationId1)(fakeRequest
+        .withCSRFToken.withFormUrlEncodedBody("emailAddress" -> collaborator1.email))
+
+      status(result) shouldBe Status.BAD_REQUEST
+      val document = Jsoup.parse(contentAsString(result))
+
+      validateFormErrors(document, Some("This user is already a team member on this organisation"))
+      validateAddTeamMemberPage(document)
+
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationId1))(*)
+      verifyZeroInteractions(mockThirdPartyDeveloperConnector)
+
+    }
 
     "display internal server error page when third party developer returns error" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*))
+        .thenReturn(Future.successful(Right(organisationWithCollaborators)))
       when(mockThirdPartyDeveloperConnector.getByEmails(eqTo(List(emailAddress)))(*)).thenReturn(Future.successful(Left(UpstreamErrorResponse("", NOT_FOUND, NOT_FOUND))))
 
       val result = controller.addTeamMemberAction(organisationId1)(fakeRequest
@@ -198,6 +222,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       val userId = UserId(UUID.randomUUID())
       val userResponse = UserResponse(emailAddress, firstName, lastName, verified = true,  userId)
 
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*))
+        .thenReturn(Future.successful(Right(organisationWithCollaborators)))
       when(mockThirdPartyDeveloperConnector.getByEmails(eqTo(List(emailAddress)))(*)).thenReturn(Future.successful(Right(List(userResponse))))
 
       when(mockXmlServiceConnector.addTeamMember(eqTo(organisationId1), eqTo(emailAddress), *, *)(*[HeaderCarrier]))

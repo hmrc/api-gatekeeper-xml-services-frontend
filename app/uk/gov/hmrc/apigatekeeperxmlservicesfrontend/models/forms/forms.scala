@@ -103,7 +103,7 @@ object Forms {
     val form: Form[RemoveTeamMemberConfirmationForm] = Form(
       mapping(
         "email" ->  text
-          .verifying("teammember.remove.email.error.required", _.nonEmpty),
+          .verifying("team.member.remove.email.error.required", _.nonEmpty),
         "confirm" -> optional(text).verifying("team.member.error.confirmation.no.choice.field", _.isDefined)
       )(RemoveTeamMemberConfirmationForm.apply)(RemoveTeamMemberConfirmationForm.unapply)
     )
