@@ -19,14 +19,14 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 import play.api.Logging
 import play.api.data.Form
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.{AppConfig, ErrorHandler}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{AuthConnector, ThirdPartyDeveloperConnector, XmlServicesConnector}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.{AddTeamMemberForm, CreateAndAddTeamMemberForm, RemoveTeamMemberConfirmationForm}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.{AddTeamMemberForm, CreateAndAddTeamMemberForm, RemoveTeamMemberConfirmationForm}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
@@ -41,7 +41,7 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
                                       removeTeamMemberView: RemoveTeamMemberView,
                                       override val authConnector: AuthConnector,
                                       val forbiddenView: ForbiddenView,
-                                      errorTemplate: ErrorTemplate,
+                                      errorHandler: ErrorHandler,
                                       xmlServicesConnector: XmlServicesConnector,
                                       thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector
                                      )(implicit val ec: ExecutionContext,
@@ -57,7 +57,7 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId).map {
         case Right(org: Organisation) => Ok(manageTeamMembersView(org))
         case Left(error: Throwable) => logger.info(s"manageTeamMembers failed getting organisation for ${organisationId.value}", error)
-          InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+          InternalServerError(errorHandler.internalServerErrorTemplate)
       }
     }
   }
@@ -75,7 +75,7 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
           case Right(users: List[UserResponse]) => addOrCreateTeamMember(organisationId, users.head.email, users.head.firstName, users.head.lastName)
           case Left(error: Throwable) =>
             logger.info(s"addTeamMemberAction failed for ${organisationId.value}", error)
-            successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error")))
+            successful(InternalServerError(errorHandler.internalServerErrorTemplate))
         }
       }
 
@@ -113,7 +113,7 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
           Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.TeamMembersController.manageTeamMembers(x.organisationId))
         case AddCollaboratorFailure(error: Throwable) =>
           logger.info(s"error in addOrCreateTeamMember attempting to add team member to ${organisationId.value}", error)
-          InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+          InternalServerError(errorHandler.internalServerErrorTemplate)
       }
   }
 
@@ -124,7 +124,7 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
           successful(Ok(removeTeamMemberView(RemoveTeamMemberConfirmationForm.form, organisationId, userId, collaborator.email)))
         case _ =>
           logger.info(s"getCollaboratorByUserIdAndOrganisationId failed for orgId:${organisationId.value} & userId: $userId ")
-          successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error")))
+          successful(InternalServerError(errorHandler.internalServerErrorTemplate))
       }
     }
   }
@@ -139,10 +139,10 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
               .map {
                 case RemoveCollaboratorSuccess(_) => Redirect(routes.TeamMembersController.manageTeamMembers(organisationId).url, SEE_OTHER)
                 case _ => logger.info(s"removeTeamMemberAction connector failed for  orgId:${organisationId.value} & userId: $userId ")
-                  InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+                  InternalServerError(errorHandler.internalServerErrorTemplate)
               }
           case _ => logger.info(s"removeTeamMemberAction: getCollaboratorByUserIdAndOrganisationId failed for  orgId:${organisationId.value} & userId: $userId ")
-            successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error")))
+            successful(InternalServerError(errorHandler.internalServerErrorTemplate))
         }
       }
 
@@ -178,6 +178,5 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
         None
     }
   }
-
 
 }
