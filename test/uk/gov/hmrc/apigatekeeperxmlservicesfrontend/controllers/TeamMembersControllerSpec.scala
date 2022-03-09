@@ -21,13 +21,14 @@ import play.api.http.Status
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.ErrorHandler
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{ThirdPartyDeveloperConnector, XmlServicesConnector}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.{UserId, UserResponse}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.{AddTeamMemberView, CreateTeamMemberView, ManageTeamMembersView, RemoveTeamMemberView}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import java.util.UUID
@@ -41,7 +42,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     val fakeRequest = FakeRequest("GET", "/organisations")
     val organisationSearchRequest = FakeRequest("GET", "/organisations-search")
     private lazy val forbiddenView = app.injector.instanceOf[ForbiddenView]
-    private lazy val errorTemplate = app.injector.instanceOf[ErrorTemplate]
+    private lazy val errorHandler = app.injector.instanceOf[ErrorHandler]
     private lazy val manageTeamMembersView = app.injector.instanceOf[ManageTeamMembersView]
     private lazy val addTeamMembersView = app.injector.instanceOf[AddTeamMemberView]
     private lazy val createTeamMembersView = app.injector.instanceOf[CreateTeamMemberView]
@@ -58,7 +59,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       removeTeamMembersView,
       mockAuthConnector,
       forbiddenView,
-      errorTemplate,
+      errorHandler,
       mockXmlServiceConnector,
       mockThirdPartyDeveloperConnector
     )

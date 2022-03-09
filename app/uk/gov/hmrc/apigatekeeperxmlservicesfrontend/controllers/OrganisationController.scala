@@ -17,25 +17,23 @@
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
 import play.api.data.Form
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.{AppConfig, ErrorHandler}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{AuthConnector, ThirdPartyDeveloperConnector, XmlServicesConnector}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.Future.successful
 import scala.util.Try
-import scala.concurrent.Future
-import play.api.mvc.Result
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
 
 @Singleton
 class OrganisationController @Inject()(
@@ -49,7 +47,7 @@ class OrganisationController @Inject()(
                                         organisationRemoveSuccessView: OrganisationRemoveSuccessView,
                                         override val authConnector: AuthConnector,
                                         val forbiddenView: ForbiddenView,
-                                        errorTemplate: ErrorTemplate,
+                                        errorHandler: ErrorHandler,
                                         xmlServicesConnector: XmlServicesConnector,
                                         thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector
                                       )(implicit val ec: ExecutionContext,
@@ -81,7 +79,7 @@ class OrganisationController @Inject()(
             case Right(users: List[UserResponse]) =>
               addOrganisation(formData.organisationName, formData.emailAddress, users.head.firstName, users.head.lastName)
             case Left(_) =>
-              successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error")))
+              successful(InternalServerError(errorHandler.internalServerErrorTemplate))
 
           }
         }
@@ -102,7 +100,7 @@ class OrganisationController @Inject()(
      .map {
        case CreateOrganisationSuccess(x: Organisation) =>
          Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(x.organisationId))
-       case _ => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+       case _ => InternalServerError(errorHandler.internalServerErrorTemplate)
      }
  }
 
@@ -116,7 +114,7 @@ class OrganisationController @Inject()(
       } yield (getOrganisationResult, getUsersResult)).map {
           case (Right(org: Organisation), Right(users: List[OrganisationUser])) => Ok(organisationDetailsView(org, users))
 
-          case _ => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+          case _ => InternalServerError(errorHandler.internalServerErrorTemplate)
         }
   }
 
@@ -125,7 +123,7 @@ class OrganisationController @Inject()(
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
         .map {
           case Right(_: Organisation) => Ok(organisationUpdateView(updateOrganisationDetailsForm, organisationId))
-          case Left(_) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+          case Left(_) => InternalServerError(errorHandler.internalServerErrorTemplate)
         }
   }
 
@@ -138,7 +136,7 @@ class OrganisationController @Inject()(
             case UpdateOrganisationDetailsSuccess(_) =>
               Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(organisationId))
             case _ =>
-              InternalServerError(errorTemplate(pageTitle = "Internal Server Error", heading = "Internal Server Error", message = "Update organisation failed"))
+              InternalServerError(errorHandler.internalServerErrorTemplate)
           }
       )
   }
@@ -148,7 +146,7 @@ class OrganisationController @Inject()(
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
         .map {
           case Right(org: Organisation) => Ok(organisationRemoveView(removeOrganisationConfirmationForm, org))
-          case Left(_) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+          case Left(_) => InternalServerError(errorHandler.internalServerErrorTemplate)
         }
   }
 
@@ -158,7 +156,7 @@ class OrganisationController @Inject()(
       def handleRemoveOrganisation(organisation: Organisation) = {
         xmlServicesConnector.removeOrganisation(organisation.organisationId).map {
           case true => Ok(organisationRemoveSuccessView(organisation))
-          case false => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+          case false => InternalServerError(errorHandler.internalServerErrorTemplate)
         }
 
       }
@@ -176,7 +174,7 @@ class OrganisationController @Inject()(
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
         .flatMap {
           case Right(org: Organisation) => removeOrganisationConfirmationForm.bindFromRequest.fold(handleInvalidForm(_, org), handleValidForm(_, org))
-          case Left(_) => Future.successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error")))
+          case Left(_) => Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
         }
 
   }
@@ -196,7 +194,7 @@ class OrganisationController @Inject()(
         result match {
           case Right(orgs: List[Organisation]) => Ok(organisationSearchView(orgs, isVendorIdSearch = isVendorIdSearch))
           case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) => Ok(organisationSearchView(List.empty, isVendorIdSearch = isVendorIdSearch))
-          case Left(_) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+          case Left(_) => InternalServerError(errorHandler.internalServerErrorTemplate)
         }
       }
 

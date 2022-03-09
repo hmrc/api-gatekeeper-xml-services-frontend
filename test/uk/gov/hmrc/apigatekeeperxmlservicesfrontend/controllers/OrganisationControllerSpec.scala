@@ -22,14 +22,15 @@ import play.api.http.Status
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.ErrorHandler
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{ThirdPartyDeveloperConnector, XmlServicesConnector}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.{UserId, UserResponse}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import java.util.UUID
@@ -42,7 +43,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     val fakeRequest = FakeRequest("GET", "/organisations")
     val organisationSearchRequest = FakeRequest("GET", "/organisations-search")
     private lazy val forbiddenView = app.injector.instanceOf[ForbiddenView]
-    private lazy val errorTemplate = app.injector.instanceOf[ErrorTemplate]
+    private lazy val errorHandler = app.injector.instanceOf[ErrorHandler]
     private lazy val organisationSearchView = app.injector.instanceOf[OrganisationSearchView]
     private lazy val organisationDetailsView = app.injector.instanceOf[OrganisationDetailsView]
     private lazy val organisationAddView = app.injector.instanceOf[OrganisationAddView]
@@ -65,7 +66,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       organisationRemoveSuccessView,
       mockAuthConnector,
       forbiddenView,
-      errorTemplate,
+      errorHandler,
       mockXmlServiceConnector,
       mockThirdPartDeveloperConnector
     )
@@ -196,8 +197,8 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       charset(result) shouldBe Some("utf-8")
 
       val document = Jsoup.parse(contentAsString(result))
-      document.getElementById("page-heading").text() shouldBe "Internal Server Error"
-      document.getElementById("page-body").text() shouldBe "Internal Server Error"
+      document.getElementById("page-heading").text() shouldBe "Sorry, we’re experiencing technical difficulties"
+      document.getElementById("page-body").text() shouldBe "Please try again in a few minutes."
 
       verifyNoMoreInteractions(mockXmlServiceConnector)
     }
@@ -273,8 +274,8 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       charset(result) shouldBe Some("utf-8")
 
       val document = Jsoup.parse(contentAsString(result))
-      document.getElementById("page-heading").text() shouldBe "Internal Server Error"
-      document.getElementById("page-body").text() shouldBe "Internal Server Error"
+      document.getElementById("page-heading").text() shouldBe "Sorry, we’re experiencing technical difficulties"
+      document.getElementById("page-body").text() shouldBe "Please try again in a few minutes."
 
       verifyNoMoreInteractions(mockXmlServiceConnector)
     }
@@ -293,8 +294,8 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       charset(result) shouldBe Some("utf-8")
 
       val document = Jsoup.parse(contentAsString(result))
-      document.getElementById("page-heading").text() shouldBe "Internal Server Error"
-      document.getElementById("page-body").text() shouldBe "Internal Server Error"
+      document.getElementById("page-heading").text() shouldBe "Sorry, we’re experiencing technical difficulties"
+      document.getElementById("page-body").text() shouldBe "Please try again in a few minutes."
 
       verifyNoMoreInteractions(mockXmlServiceConnector)
     }
