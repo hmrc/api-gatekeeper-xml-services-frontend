@@ -152,8 +152,8 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
     "return a list of users" in new Setup {
       when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(xmlApis)))
 
-      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
-    $email, $firstName, $lastName, $servicesString, $vendorIds"""
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS,DUPLICATENAMES
+    $email, $firstName, $lastName, $servicesString, $vendorIds,"""
 
       val result: Seq[ParsedUser] = await(csvService.mapToUsersFromCsv(csvTestData))
       val actualUser = result.head
@@ -168,8 +168,8 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
     "return a list of users when empty (no white space) services specified" in new Setup {
       when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(xmlApis)))
 
-      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
-    $email, $firstName, $lastName,, $vendorIds"""
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS,DUPLICATENAMES
+    $email, $firstName, $lastName,, $vendorIds,"""
 
       val result: Seq[ParsedUser] = await(csvService.mapToUsersFromCsv(csvTestData))
       val actualUser = result.head
@@ -184,8 +184,8 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
     "return a list of users when blank (with white space) services specified" in new Setup {
       when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(xmlApis)))
 
-      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
-    $email, $firstName, $lastName, , $vendorIds"""
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS,DUPLICATENAMES
+    $email, $firstName, $lastName, , $vendorIds, somevalue """
 
       val result: Seq[ParsedUser] = await(csvService.mapToUsersFromCsv(csvTestData))
       val actualUser = result.head
@@ -200,7 +200,7 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
     "throw an exception when xml connector returns an empty list of xml apis" in new Setup {
       when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(Nil)))
 
-      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS,DUPLICATENAMES
     $email, $firstName, $lastName, $servicesString, 1000;2000"""
 
       val exception = intercept[RuntimeException] { await(csvService.mapToUsersFromCsv(csvTestData)) }
@@ -211,7 +211,7 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
     "throw an exception when xml connector returns error" in new Setup {
       when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Left(new RuntimeException("error"))))
 
-      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS,DUPLICATENAMES
     $email, $firstName, $lastName, $servicesString, 1000;2000"""
 
       val exception = intercept[RuntimeException] { await(csvService.mapToUsersFromCsv(csvTestData)) }
@@ -221,7 +221,7 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
     "throw an exception when invaild services separator" in new Setup {
       when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(xmlApis)))
 
-      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS,DUPLICATENAMES
     $email, $firstName, $lastName, service1;service2, 1000|2000"""
 
       val exception = intercept[RuntimeException] { await(csvService.mapToUsersFromCsv(csvTestData)) }
@@ -231,7 +231,7 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
     "throw an exception when invaild serviceName" in new Setup {
       when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(xmlApis)))
 
-      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS,DUPLICATENAMES
     $email, $firstName, $lastName, service1|vat-and-ec-sales-list, 1000|2000"""
 
       val exception = intercept[RuntimeException] { await(csvService.mapToUsersFromCsv(csvTestData)) }
@@ -241,7 +241,7 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
     "throw an exception when invaild vendorIds separator" in new Setup {
       when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(xmlApis)))
 
-      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS,DUPLICATENAMES
     $email, $firstName, $lastName, $servicesString, 1000;2000"""
 
       val exception = intercept[RuntimeException] { await(csvService.mapToUsersFromCsv(csvTestData)) }
@@ -251,7 +251,7 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
     "throw an exception when invaild vendorId value" in new Setup {
       when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(xmlApis)))
 
-      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS,DUPLICATENAMES
     $email, $firstName, $lastName, $servicesString, notAnumber"""
 
       val exception = intercept[RuntimeException] { await(csvService.mapToUsersFromCsv(csvTestData)) }
@@ -261,7 +261,7 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
     "throw an exception when payload has empty vendorIds value" in new Setup {
       when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(xmlApis)))
 
-      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS,DUPLICATENAMES
     $email, $firstName, $lastName, $servicesString,"""
 
       val exception = intercept[RuntimeException] { await(csvService.mapToUsersFromCsv(csvTestData)) }
@@ -271,11 +271,11 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
     "throw an exception when payload is missing vendorIds value" in new Setup {
       when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(xmlApis)))
 
-      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
+      val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS,DUPLICATENAMES
     $email, $firstName, $lastName, $servicesString"""
 
       val exception = intercept[RuntimeException] { await(csvService.mapToUsersFromCsv(csvTestData)) }
-      exception.getMessage() shouldBe "Expected 5 values on row 1"
+      exception.getMessage() shouldBe "Expected at least 5 values on row 1"
     }
   }
 }

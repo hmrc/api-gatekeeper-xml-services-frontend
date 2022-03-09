@@ -42,7 +42,7 @@ class CsvService @Inject() (xmlServicesConnector: XmlServicesConnector)(implicit
   object UsersHeader extends Enumeration {
     type UsersHeader = Value
 
-    val EMAIL, FIRSTNAME, LASTNAME, SERVICES, VENDORIDS = Value
+    val EMAIL, FIRSTNAME, LASTNAME, SERVICES, VENDORIDS, DUPLICATENAMES = Value
   }
 
   def mapToUsersFromCsv(csvData: String)(implicit hc: HeaderCarrier): Future[List[ParsedUser]] = {
@@ -52,8 +52,8 @@ class CsvService @Inject() (xmlServicesConnector: XmlServicesConnector)(implicit
       validateHeaders(headers, expectedHeaders)
 
     def parseUser(record: CSVRecord, xmlApis: Seq[String]): ParsedUser = {
-      val expectedValues = 5
-      if (record.size() < expectedValues) throw new RuntimeException(s"Expected $expectedValues values on row ${record.getRecordNumber}")
+      val minNumberOfValues = 5
+      if (record.size() < minNumberOfValues) throw new RuntimeException(s"Expected at least $minNumberOfValues values on row ${record.getRecordNumber}")
 
       ParsedUser(
         email = parseStringFromCsv(record, s"${UsersHeader.EMAIL}"),
