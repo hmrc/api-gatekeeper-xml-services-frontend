@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
+import play.api.Logging
 import play.api.data.Form
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
@@ -43,9 +44,9 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
                                       errorTemplate: ErrorTemplate,
                                       xmlServicesConnector: XmlServicesConnector,
                                       thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector
-                                    )(implicit val ec: ExecutionContext,
-                                      appConfig: AppConfig)
-  extends FrontendController(mcc) with GatekeeperAuthWrapper {
+                                     )(implicit val ec: ExecutionContext,
+                                       appConfig: AppConfig)
+  extends FrontendController(mcc) with GatekeeperAuthWrapper with Logging {
 
   val addTeamMemberForm: Form[AddTeamMemberForm] = AddTeamMemberForm.form
   val createAndAddTeamMemberForm: Form[CreateAndAddTeamMemberForm] = CreateAndAddTeamMemberForm.form
@@ -54,9 +55,10 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
   def manageTeamMembers(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request => {
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId).map {
-          case Right(org: Organisation) => Ok(manageTeamMembersView(org))
-          case Left(_) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
-        }
+        case Right(org: Organisation) => Ok(manageTeamMembersView(org))
+        case Left(error: Throwable) => logger.info(s"manageTeamMembers failed getting organisation for ${organisationId.value}", error)
+          InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+      }
     }
   }
 
@@ -66,48 +68,66 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
 
   def addTeamMemberAction(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request =>
+
+      def handleGetUsersFromTPD(teamMemberAddData: AddTeamMemberForm) = {
+        thirdPartyDeveloperConnector.getByEmails(List(teamMemberAddData.emailAddress.getOrElse(""))).flatMap {
+          case Right(Nil) => successful(Ok(createTeamMemberView(createAndAddTeamMemberForm, organisationId, teamMemberAddData.emailAddress)))
+          case Right(users: List[UserResponse]) => addOrCreateTeamMember(organisationId, users.head.email, users.head.firstName, users.head.lastName)
+          case Left(error: Throwable) =>
+            logger.info(s"addTeamMemberAction failed for ${organisationId.value}", error)
+            successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error")))
+        }
+      }
+
       addTeamMemberForm.bindFromRequest.fold(
         formWithErrors => successful(BadRequest(addTeamMemberView(formWithErrors, organisationId))),
         teamMemberAddData => {
-         thirdPartyDeveloperConnector.getByEmails(List(teamMemberAddData.emailAddress.getOrElse(""))).flatMap {
-           case Right(Nil) => successful(Ok(createTeamMemberView(createAndAddTeamMemberForm, organisationId, teamMemberAddData.emailAddress)))
-           case Right(users: List[UserResponse]) => addOrCreateTeamMember(organisationId, users.head.email,  users.head.firstName,  users.head.lastName)
-           case Left(_) => successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error")))
-         }
+          getCollaboratorByEmailAddressAndOrganisationId(organisationId, teamMemberAddData.emailAddress.getOrElse("")).flatMap {
+            case Some(user: Collaborator) =>
+              logger.info(s"error in addOrCreateTeamMember for organisation ${organisationId.value} duplicate collaborator ${user.userId}")
+              val formWithError= AddTeamMemberForm.form.fill(teamMemberAddData).withError("emailAddress", "team.member.error.emailAddress.already.exists.field")
+              successful(BadRequest(addTeamMemberView(formWithError, organisationId)))
+            case None => handleGetUsersFromTPD(teamMemberAddData)
+          }
         }
       )
+
   }
 
   def createTeamMemberAction(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
-    implicit request => createAndAddTeamMemberForm.bindFromRequest.fold(
-        formWithErrors => successful(BadRequest(createTeamMemberView(formWithErrors, organisationId, None))),
-        formData => addOrCreateTeamMember(organisationId, formData.emailAddress,  formData.firstName,  formData.lastName)
+    implicit request =>
+      createAndAddTeamMemberForm.bindFromRequest.fold(
+        formWithErrors => {
+          logger.info(s"createTeamMemberAction invalid form provided for ${organisationId.value}")
+          successful(BadRequest(createTeamMemberView(formWithErrors, organisationId, None)))
+        }, formData => addOrCreateTeamMember(organisationId, formData.emailAddress, formData.firstName, formData.lastName)
       )
   }
 
-  private def addOrCreateTeamMember(organisationId: OrganisationId, emailAddress: String, firstname: String, lastname: String )
-                                   (implicit hc: HeaderCarrier, request: LoggedInRequest[_]): Future[Result] ={
+  private def addOrCreateTeamMember(organisationId: OrganisationId, emailAddress: String, firstname: String, lastname: String)
+                                   (implicit hc: HeaderCarrier, request: LoggedInRequest[_]): Future[Result] = {
     xmlServicesConnector
       .addTeamMember(organisationId, emailAddress, firstname, lastname)
       .map {
         case AddCollaboratorSuccess(x: Organisation) =>
           Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.TeamMembersController.manageTeamMembers(x.organisationId))
-        case _ => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+        case AddCollaboratorFailure(error: Throwable) =>
+          logger.info(s"error in addOrCreateTeamMember attempting to add team member to ${organisationId.value}", error)
+          InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
       }
   }
-
 
   def removeTeamMember(organisationId: OrganisationId, userId: String): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request => {
       getCollaboratorByUserIdAndOrganisationId(organisationId, userId).flatMap {
         case Some(collaborator: Collaborator) =>
           successful(Ok(removeTeamMemberView(RemoveTeamMemberConfirmationForm.form, organisationId, userId, collaborator.email)))
-        case _ => successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error")))
+        case _ =>
+          logger.info(s"getCollaboratorByUserIdAndOrganisationId failed for orgId:${organisationId.value} & userId: $userId ")
+          successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error")))
       }
     }
-
   }
-
 
   def removeTeamMemberAction(organisationId: OrganisationId, userId: String): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request =>
@@ -118,9 +138,11 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
             xmlServicesConnector.removeTeamMember(organisationId, collaborator.email, request.name.getOrElse("Unknown Name"))
               .map {
                 case RemoveCollaboratorSuccess(_) => Redirect(routes.TeamMembersController.manageTeamMembers(organisationId).url, SEE_OTHER)
-                case _ => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
+                case _ => logger.info(s"removeTeamMemberAction connector failed for  orgId:${organisationId.value} & userId: $userId ")
+                  InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error"))
               }
-          case _ => successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error")))
+          case _ => logger.info(s"removeTeamMemberAction: getCollaboratorByUserIdAndOrganisationId failed for  orgId:${organisationId.value} & userId: $userId ")
+            successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", "Internal Server Error")))
         }
       }
 
@@ -142,8 +164,20 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
     xmlServicesConnector.getOrganisationByOrganisationId(organisationId).map {
       case Right(organisation: Organisation) =>
         organisation.collaborators.find(_.userId.equalsIgnoreCase(userId))
-      case _ => None
+      case Left(error: Throwable) => logger.error(s"getOrganisationByOrganisationId failed for orgId:${organisationId.value}", error)
+        None
     }
   }
+
+  private def getCollaboratorByEmailAddressAndOrganisationId(organisationId: OrganisationId, emailAddress: String)
+                                                            (implicit hc: HeaderCarrier): Future[Option[Collaborator]] = {
+    xmlServicesConnector.getOrganisationByOrganisationId(organisationId).map {
+      case Right(organisation: Organisation) =>
+        organisation.collaborators.find(_.email.equalsIgnoreCase(emailAddress.trim))
+      case Left(error: Throwable) => logger.error(s"getCollaboratorByEmailAddressAndOrganisationId failed for orgId:${organisationId.value}", error)
+        None
+    }
+  }
+
 
 }
