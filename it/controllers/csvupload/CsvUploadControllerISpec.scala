@@ -81,15 +81,16 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
     val lastName = "Bloggs"
     val servicesString = "vat-and-ec-sales-list|stamp-taxes-online"
     val vendorIds = "20001|20002"
-    val vendorIdsList = List(VendorId(20001), VendorId(20002))
+    val vendorIdsParsed = List(VendorId(20001), VendorId(20002))
+    val duplicateNames = "bob Hope|BOB Hopee"
 
-    val validUserCsvPayload = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
-        a@b.com,Joe,Bloggs,$servicesString,$vendorIds"""
+    val validUserCsvPayload = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS,DUPLICATENAMES
+        a@b.com,Joe,Bloggs,$servicesString,$vendorIds,$duplicateNames"""
 
-    val parsedUser = ParsedUser(email, firstName, lastName, services, vendorIdsList)
+    val parsedUser = ParsedUser(email, firstName, lastName, services, vendorIdsParsed)
 
     val users = Seq(
-      ParsedUser(email, firstName, lastName, services, vendorIdsList)
+      ParsedUser(email, firstName, lastName, services, vendorIdsParsed)
     )
 
     def callGetEndpoint(url: String, headers: List[(String, String)] = List.empty): WSResponse =
