@@ -27,8 +27,8 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.{UserId, UserResponse}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.{AddTeamMemberView, CreateTeamMemberView, ManageTeamMembersView, RemoveTeamMemberView}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.{ErrorTemplate, ForbiddenView}
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import java.util.UUID
