@@ -185,7 +185,7 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
       when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(xmlApis)))
 
       val csvTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS,DUPLICATENAMES
-    $email, $firstName, $lastName, , $vendorIds,"""
+    $email, $firstName, $lastName, , $vendorIds, somevalue """
 
       val result: Seq[ParsedUser] = await(csvService.mapToUsersFromCsv(csvTestData))
       val actualUser = result.head
