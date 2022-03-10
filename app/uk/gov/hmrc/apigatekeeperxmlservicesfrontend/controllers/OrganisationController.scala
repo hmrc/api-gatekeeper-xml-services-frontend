@@ -61,7 +61,10 @@ class OrganisationController @Inject()(
   val removeOrganisationConfirmationForm: Form[RemoveOrganisationConfirmationForm] = RemoveOrganisationConfirmationForm.form
 
   val organisationsPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
-    implicit request => successful(Ok(organisationSearchView(List.empty, showTable = false)))
+    implicit request =>
+      println(s"*****organisationsPage***** ${request.name.getOrElse("NO NAME HERE")}")
+      loggedIn(request)
+      successful(Ok(organisationSearchView(List.empty, showTable = false)))
   }
 
   val organisationsAddPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
@@ -181,6 +184,7 @@ class OrganisationController @Inject()(
 
   def organisationsSearchAction(searchType: String, searchText: Option[String]): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request =>
+      println(s"*****organisationsSearchAction***** ${request.name.getOrElse("NO NAME HERE")}")
       def toVendorIdOrNone(txtVal: Option[String]): Option[VendorId] = {
         txtVal.flatMap(x => Try(x.toLong).toOption.map(VendorId))
       }
