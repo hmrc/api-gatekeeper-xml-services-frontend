@@ -17,3 +17,7 @@
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models
 
 case class LoggedInUser(userFullName: Option[String])
+
+object LoggedInUser {
+  implicit def fromRequest(implicit request: LoggedInRequest[_]): LoggedInUser = LoggedInUser(request.name)
+}

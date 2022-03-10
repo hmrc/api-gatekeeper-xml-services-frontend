@@ -61,7 +61,9 @@ class OrganisationController @Inject()(
   val removeOrganisationConfirmationForm: Form[RemoveOrganisationConfirmationForm] = RemoveOrganisationConfirmationForm.form
 
   val organisationsPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
-    implicit request => successful(Ok(organisationSearchView(List.empty, showTable = false)))
+    implicit request =>
+      loggedIn(request)
+      successful(Ok(organisationSearchView(List.empty, showTable = false)))
   }
 
   val organisationsAddPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {

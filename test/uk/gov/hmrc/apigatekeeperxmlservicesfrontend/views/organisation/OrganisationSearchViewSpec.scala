@@ -21,7 +21,7 @@ import org.jsoup.nodes.Document
 import play.api.test.FakeRequest
 import play.twirl.api.Html
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{LoggedInUser, Organisation}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationSearchView
@@ -33,6 +33,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
     val organisationSearchView = app.injector.instanceOf[OrganisationSearchView]
+    val loggedInUser = LoggedInUser(Some("Test User"))
 
     def testRadioButton(document: Document, radioButtonId: String, isChecked: Boolean) = {
       withClue(s"radio button $radioButtonId test failed") {
@@ -59,7 +60,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
     }
 
     "render page correctly on initial load when organisations list is empty" in new Setup {
-      val page: Html = organisationSearchView.render(List.empty, showTable = false, isVendorIdSearch = true, FakeRequest(), messagesProvider.messages, mockAppConfig)
+      val page: Html = organisationSearchView.render(List.empty, showTable = false, isVendorIdSearch = true, FakeRequest(), loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       testStandardComponents(document)
       testRadioButton(document, "vendor-id-input", true)
@@ -76,7 +77,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
     }
 
     "render page correctly when organisations list is populated" in new Setup {
-      val page: Html = organisationSearchView.render(organisations, showTable = true, isVendorIdSearch = true, FakeRequest(), messagesProvider.messages, mockAppConfig)
+      val page: Html = organisationSearchView.render(organisations, showTable = true, isVendorIdSearch = true, FakeRequest(), loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       testStandardComponents(document)
 
@@ -94,7 +95,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
     }
 
     "render page correctly when organisations list is empty" in new Setup {
-      val page: Html = organisationSearchView.render(List.empty, showTable = true, isVendorIdSearch = false, FakeRequest(), messagesProvider.messages, mockAppConfig)
+      val page: Html = organisationSearchView.render(List.empty, showTable = true, isVendorIdSearch = false, FakeRequest(), loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       testStandardComponents(document)
       testRadioButton(document, "vendor-id-input", false)

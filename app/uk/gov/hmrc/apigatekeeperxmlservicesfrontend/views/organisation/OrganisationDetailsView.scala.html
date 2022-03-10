@@ -18,17 +18,19 @@
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationUser
 @import play.twirl.api.HtmlFormat
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 
 @this(layout: Layout)
 
 
-@(organisation: Organisation, users: List[OrganisationUser])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@(organisation: Organisation, users: List[OrganisationUser])(implicit request: Request[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
 
 @emails() = @{
     if(users.nonEmpty) {
         users.map(_.email).mkString("", ";", ";")
     } else ""
 }
+
 
 @buildGatekeeperDeveloperUrl(user: OrganisationUser) = @{
     appConfig.apiGatekeeperUrl+"/developer?developerId="+user.userId.value

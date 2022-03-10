@@ -24,6 +24,7 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.AddOrgani
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationAddView
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.ViewSpecHelpers
 
 class OrganisationAddViewSpec extends CommonViewSpec with WithCSRFAddToken with ViewSpecHelpers {
@@ -31,7 +32,7 @@ class OrganisationAddViewSpec extends CommonViewSpec with WithCSRFAddToken with 
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
     val organisationAddView = app.injector.instanceOf[OrganisationAddView]
-
+    val loggedInUser = LoggedInUser(Some("Test User"))
   }
 
   "Organisation Add View" should {
@@ -39,7 +40,7 @@ class OrganisationAddViewSpec extends CommonViewSpec with WithCSRFAddToken with 
 
     "render the organisation add page correctly when no errors" in new Setup {
 
-      val page = organisationAddView.render(AddOrganisationForm.form, FakeRequest().withCSRFToken, messagesProvider.messages, mockAppConfig)
+      val page = organisationAddView.render(AddOrganisationForm.form, FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
 
       validateFormErrors(document)
@@ -51,7 +52,7 @@ class OrganisationAddViewSpec extends CommonViewSpec with WithCSRFAddToken with 
         .withError("organisationName", "organisationname.error.required")
         .withError("emailAddress", "emailAddress.error.required")
 
-      val page = organisationAddView.render(form, FakeRequest().withCSRFToken, messagesProvider.messages, mockAppConfig)
+      val page = organisationAddView.render(form, FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
 
       validateFormErrors(document, Some("Enter an organisation name"))

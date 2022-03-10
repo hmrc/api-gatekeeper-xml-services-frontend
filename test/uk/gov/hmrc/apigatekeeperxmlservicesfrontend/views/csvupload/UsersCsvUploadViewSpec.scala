@@ -20,6 +20,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.UsersCsvUploadView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
@@ -31,7 +32,7 @@ class UsersCsvUploadViewSpec extends CommonViewSpec with WithCSRFAddToken with V
   trait Setup {
     val mockAppConfig = mock[AppConfig]
     val usersCsvUploadView = app.injector.instanceOf[UsersCsvUploadView]
-
+    val loggedInUser = LoggedInUser(Some("Test User"))
   }
 
   "CSV Upload View" should {
@@ -45,7 +46,7 @@ class UsersCsvUploadViewSpec extends CommonViewSpec with WithCSRFAddToken with V
     }
 
     "render the users csv upload page correctly when no errors" in new Setup {
-      val page = usersCsvUploadView.render(CsvData.form, FakeRequest().withCSRFToken, messagesProvider.messages)
+      val page = usersCsvUploadView.render(CsvData.form, FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages)
       val document: Document = Jsoup.parse(page.body)
 
       validateFormErrors(document, false)
@@ -55,8 +56,8 @@ class UsersCsvUploadViewSpec extends CommonViewSpec with WithCSRFAddToken with V
 
     "render the users csv upload page correctly when errors exist" in new Setup {
 
-      val page = usersCsvUploadView.render(CsvData.form.withError("csv-data-input", "csvdata.error.required"), 
-                                      FakeRequest().withCSRFToken, messagesProvider.messages)
+      val page = usersCsvUploadView.render(CsvData.form.withError("csv-data-input", "csvdata.error.required"),
+                                      FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages)
       val document: Document = Jsoup.parse(page.body)
 
       validateFormErrors(document, true)

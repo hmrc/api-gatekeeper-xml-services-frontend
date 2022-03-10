@@ -16,10 +16,11 @@
 
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 
 @this(layout: Layout)
 
-@(organisation: Organisation)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@(organisation: Organisation)(implicit request: Request[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
 
 @layout(pageTitle = Some("Manage team members - HMRC API Gatekeeper")) {
 

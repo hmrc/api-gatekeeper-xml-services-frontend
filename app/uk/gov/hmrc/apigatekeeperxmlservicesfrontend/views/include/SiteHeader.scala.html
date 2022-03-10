@@ -17,11 +17,12 @@
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.HmrcHeader
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.Header
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.language.En
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 
 @this(hmrcHeader: HmrcHeader)
 
 
-@(apiGatekeeperUrl: String)(implicit messages: Messages)
+@(apiGatekeeperUrl: String)(implicit request: Request[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages)
 
 @navigation = @{
     Seq(

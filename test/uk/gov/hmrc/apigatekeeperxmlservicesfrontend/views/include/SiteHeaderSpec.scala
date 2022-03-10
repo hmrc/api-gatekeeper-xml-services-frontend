@@ -17,7 +17,9 @@
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.include
 
 import org.jsoup.Jsoup
+import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.SiteHeader
 
@@ -28,6 +30,7 @@ class SiteHeaderSpec extends CommonViewSpec {
   trait Setup {
     val mockAppConfig = mock[AppConfig]
     val siteHeader = app.injector.instanceOf[SiteHeader]
+    val loggedInUser = LoggedInUser(Some("Test User"))
 
     val apiGatekeeperUrl = "/api-gatekeeper"
 
@@ -43,7 +46,7 @@ class SiteHeaderSpec extends CommonViewSpec {
   "SiteHeader" should {
 
     "render correctly" in new Setup {
-      val component = siteHeader.render(apiGatekeeperUrl, messagesProvider.messages)
+      val component = siteHeader.render(apiGatekeeperUrl, FakeRequest(), loggedInUser, messagesProvider.messages)
       val document = Jsoup.parse(component.body)
       val navigation = document.getElementById("navigation")
 
