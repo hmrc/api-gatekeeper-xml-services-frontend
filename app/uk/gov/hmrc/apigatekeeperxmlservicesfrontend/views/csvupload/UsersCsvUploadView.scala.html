@@ -17,11 +17,12 @@
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.CsvData
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.FieldError
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 
 @this(layout: Layout)
 
 
-@(form: Form[CsvData])(implicit request: Request[_], messages: Messages)
+@(form: Form[CsvData])(implicit request: Request[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages)
 
 @layout(pageTitle = Some("Upload users as CSV - HMRC API Gatekeeper")) {
     <div class="govuk-form-group">

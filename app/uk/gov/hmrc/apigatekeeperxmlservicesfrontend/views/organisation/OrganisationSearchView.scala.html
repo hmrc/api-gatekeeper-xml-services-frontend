@@ -16,11 +16,12 @@
 
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 
 @this(layout: Layout)
 
 
-@(organisations: List[Organisation], showTable: Boolean = true, isVendorIdSearch: Boolean = true)(implicit request: Request[_], messages: Messages,
+@(organisations: List[Organisation], showTable: Boolean = true, isVendorIdSearch: Boolean = true)(implicit request: Request[_],  loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages,
 appConfig: AppConfig)
 
 @buildManageOrgPath(org: Organisation) = @{

@@ -18,14 +18,14 @@
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.UpdateOrganisationDetailsForm
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include._
-
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 
 
 @this(layout: Layout)
 
 @(form: Form[UpdateOrganisationDetailsForm],
         organisationId: OrganisationId)(implicit request:
-Request[_], messages: Messages,
+Request[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages,
 appConfig: AppConfig)
 
 @layout(pageTitle = Some("Manage XML Organisations - HMRC API Gatekeeper")) {

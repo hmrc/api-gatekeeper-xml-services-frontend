@@ -18,11 +18,12 @@
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include._
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.RemoveOrganisationConfirmationForm
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 
 @this(layout: Layout)
 
 
-@(form: Form[RemoveOrganisationConfirmationForm], organisation: Organisation)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@(form: Form[RemoveOrganisationConfirmationForm], organisation: Organisation)(implicit request: Request[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
 
 @layout(pageTitle = Some("Remove organisation- HMRC API Gatekeeper")) {
 
