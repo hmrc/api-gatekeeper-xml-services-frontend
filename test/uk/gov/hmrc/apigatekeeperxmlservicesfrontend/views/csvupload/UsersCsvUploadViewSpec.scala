@@ -24,7 +24,7 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.UsersCsvUploadView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.CsvData
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.FormUtils.CsvData
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.ViewSpecHelpers
 
 class UsersCsvUploadViewSpec extends CommonViewSpec with WithCSRFAddToken with ViewSpecHelpers {

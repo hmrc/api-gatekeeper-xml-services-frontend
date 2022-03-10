@@ -3,7 +3,10 @@ service.text = This is your new service
 
 organisationname.error.required = Enter an organisation name
 
-emailAddress.error.required = Enter an email address
+emailAddress.error.required.field = Enter an email address
+emailAddress.error.not.valid.field = Provide a valid email address
+emailAddress.error.maxLength.field = Provide an email address with fewer than 320 characters
+
 firstname.error.required = Enter a first name
 lastname.error.required = Enter a last name
 

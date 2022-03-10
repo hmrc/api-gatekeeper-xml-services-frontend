@@ -21,7 +21,7 @@ import org.jsoup.nodes.Document
 import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.AddTeamMemberForm
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.FormUtils.AddTeamMemberForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.{CommonViewSpec, WithCSRFAddToken}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.AddTeamMemberView
@@ -52,7 +52,7 @@ class AddTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with Vi
 
     "render the add team member page correctly when errors exist" in new Setup {
 
-      val page = addTeamMemberView.render(AddTeamMemberForm.form.withError("emailAddress", "emailAddress.error.required"),
+      val page = addTeamMemberView.render(AddTeamMemberForm.form.withError("emailAddress", "emailAddress.error.required.field"),
         org1.organisationId,
         FakeRequest().withCSRFToken,
         loggedInUser,

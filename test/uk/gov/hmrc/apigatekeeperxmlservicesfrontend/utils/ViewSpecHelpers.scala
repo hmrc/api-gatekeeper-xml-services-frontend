@@ -32,6 +32,7 @@ trait ViewSpecHelpers extends Matchers {
       Option(document.getElementById("error-summary-display")).isDefined shouldBe true
       document.getElementById("error-summary-title").text() shouldBe "There is a problem"
       withClue(s"Expected Error ${expectedError.getOrElse("")} is not displayed") {
+        document.getElementById("error-list").children().eachText().forEach(println)
         document.getElementById("error-list").children().eachText().contains(expectedError.getOrElse("")) shouldBe true
       }
       formGroupElement.head.classNames().contains("govuk-form-group--error") shouldBe true
@@ -113,7 +114,7 @@ trait ViewSpecHelpers extends Matchers {
   }
 
   def validateRemoveTeamMemberPage(document: Document) = {
-    document.getElementById("page-heading").text() shouldBe "Are you sure you want to remove email1?"
+    document.getElementById("page-heading").text() shouldBe "Are you sure you want to remove email1@email.com?"
     Option(document.getElementById("yes")).isDefined shouldBe true
     Option(document.getElementById("no")).isDefined shouldBe true
     Option(document.getElementById("continue-button")).isDefined shouldBe true
