@@ -20,6 +20,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.OrganisationCsvUploadView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
@@ -30,7 +31,7 @@ class OrganisationCsvUploadViewSpec extends CommonViewSpec with WithCSRFAddToken
   trait Setup {
     val mockAppConfig = mock[AppConfig]
     val organisationCsvUploadView = app.injector.instanceOf[OrganisationCsvUploadView]
-
+    val loggedInUser = LoggedInUser(Some("Test User"))
   }
 
   "CSV Upload View" should {
@@ -44,7 +45,7 @@ class OrganisationCsvUploadViewSpec extends CommonViewSpec with WithCSRFAddToken
     }
 
     "render the organisation csv upload page correctly when no errors" in new Setup {
-      val page = organisationCsvUploadView.render(CsvData.form, FakeRequest().withCSRFToken, messagesProvider.messages)
+      val page = organisationCsvUploadView.render(CsvData.form, FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages)
       val document: Document = Jsoup.parse(page.body)
 
       validateFormErrors(document, false)
@@ -57,8 +58,8 @@ class OrganisationCsvUploadViewSpec extends CommonViewSpec with WithCSRFAddToken
 
     "render the organisation csv upload page correctly when errors exist" in new Setup {
 
-      val page = organisationCsvUploadView.render(CsvData.form.withError("csv-data-input", "csvdata.error.required"), 
-                                      FakeRequest().withCSRFToken, messagesProvider.messages)
+      val page = organisationCsvUploadView.render(CsvData.form.withError("csv-data-input", "csvdata.error.required"),
+                                      FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages)
       val document: Document = Jsoup.parse(page.body)
 
       validateFormErrors(document, true)

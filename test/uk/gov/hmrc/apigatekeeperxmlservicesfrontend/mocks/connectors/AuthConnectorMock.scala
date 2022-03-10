@@ -27,7 +27,7 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.TestRoles
 
 trait AuthConnectorMock extends TestRoles with MockitoSugar with ArgumentMatchersSugar {
 
-  val userName = "userName"
+  val userName = "Test User"
   val superUserName = "superUserName"
   val adminName = "adminName"
   val mockAuthConnector = mock[AuthConnector]

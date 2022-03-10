@@ -23,20 +23,21 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.ManageTeamMembersView
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 
 class ManageTeamMembersViewSpec extends CommonViewSpec with ViewSpecHelpers {
 
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
     val manageTeamMembersView = app.injector.instanceOf[ManageTeamMembersView]
-
+    val loggedInUser = LoggedInUser(Some("Test User"))
   }
 
   "Manage Team Members View" should {
 
     "render the team members correctly when " in new Setup {
 
-      val page = manageTeamMembersView.render(organisationWithCollaborators, FakeRequest(), messagesProvider.messages, mockAppConfig)
+      val page = manageTeamMembersView.render(organisationWithCollaborators, FakeRequest(), loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       validateManageTeamMembersPage(document, organisationWithCollaborators)
     }

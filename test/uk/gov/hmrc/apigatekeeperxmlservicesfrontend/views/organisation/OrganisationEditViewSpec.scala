@@ -20,6 +20,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.UpdateOrganisationDetailsForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.{CommonViewSpec, WithCSRFAddToken}
@@ -30,7 +31,7 @@ class OrganisationEditViewSpec extends CommonViewSpec with WithCSRFAddToken with
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
     val organisationUpdateView = app.injector.instanceOf[OrganisationUpdateView]
-
+    val loggedInUser = LoggedInUser(Some("Test User"))
   }
 
   "Organisation Edit View" should {
@@ -41,6 +42,7 @@ class OrganisationEditViewSpec extends CommonViewSpec with WithCSRFAddToken with
         UpdateOrganisationDetailsForm.form,
         organisationId1,
         FakeRequest().withCSRFToken,
+        loggedInUser,
         messagesProvider.messages,
         mockAppConfig)
 
@@ -56,6 +58,7 @@ class OrganisationEditViewSpec extends CommonViewSpec with WithCSRFAddToken with
         UpdateOrganisationDetailsForm.form.withError("organisationName", "organisationname.error.required"),
         organisationId1,
         FakeRequest().withCSRFToken,
+        loggedInUser,
         messagesProvider.messages,
         mockAppConfig)
 
@@ -63,7 +66,6 @@ class OrganisationEditViewSpec extends CommonViewSpec with WithCSRFAddToken with
 
       validateFormErrors(document, Some("Enter an organisation name"))
       validateUpdateOrganisationDetailsPage(document)
-
     }
   }
 }

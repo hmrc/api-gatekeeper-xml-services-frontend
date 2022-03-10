@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.teammembers
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.organisation
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.{CommonViewSpec, WithCSRFAddToken}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationRemoveSuccessView
@@ -29,14 +30,14 @@ class OrganisationRemoveSuccessViewSpec extends CommonViewSpec with WithCSRFAddT
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
     val organisationRemoveSuccessView = app.injector.instanceOf[OrganisationRemoveSuccessView]
-
+    val loggedInUser = LoggedInUser(Some("Test User"))
   }
 
   "Organisation Remove Success View" should {
 
     "render the remove success organisation page" in new Setup {
 
-      val page = organisationRemoveSuccessView.render(org1, FakeRequest(), messagesProvider.messages, mockAppConfig)
+      val page = organisationRemoveSuccessView.render(org1, FakeRequest(), loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
 
       validateRemoveOrganisationSuccessPage(document, org1.name)

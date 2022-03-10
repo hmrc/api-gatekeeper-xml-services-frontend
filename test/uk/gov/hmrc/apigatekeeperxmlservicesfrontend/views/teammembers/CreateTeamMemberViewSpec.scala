@@ -20,6 +20,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.CreateAndAddTeamMemberForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.{CommonViewSpec, WithCSRFAddToken}
@@ -30,19 +31,22 @@ class CreateTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
     val createTeamMemberView = app.injector.instanceOf[CreateTeamMemberView]
-
+    val loggedInUser = LoggedInUser(Some("Test User"))
   }
 
   "Create Team Member View" should {
 
-
     "render the create team member page correctly when no errors" in new Setup {
 
-      val page = createTeamMemberView.render(CreateAndAddTeamMemberForm.form,
+      val page = createTeamMemberView.render(
+        CreateAndAddTeamMemberForm.form,
         org1.organisationId,
         Some(emailAddress),
         FakeRequest().withCSRFToken,
-        messagesProvider.messages, mockAppConfig)
+        loggedInUser,
+        messagesProvider.messages,
+        mockAppConfig
+      )
 
       val document: Document = Jsoup.parse(page.body)
 
@@ -53,12 +57,15 @@ class CreateTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with
     "render the create team member page correctly when errors exist" in new Setup {
 
       val page = createTeamMemberView
-        .render(CreateAndAddTeamMemberForm.form.withError("firstName", "firstname.error.required").withError("lastName", "lastname.error.required"),
-        org1.organisationId,
-        Some(emailAddress),
-        FakeRequest().withCSRFToken,
-        messagesProvider.messages,
-        mockAppConfig)
+        .render(
+          CreateAndAddTeamMemberForm.form.withError("firstName", "firstname.error.required").withError("lastName", "lastname.error.required"),
+          org1.organisationId,
+          Some(emailAddress),
+          FakeRequest().withCSRFToken,
+          loggedInUser,
+          messagesProvider.messages,
+          mockAppConfig
+        )
 
       val document: Document = Jsoup.parse(page.body)
 

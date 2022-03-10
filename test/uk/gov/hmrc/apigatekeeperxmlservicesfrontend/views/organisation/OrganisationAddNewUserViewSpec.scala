@@ -20,6 +20,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.AddOrganisationWithNewUserForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.{CommonViewSpec, WithCSRFAddToken}
@@ -30,18 +31,17 @@ class OrganisationAddNewUserViewSpec extends CommonViewSpec with WithCSRFAddToke
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
     val organisationAddNewUserView = app.injector.instanceOf[OrganisationAddNewUserView]
-
+    val loggedInUser = LoggedInUser(Some("Test User"))
   }
 
   "Organisation Add new User View" should {
-
 
     "render the add new user page correctly when no errors" in new Setup {
       val orgName = "orgName"
       val email = "email"
 
       val page = organisationAddNewUserView
-        .render(AddOrganisationWithNewUserForm.form, Some(orgName), Some(email), FakeRequest().withCSRFToken, messagesProvider.messages, mockAppConfig)
+        .render(AddOrganisationWithNewUserForm.form, Some(orgName), Some(email), FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
 
       validateFormErrors(document)
@@ -55,12 +55,12 @@ class OrganisationAddNewUserViewSpec extends CommonViewSpec with WithCSRFAddToke
         .withError("firstName", "firstname.error.required")
         .withError("lastName", "lastname.error.required")
 
-      val page = organisationAddNewUserView.render(form, Some(orgName), Some(email), FakeRequest().withCSRFToken, messagesProvider.messages, mockAppConfig)
+      val page = organisationAddNewUserView.render(form, Some(orgName), Some(email), FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
 
       validateFormErrors(document, Some("Enter a first name"))
       validateFormErrors(document, Some("Enter a last name"))
-      validateOrganisationAddNewUserPage(document, orgName, email )
+      validateOrganisationAddNewUserPage(document, orgName, email)
     }
   }
 }

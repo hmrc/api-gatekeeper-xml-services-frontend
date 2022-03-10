@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.teammembers
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.organisation
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.RemoveOrganisationConfirmationForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.{CommonViewSpec, WithCSRFAddToken}
@@ -30,14 +31,14 @@ class OrganisationRemoveViewSpec extends CommonViewSpec with WithCSRFAddToken wi
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
     val organisationRemoveView = app.injector.instanceOf[OrganisationRemoveView]
-
+    val loggedInUser = LoggedInUser(Some("Test User"))
   }
 
   "Organisation Remove View" should {
 
     "render the remove organisation page correctly when no errors" in new Setup {
 
-      val page = organisationRemoveView.render(RemoveOrganisationConfirmationForm.form, org1, FakeRequest().withCSRFToken, messagesProvider.messages, mockAppConfig)
+      val page = organisationRemoveView.render(RemoveOrganisationConfirmationForm.form, org1, FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
 
       validateFormErrors(document)
@@ -48,7 +49,7 @@ class OrganisationRemoveViewSpec extends CommonViewSpec with WithCSRFAddToken wi
     "render the remove organisation page correctly when errors exist" in new Setup {
 
       val page = organisationRemoveView.render(RemoveOrganisationConfirmationForm.form.withError("confirm", "organisation.error.confirmation.no.choice.field"),
-        org1, FakeRequest().withCSRFToken, messagesProvider.messages, mockAppConfig)
+        org1, FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
 
       val document: Document = Jsoup.parse(page.body)
 

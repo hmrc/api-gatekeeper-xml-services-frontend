@@ -17,28 +17,27 @@
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.organisation
 
 import play.api.test.FakeRequest
-
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
-
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationDetailsView
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 
 class OrganisationDetailsViewSpec extends CommonViewSpec {
 
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
     val organisationDetailsView = app.injector.instanceOf[OrganisationDetailsView]
-
+    val loggedInUser = LoggedInUser(Some("Test User"))
   }
 
   "Organisation Details View" should {
 
     "render the organisation details correctly and display the team member when present" in new Setup {
       when(mockAppConfig.apiGatekeeperUrl).thenReturn("https://admin.qa.tax.service.gov.uk/api-gatekeeper")
-      val page = organisationDetailsView.render(organisationWithCollaborators, organisationUsers, FakeRequest(), messagesProvider.messages, mockAppConfig)
+      val page = organisationDetailsView.render(organisationWithCollaborators, organisationUsers, FakeRequest(), loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
 
       document.getElementById("org-name-heading").text() shouldBe "Name"
@@ -63,7 +62,7 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
 
       "render the organisation details correctly and display the team member when not present" in new Setup {
 
-      val page = organisationDetailsView.render(organisationWithCollaborators, List.empty, FakeRequest(), messagesProvider.messages, mockAppConfig)
+      val page = organisationDetailsView.render(organisationWithCollaborators, List.empty, FakeRequest(), loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
 
         document.getElementById("org-name-heading").text() shouldBe "Name"

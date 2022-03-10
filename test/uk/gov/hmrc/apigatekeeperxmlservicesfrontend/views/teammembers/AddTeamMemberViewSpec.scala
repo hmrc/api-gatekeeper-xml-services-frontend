@@ -20,6 +20,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.AddTeamMemberForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.{CommonViewSpec, WithCSRFAddToken}
@@ -30,17 +31,17 @@ class AddTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with Vi
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
     val addTeamMemberView = app.injector.instanceOf[AddTeamMemberView]
-
+    val loggedInUser = LoggedInUser(Some("Test User"))
   }
 
   "Add Team Member View" should {
-
 
     "render the add team member page correctly when no errors" in new Setup {
 
       val page = addTeamMemberView.render(AddTeamMemberForm.form,
         org1.organisationId,
         FakeRequest().withCSRFToken,
+        loggedInUser,
         messagesProvider.messages, mockAppConfig)
 
       val document: Document = Jsoup.parse(page.body)
@@ -54,6 +55,7 @@ class AddTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with Vi
       val page = addTeamMemberView.render(AddTeamMemberForm.form.withError("emailAddress", "emailAddress.error.required"),
         org1.organisationId,
         FakeRequest().withCSRFToken,
+        loggedInUser,
         messagesProvider.messages,
         mockAppConfig)
 
