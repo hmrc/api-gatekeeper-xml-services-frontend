@@ -383,7 +383,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       val document = Jsoup.parse(contentAsString(result))
       validateAddOrganisationPage(document)
       validateFormErrors(document, Some("Enter an organisation name"))
-      validateFormErrors(document, Some("Enter an email address"))
+      validateFormErrors(document, Some("Provide a valid email address"))
       verifyZeroInteractions(mockXmlServiceConnector)
       verifyZeroInteractions(mockThirdPartDeveloperConnector)
     }

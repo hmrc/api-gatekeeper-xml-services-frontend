@@ -22,7 +22,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.{AppConfig, ErrorHandler}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{AuthConnector, ThirdPartyDeveloperConnector, XmlServicesConnector}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.{AddTeamMemberForm, CreateAndAddTeamMemberForm, RemoveTeamMemberConfirmationForm}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.FormUtils.{AddTeamMemberForm, CreateAndAddTeamMemberForm, RemoveTeamMemberConfirmationForm}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
@@ -70,7 +70,7 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
     implicit request =>
 
       def handleGetUsersFromTPD(teamMemberAddData: AddTeamMemberForm) = {
-        thirdPartyDeveloperConnector.getByEmails(List(teamMemberAddData.emailAddress.getOrElse(""))).flatMap {
+        thirdPartyDeveloperConnector.getByEmails(List(teamMemberAddData.emailAddress)).flatMap {
           case Right(Nil) => successful(Ok(createTeamMemberView(createAndAddTeamMemberForm, organisationId, teamMemberAddData.emailAddress)))
           case Right(users: List[UserResponse]) => addOrCreateTeamMember(organisationId, users.head.email, users.head.firstName, users.head.lastName)
           case Left(error: Throwable) =>
@@ -82,7 +82,7 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
       addTeamMemberForm.bindFromRequest.fold(
         formWithErrors => successful(BadRequest(addTeamMemberView(formWithErrors, organisationId))),
         teamMemberAddData => {
-          getCollaboratorByEmailAddressAndOrganisationId(organisationId, teamMemberAddData.emailAddress.getOrElse("")).flatMap {
+          getCollaboratorByEmailAddressAndOrganisationId(organisationId, teamMemberAddData.emailAddress).flatMap {
             case Some(user: Collaborator) =>
               logger.info(s"error in addOrCreateTeamMember for organisation ${organisationId.value} duplicate collaborator ${user.userId}")
               val formWithError= AddTeamMemberForm.form.fill(teamMemberAddData).withError("emailAddress", "team.member.error.emailAddress.already.exists.field")
@@ -99,7 +99,7 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
       createAndAddTeamMemberForm.bindFromRequest.fold(
         formWithErrors => {
           logger.info(s"createTeamMemberAction invalid form provided for ${organisationId.value}")
-          successful(BadRequest(createTeamMemberView(formWithErrors, organisationId, None)))
+          successful(BadRequest(createTeamMemberView(formWithErrors, organisationId, "")))
         }, formData => addOrCreateTeamMember(organisationId, formData.emailAddress, formData.firstName, formData.lastName)
       )
   }

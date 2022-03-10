@@ -34,8 +34,8 @@ trait OrganisationTestData {
     val emailAddress = "a@b.com"
     val firstName = "bob"
     val lastName = "hope"
-    val collaborator1 = Collaborator("userId1", "email1")
-    val collaborator2 =  Collaborator("userId2", "email2")
+    val collaborator1 = Collaborator("userId1", "email1@email.com")
+    val collaborator2 =  Collaborator("userId2", "email2@email.com")
     val organisationWithCollaborators = org1.copy(collaborators = List(collaborator1, collaborator2))
     val xmlApi1 = XmlApi(name = "xml api 1",
         serviceName = ServiceName("vat-and-ec-sales-list"),

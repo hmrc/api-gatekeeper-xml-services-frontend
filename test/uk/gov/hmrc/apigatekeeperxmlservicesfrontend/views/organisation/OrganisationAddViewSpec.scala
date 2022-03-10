@@ -20,7 +20,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.{CommonViewSpec, WithCSRFAddToken}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.AddOrganisationForm
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.FormUtils.AddOrganisationForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationAddView
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -50,7 +50,7 @@ class OrganisationAddViewSpec extends CommonViewSpec with WithCSRFAddToken with 
     "render the organisation add page correctly when errors exist" in new Setup {
       val form = AddOrganisationForm.form
         .withError("organisationName", "organisationname.error.required")
-        .withError("emailAddress", "emailAddress.error.required")
+        .withError("emailAddress", "emailAddress.error.required.field")
 
       val page = organisationAddView.render(form, FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)

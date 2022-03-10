@@ -16,13 +16,13 @@
 
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.CreateAndAddTeamMemberForm
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.FormUtils.CreateAndAddTeamMemberForm
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include._
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 
 @this(layout: Layout)
 
-@(form: Form[CreateAndAddTeamMemberForm], organisationId: OrganisationId, email: Option[String])(implicit request:
+@(form: Form[CreateAndAddTeamMemberForm], organisationId: OrganisationId, email: String)(implicit request:
 Request[_], loggedInUser: LoggedInUser = LoggedInUser(None),
         messages: Messages,
         appConfig: AppConfig)
@@ -60,8 +60,8 @@ Request[_], loggedInUser: LoggedInUser = LoggedInUser(None),
                     <div>
 
                         <input id="email-hidden" name="emailAddress" type="hidden"
-                            @if(email.isDefined) {
-                                value="@email.getOrElse("")"
+                            @if(email.nonEmpty) {
+                                value="@email"
                             } else {
                                 value="@form.data.get("emailAddress")"} />
 

@@ -16,10 +16,22 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms
 
-import play.api.data.Form
-import play.api.data.Forms.{nonEmptyText, _}
+import play.api.data.{Form, Forms, Mapping}
+import play.api.data.Forms.{mapping, optional, text}
+import uk.gov.hmrc.emailaddress.EmailAddress
 
-object Forms {
+object FormUtils {
+
+  val emailAddressRequiredKey = "emailAddress.error.required.field"
+  val emailAddressNotValidKey = "emailAddress.error.not.valid.field"
+  val emailMaxLengthKey = "emailAddress.error.maxLength.field"
+
+  def emailValidator(maxLength: Int = 320): Mapping[String] = {
+    Forms.text
+      .verifying(emailAddressNotValidKey, email => EmailAddress.isValid(email) || email.isEmpty)
+      .verifying(emailMaxLengthKey, email => email.length <= maxLength)
+      .verifying(emailAddressRequiredKey, email => email.nonEmpty)
+  }
 
   case class AddOrganisationForm(organisationName: String, emailAddress: String)
 
@@ -28,7 +40,7 @@ object Forms {
     val form = Form(
       mapping(
         "organisationName" -> text.verifying(error = "organisationname.error.required", x => x.trim.nonEmpty),
-         "emailAddress" -> text.verifying(error = "emailAddress.error.required", x => x.trim.nonEmpty)
+         "emailAddress" -> emailValidator()
       )(AddOrganisationForm.apply)(AddOrganisationForm.unapply)
     )
 
@@ -41,7 +53,7 @@ object Forms {
     val form = Form(
       mapping(
         "organisationName" -> text.verifying(error = "organisationname.error.required", x => x.trim.nonEmpty),
-        "emailAddress" -> text.verifying(error = "emailAddress.error.required", x => x.trim.nonEmpty),
+        "emailAddress" -> emailValidator(),
         "firstName" -> text.verifying("firstname.error.required", x => x.trim.nonEmpty),
         "lastName" ->  text.verifying("lastname.error.required", x => x.trim.nonEmpty)
 
@@ -72,14 +84,14 @@ object Forms {
     )
   }
 
-  case class AddTeamMemberForm(emailAddress: Option[String] = Some(""))
+  case class AddTeamMemberForm(emailAddress: String)
 
 
   object AddTeamMemberForm {
 
     val form = Form(
       mapping(
-        "emailAddress" -> optional(nonEmptyText).verifying("emailAddress.error.required", x => x.isDefined)
+        "emailAddress" -> emailValidator()
       )(AddTeamMemberForm.apply)(AddTeamMemberForm.unapply)
     )
 
@@ -90,7 +102,7 @@ object Forms {
   object CreateAndAddTeamMemberForm {
     val form = Form(
       mapping(
-        "emailAddress" -> text.verifying("emailAddress.error.required", x => x.trim.nonEmpty),
+        "emailAddress" -> emailValidator(),
         "firstName" -> text.verifying("firstname.error.required", x => x.trim.nonEmpty),
         "lastName" ->  text.verifying("lastname.error.required", x => x.trim.nonEmpty)
       )(CreateAndAddTeamMemberForm.apply)(CreateAndAddTeamMemberForm.unapply)
@@ -102,8 +114,7 @@ object Forms {
   object RemoveTeamMemberConfirmationForm {
     val form: Form[RemoveTeamMemberConfirmationForm] = Form(
       mapping(
-        "email" ->  text
-          .verifying("team.member.remove.email.error.required", _.nonEmpty),
+        "email" ->  emailValidator(),
         "confirm" -> optional(text).verifying("team.member.error.confirmation.no.choice.field", _.isDefined)
       )(RemoveTeamMemberConfirmationForm.apply)(RemoveTeamMemberConfirmationForm.unapply)
     )
@@ -119,4 +130,7 @@ object Forms {
       )(CsvData.apply)(CsvData.unapply)
     )
   }
+
+
+
 }

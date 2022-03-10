@@ -21,7 +21,7 @@ import org.jsoup.nodes.Document
 import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.Forms.CreateAndAddTeamMemberForm
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.FormUtils.CreateAndAddTeamMemberForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.{CommonViewSpec, WithCSRFAddToken}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.CreateTeamMemberView
@@ -41,7 +41,7 @@ class CreateTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with
       val page = createTeamMemberView.render(
         CreateAndAddTeamMemberForm.form,
         org1.organisationId,
-        Some(emailAddress),
+        emailAddress,
         FakeRequest().withCSRFToken,
         loggedInUser,
         messagesProvider.messages,
@@ -58,9 +58,11 @@ class CreateTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with
 
       val page = createTeamMemberView
         .render(
-          CreateAndAddTeamMemberForm.form.withError("firstName", "firstname.error.required").withError("lastName", "lastname.error.required"),
+          CreateAndAddTeamMemberForm.form.fill(CreateAndAddTeamMemberForm(emailAddress, "", ""))
+            .withError("firstName", "firstname.error.required")
+            .withError("lastName", "lastname.error.required"),
           org1.organisationId,
-          Some(emailAddress),
+          "",
           FakeRequest().withCSRFToken,
           loggedInUser,
           messagesProvider.messages,

@@ -404,9 +404,10 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
 
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
-        fakeRequest.withCSRFToken.withFormUrlEncodedBody("email" -> organisationWithCollaborators.name, "confirm" -> "Yes")
+        fakeRequest.withCSRFToken.withFormUrlEncodedBody("email" -> collaborator1.email, "confirm" -> "Yes")
       )
 
+      println(contentAsString(result))
       status(result) shouldBe Status.SEE_OTHER
       headers(result).getOrElse(LOCATION, "") shouldBe s"/api-gatekeeper-xml-services/organisations/${organisationId1.value.toString}/team-members"
 
@@ -420,7 +421,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
-        fakeRequest.withCSRFToken.withFormUrlEncodedBody("email" -> organisationWithCollaborators.name, "confirm" -> "No")
+        fakeRequest.withCSRFToken.withFormUrlEncodedBody("email" -> collaborator1.email, "confirm" -> "No")
       )
 
       status(result) shouldBe Status.SEE_OTHER
@@ -460,7 +461,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
-        fakeRequest.withCSRFToken.withFormUrlEncodedBody("email" -> organisationWithCollaborators.name)
+        fakeRequest.withCSRFToken.withFormUrlEncodedBody("email" ->  collaborator1.email)
       )
 
       status(result) shouldBe BAD_REQUEST
@@ -479,7 +480,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
         .thenReturn(Future.successful(RemoveCollaboratorFailure(new RuntimeException("some error"))))
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
-        fakeRequest.withCSRFToken.withFormUrlEncodedBody("email" -> organisationWithCollaborators.name, "confirm" -> "Yes")
+        fakeRequest.withCSRFToken.withFormUrlEncodedBody("email" ->  collaborator1.email, "confirm" -> "Yes")
       )
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
@@ -496,7 +497,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, "someOtherUserId")(
-        fakeRequest.withCSRFToken.withFormUrlEncodedBody("email" -> organisationWithCollaborators.name, "confirm" -> "Yes")
+        fakeRequest.withCSRFToken.withFormUrlEncodedBody("email" -> collaborator1.email, "confirm" -> "Yes")
       )
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
@@ -512,7 +513,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
-        fakeRequest.withCSRFToken.withFormUrlEncodedBody("email" -> organisationWithCollaborators.name, "confirm" -> "Yes")
+        fakeRequest.withCSRFToken.withFormUrlEncodedBody("email" -> collaborator1.email, "confirm" -> "Yes")
       )
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
@@ -524,7 +525,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     "return forbidden view when not authorised" in new Setup {
       givenAUnsuccessfulLogin()
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
-        fakeRequest.withCSRFToken.withFormUrlEncodedBody("email" -> organisationWithCollaborators.name, "confirm" -> "Yes")
+        fakeRequest.withCSRFToken.withFormUrlEncodedBody("email" -> collaborator1.email, "confirm" -> "Yes")
       )
       status(result) shouldBe Status.SEE_OTHER
 
