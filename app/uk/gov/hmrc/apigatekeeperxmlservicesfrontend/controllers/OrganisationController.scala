@@ -17,12 +17,13 @@
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
 import play.api.data.Form
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import play.api.data.Forms.{mapping, optional, text}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, Result}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.{AppConfig, ErrorHandler}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{AuthConnector, ThirdPartyDeveloperConnector, XmlServicesConnector}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.FormUtils.emailValidator
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.FormUtils._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
@@ -35,25 +36,77 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.Future.successful
 import scala.util.Try
 
+object OrganisationController {
+  val vendorIdParameterName = "vendor-id"
+  val organisationNameParamName = "organisation-name"
+
+  case class AddOrganisationForm(organisationName: String, emailAddress: String)
+
+  object AddOrganisationForm {
+
+    val form = Form(
+      mapping(
+        "organisationName" -> text.verifying(error = "organisationname.error.required", x => x.trim.nonEmpty),
+        "emailAddress" -> emailValidator()
+      )(AddOrganisationForm.apply)(AddOrganisationForm.unapply)
+    )
+
+  }
+
+  case class AddOrganisationWithNewUserForm(organisationName: String, emailAddress: String, firstName: String, lastName: String)
+
+  object AddOrganisationWithNewUserForm {
+
+    val form = Form(
+      mapping(
+        "organisationName" -> text.verifying(error = "organisationname.error.required", x => x.trim.nonEmpty),
+        "emailAddress" -> emailValidator(),
+        "firstName" -> text.verifying("firstname.error.required", x => x.trim.nonEmpty),
+        "lastName" -> text.verifying("lastname.error.required", x => x.trim.nonEmpty)
+      )(AddOrganisationWithNewUserForm.apply)(AddOrganisationWithNewUserForm.unapply)
+    )
+
+  }
+
+  case class UpdateOrganisationDetailsForm(organisationName: String)
+
+  object UpdateOrganisationDetailsForm {
+
+    val form = Form(
+      mapping(
+        "organisationName" -> text.verifying("organisationname.error.required", x => x.trim.nonEmpty)
+      )(UpdateOrganisationDetailsForm.apply)(UpdateOrganisationDetailsForm.unapply)
+    )
+  }
+
+  final case class RemoveOrganisationConfirmationForm(confirm: Option[String] = Some(""))
+
+  object RemoveOrganisationConfirmationForm {
+
+    val form: Form[RemoveOrganisationConfirmationForm] = Form(
+      mapping(
+        "confirm" -> optional(text).verifying("organisation.error.confirmation.no.choice.field", _.isDefined)
+      )(RemoveOrganisationConfirmationForm.apply)(RemoveOrganisationConfirmationForm.unapply)
+    )
+  }
+
+}
+
 @Singleton
-class OrganisationController @Inject()(
-                                        mcc: MessagesControllerComponents,
-                                        organisationSearchView: OrganisationSearchView,
-                                        organisationDetailsView: OrganisationDetailsView,
-                                        organisationAddView: OrganisationAddView,
-                                        organisationAddNewUserView: OrganisationAddNewUserView,
-                                        organisationUpdateView: OrganisationUpdateView,
-                                        organisationRemoveView: OrganisationRemoveView,
-                                        organisationRemoveSuccessView: OrganisationRemoveSuccessView,
-                                        override val authConnector: AuthConnector,
-                                        val forbiddenView: ForbiddenView,
-                                        errorHandler: ErrorHandler,
-                                        xmlServicesConnector: XmlServicesConnector,
-                                        thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector
-                                      )(implicit val ec: ExecutionContext,
-                                        appConfig: AppConfig)
-  extends FrontendController(mcc)
-    with GatekeeperAuthWrapper {
+class OrganisationController @Inject() (
+    mcc: MessagesControllerComponents,
+    organisationSearchView: OrganisationSearchView,
+    organisationDetailsView: OrganisationDetailsView,
+    organisationAddView: OrganisationAddView,
+    organisationAddNewUserView: OrganisationAddNewUserView,
+    organisationUpdateView: OrganisationUpdateView,
+    organisationRemoveView: OrganisationRemoveView,
+    organisationRemoveSuccessView: OrganisationRemoveSuccessView,
+    override val authConnector: AuthConnector,
+    val forbiddenView: ForbiddenView,
+    errorHandler: ErrorHandler,
+    xmlServicesConnector: XmlServicesConnector,
+    thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector)(implicit val ec: ExecutionContext, appConfig: AppConfig) extends FrontendController(mcc) with GatekeeperAuthWrapper {
 
   val addOrganisationForm: Form[AddOrganisationForm] = AddOrganisationForm.form
   val addOrganisationWithNewUserForm: Form[AddOrganisationWithNewUserForm] = AddOrganisationWithNewUserForm.form
@@ -75,12 +128,12 @@ class OrganisationController @Inject()(
       addOrganisationForm.bindFromRequest.fold(
         formWithErrors => successful(BadRequest(organisationAddView(formWithErrors))),
         formData => {
-          thirdPartyDeveloperConnector.getByEmails(List(formData.emailAddress)).flatMap{
-            case Right(Nil) =>
+          thirdPartyDeveloperConnector.getByEmails(List(formData.emailAddress)).flatMap {
+            case Right(Nil)                       =>
               successful(Ok(organisationAddNewUserView(addOrganisationWithNewUserForm, Some(formData.organisationName), Some(formData.emailAddress))))
             case Right(users: List[UserResponse]) =>
               addOrganisation(formData.organisationName, formData.emailAddress, users.head.firstName, users.head.lastName)
-            case Left(_) =>
+            case Left(_)                          =>
               successful(InternalServerError(errorHandler.internalServerErrorTemplate))
 
           }
@@ -89,58 +142,73 @@ class OrganisationController @Inject()(
   }
 
   def organisationsAddWithNewUserAction(): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
-    implicit request => addOrganisationWithNewUserForm.bindFromRequest.fold(
-      formWithErrors => successful(BadRequest(organisationAddNewUserView(formWithErrors, None, None))),
-      formData => addOrganisation(formData.organisationName, formData.emailAddress, formData.firstName,  formData.lastName)
-    )
+    implicit request =>
+      addOrganisationWithNewUserForm.bindFromRequest.fold(
+        formWithErrors => successful(BadRequest(organisationAddNewUserView(formWithErrors, None, None))),
+        formData => addOrganisation(formData.organisationName, formData.emailAddress, formData.firstName, formData.lastName)
+      )
   }
 
- private def addOrganisation(organisationName: String, emailAddress: String, firstName: String, lastName: String)
-                            (implicit hc: HeaderCarrier, loggedInRequest: LoggedInRequest[_]): Future[Result] ={
-   xmlServicesConnector
-     .addOrganisation(organisationName, emailAddress, firstName, lastName)
-     .map {
-       case CreateOrganisationSuccess(x: Organisation) =>
-         Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(x.organisationId))
-       case _ => InternalServerError(errorHandler.internalServerErrorTemplate)
-     }
- }
-
+  private def addOrganisation(
+      organisationName: String,
+      emailAddress: String,
+      firstName: String,
+      lastName: String
+    )(implicit hc: HeaderCarrier,
+      loggedInRequest: LoggedInRequest[_]
+    ): Future[Result] = {
+    xmlServicesConnector
+      .addOrganisation(organisationName, emailAddress, firstName, lastName)
+      .map {
+        case CreateOrganisationSuccess(x: Organisation) =>
+          Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(x.organisationId))
+        case _                                          => InternalServerError(errorHandler.internalServerErrorTemplate)
+      }
+  }
 
   def viewOrganisationPage(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request =>
-
-      (for{
-        getOrganisationResult <-  xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
+      (for {
+        getOrganisationResult <- xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
         getUsersResult <- xmlServicesConnector.getOrganisationUsersByOrganisationId(organisationId)
       } yield (getOrganisationResult, getUsersResult)).map {
-          case (Right(org: Organisation), Right(users: List[OrganisationUser])) => Ok(organisationDetailsView(org, users))
+        case (Right(org: Organisation), Right(users: List[OrganisationUser])) => Ok(organisationDetailsView(org, users))
 
-          case _ => InternalServerError(errorHandler.internalServerErrorTemplate)
-        }
+        case _ => InternalServerError(errorHandler.internalServerErrorTemplate)
+      }
   }
 
   def updateOrganisationsDetailsPage(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request =>
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
         .map {
-          case Right(_: Organisation) => Ok(organisationUpdateView(updateOrganisationDetailsForm, organisationId))
-          case Left(_) => InternalServerError(errorHandler.internalServerErrorTemplate)
+          case Right(organisation: Organisation) => Ok(organisationUpdateView(updateOrganisationDetailsForm, organisation))
+          case Left(_)                => InternalServerError(errorHandler.internalServerErrorTemplate)
         }
   }
 
   def updateOrganisationsDetailsAction(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+
+     def handleFormAction(organisation: Organisation)(implicit request: Request[_]): Future[Result] ={
+       updateOrganisationDetailsForm.bindFromRequest.fold(
+         formWithErrors => successful(BadRequest(organisationUpdateView(formWithErrors, organisation))),
+         formData =>
+           xmlServicesConnector.updateOrganisationDetails(organisationId, formData.organisationName).map {
+             case UpdateOrganisationDetailsSuccess(_) =>
+               Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(organisationId))
+             case _                                   =>
+               InternalServerError(errorHandler.internalServerErrorTemplate)
+           }
+       )
+     }
+
     implicit request =>
-      updateOrganisationDetailsForm.bindFromRequest.fold(
-        formWithErrors => successful(BadRequest(organisationUpdateView(formWithErrors, organisationId))),
-        formData =>
-          xmlServicesConnector.updateOrganisationDetails(organisationId, formData.organisationName).map {
-            case UpdateOrganisationDetailsSuccess(_) =>
-              Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(organisationId))
-            case _ =>
-              InternalServerError(errorHandler.internalServerErrorTemplate)
-          }
-      )
+      xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
+        .flatMap {
+          case Right(organisation: Organisation) => handleFormAction(organisation)
+          case Left(_)                => Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
+        }
+
   }
 
   def removeOrganisationPage(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
@@ -148,16 +216,15 @@ class OrganisationController @Inject()(
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
         .map {
           case Right(org: Organisation) => Ok(organisationRemoveView(removeOrganisationConfirmationForm, org))
-          case Left(_) => InternalServerError(errorHandler.internalServerErrorTemplate)
+          case Left(_)                  => InternalServerError(errorHandler.internalServerErrorTemplate)
         }
   }
 
   def removeOrganisationAction(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
     implicit request =>
-
       def handleRemoveOrganisation(organisation: Organisation) = {
         xmlServicesConnector.removeOrganisation(organisation.organisationId).map {
-          case true => Ok(organisationRemoveSuccessView(organisation))
+          case true  => Ok(organisationRemoveSuccessView(organisation))
           case false => InternalServerError(errorHandler.internalServerErrorTemplate)
         }
 
@@ -166,7 +233,7 @@ class OrganisationController @Inject()(
       def handleValidForm(form: RemoveOrganisationConfirmationForm, organisation: Organisation): Future[Result] = {
         form.confirm match {
           case Some("Yes") => handleRemoveOrganisation(organisation)
-          case _ => Future.successful(Redirect(routes.OrganisationController.viewOrganisationPage(organisationId).url))
+          case _           => Future.successful(Redirect(routes.OrganisationController.viewOrganisationPage(organisationId).url))
         }
       }
 
@@ -176,7 +243,7 @@ class OrganisationController @Inject()(
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
         .flatMap {
           case Right(org: Organisation) => removeOrganisationConfirmationForm.bindFromRequest.fold(handleInvalidForm(_, org), handleValidForm(_, org))
-          case Left(_) => Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
+          case Left(_)                  => Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
         }
 
   }
@@ -194,25 +261,19 @@ class OrganisationController @Inject()(
 
       def handleResults(result: Either[Throwable, List[Organisation]], isVendorIdSearch: Boolean) = {
         result match {
-          case Right(orgs: List[Organisation]) => Ok(organisationSearchView(orgs, isVendorIdSearch = isVendorIdSearch))
+          case Right(orgs: List[Organisation])                 => Ok(organisationSearchView(orgs, isVendorIdSearch = isVendorIdSearch))
           case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) => Ok(organisationSearchView(List.empty, isVendorIdSearch = isVendorIdSearch))
-          case Left(_) => InternalServerError(errorHandler.internalServerErrorTemplate)
+          case Left(_)                                         => InternalServerError(errorHandler.internalServerErrorTemplate)
         }
       }
 
       searchType match {
         case x: String if isValidVendorId(searchText) && (x == vendorIdParameterName) =>
           xmlServicesConnector.findOrganisationsByParams(toVendorIdOrNone(searchText), None).map(handleResults(_, isVendorIdSearch = true))
-        case x: String if x == organisationNameParamName =>
+        case x: String if x == organisationNameParamName                              =>
           xmlServicesConnector.findOrganisationsByParams(None, searchText).map(handleResults(_, isVendorIdSearch = false))
-        case _ => successful(Ok(organisationSearchView(List.empty)))
+        case _                                                                        => successful(Ok(organisationSearchView(List.empty)))
       }
   }
 
-
-}
-
-object OrganisationController {
-  val vendorIdParameterName = "vendor-id"
-  val organisationNameParamName = "organisation-name"
 }

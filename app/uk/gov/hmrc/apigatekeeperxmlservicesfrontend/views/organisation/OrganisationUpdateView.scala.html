@@ -15,18 +15,17 @@
  *@
 
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.FormUtils.UpdateOrganisationDetailsForm
+
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.UpdateOrganisationDetailsForm
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include._
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 
 
 @this(layout: Layout)
 
-@(form: Form[UpdateOrganisationDetailsForm],
-        organisationId: OrganisationId)(implicit request:
-Request[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages,
-appConfig: AppConfig)
+
+@(form: Form[UpdateOrganisationDetailsForm], organisation: Organisation)(implicit request: Request[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
 
 @layout(pageTitle = Some("Manage XML Organisations - HMRC API Gatekeeper")) {
 <div class="govuk-form-group">
@@ -34,7 +33,7 @@ appConfig: AppConfig)
   @errorSummary(form)
 
     @helper.form(action =
-    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.updateOrganisationsDetailsAction(organisationId)) {
+    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.updateOrganisationsDetailsAction(organisation.organisationId)) {
         @helper.CSRF.formField
     <div id="form-group" class="govuk-form-group @if(form.errors("organisationName").nonEmpty) {govuk-form-group--error}">
         <h1 class="govuk-label-wrapper">
@@ -44,13 +43,13 @@ appConfig: AppConfig)
         </h1>
         @FieldError(form.errors, "organisationName")
         <input class="govuk-input govuk-input--width-20" id="organisationName" name="organisationName" type="text"
-            aria-describedby="organisationName">
+            aria-describedby="organisationName" value="@{organisation.name}">
     </div>
     <div class="govuk-button-group">
         <button id="continue-button" class="govuk-button" data-module="govuk-button">
             Continue
         </button>
-        <a href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(organisationId).url" class="govuk-link govuk-link--no-visited-state">
+        <a href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(organisation.organisationId).url" class="govuk-link govuk-link--no-visited-state">
             Cancel
         </a>
     </div>

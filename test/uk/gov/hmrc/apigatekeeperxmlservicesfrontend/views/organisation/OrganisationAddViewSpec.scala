@@ -20,10 +20,10 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.{CommonViewSpec, WithCSRFAddToken}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.FormUtils.AddOrganisationForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationAddView
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.AddOrganisationForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.ViewSpecHelpers
 

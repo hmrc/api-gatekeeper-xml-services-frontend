@@ -20,8 +20,8 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import play.api.test.FakeRequest
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.UpdateOrganisationDetailsForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.FormUtils.UpdateOrganisationDetailsForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.{CommonViewSpec, WithCSRFAddToken}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationUpdateView
@@ -40,7 +40,7 @@ class OrganisationEditViewSpec extends CommonViewSpec with WithCSRFAddToken with
 
       val page = organisationUpdateView.render(
         UpdateOrganisationDetailsForm.form,
-        organisationId1,
+        org1,
         FakeRequest().withCSRFToken,
         loggedInUser,
         messagesProvider.messages,
@@ -56,7 +56,7 @@ class OrganisationEditViewSpec extends CommonViewSpec with WithCSRFAddToken with
 
       val page = organisationUpdateView.render(
         UpdateOrganisationDetailsForm.form.withError("organisationName", "organisationname.error.required"),
-        organisationId1,
+        org1,
         FakeRequest().withCSRFToken,
         loggedInUser,
         messagesProvider.messages,

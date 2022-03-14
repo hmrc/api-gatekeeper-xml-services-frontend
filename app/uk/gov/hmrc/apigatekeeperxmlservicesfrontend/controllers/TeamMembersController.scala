@@ -18,11 +18,13 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
 import play.api.Logging
 import play.api.data.Form
+import play.api.data.Forms.{mapping, optional, text}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.{AppConfig, ErrorHandler}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{AuthConnector, ThirdPartyDeveloperConnector, XmlServicesConnector}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.FormUtils.emailValidator
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.TeamMembersController.{AddTeamMemberForm, CreateAndAddTeamMemberForm, RemoveTeamMemberConfirmationForm}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.FormUtils.{AddTeamMemberForm, CreateAndAddTeamMemberForm, RemoveTeamMemberConfirmationForm}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
@@ -33,6 +35,45 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import javax.inject.Inject
 import scala.concurrent.Future.successful
 import scala.concurrent.{ExecutionContext, Future}
+
+object TeamMembersController {
+
+  case class AddTeamMemberForm(emailAddress: String)
+
+  object AddTeamMemberForm {
+
+    val form = Form(
+      mapping(
+        "emailAddress" -> emailValidator()
+      )(AddTeamMemberForm.apply)(AddTeamMemberForm.unapply)
+    )
+
+  }
+
+  case class CreateAndAddTeamMemberForm(emailAddress: String , firstName: String, lastName:String)
+
+  object CreateAndAddTeamMemberForm {
+    val form = Form(
+      mapping(
+        "emailAddress" -> emailValidator(),
+        "firstName" -> text.verifying("firstname.error.required", x => x.trim.nonEmpty),
+        "lastName" ->  text.verifying("lastname.error.required", x => x.trim.nonEmpty)
+      )(CreateAndAddTeamMemberForm.apply)(CreateAndAddTeamMemberForm.unapply)
+    )
+  }
+
+  final case class RemoveTeamMemberConfirmationForm(email: String, confirm: Option[String] = Some(""))
+
+  object RemoveTeamMemberConfirmationForm {
+    val form: Form[RemoveTeamMemberConfirmationForm] = Form(
+      mapping(
+        "email" ->  emailValidator(),
+        "confirm" -> optional(text).verifying("team.member.error.confirmation.no.choice.field", _.isDefined)
+      )(RemoveTeamMemberConfirmationForm.apply)(RemoveTeamMemberConfirmationForm.unapply)
+    )
+  }
+
+}
 
 class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
                                       manageTeamMembersView: ManageTeamMembersView,
