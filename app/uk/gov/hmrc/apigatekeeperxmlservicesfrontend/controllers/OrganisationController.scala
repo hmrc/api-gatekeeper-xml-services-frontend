@@ -189,7 +189,7 @@ class OrganisationController @Inject() (
 
   def updateOrganisationsDetailsAction(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
 
-     def handleFormAction(organisation: Organisation)(implicit request: Request[_]): Future[Result] ={
+     def handleFormAction(organisation: Organisation)(implicit request: LoggedInRequest[_]): Future[Result] ={
        updateOrganisationDetailsForm.bindFromRequest.fold(
          formWithErrors => successful(BadRequest(organisationUpdateView(formWithErrors, organisation))),
          formData =>
