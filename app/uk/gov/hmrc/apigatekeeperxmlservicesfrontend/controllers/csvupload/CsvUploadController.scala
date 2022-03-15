@@ -18,6 +18,7 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.csvupload
 
 import play.api.Logging
 import play.api.data.Form
+import play.api.data.Forms.{mapping, text}
 import play.api.mvc.Action
 import play.api.mvc.AnyContent
 import play.api.mvc.MessagesControllerComponents
@@ -25,7 +26,6 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.AuthConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.GatekeeperRole
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.FormUtils.CsvData
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.services.CsvService
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ErrorTemplate
@@ -38,7 +38,22 @@ import javax.inject.Singleton
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.csvupload.CsvUploadController.CsvData
 import uk.gov.hmrc.http.UpstreamErrorResponse
+
+object CsvUploadController {
+
+  case class CsvData(csv: String)
+
+  object CsvData {
+    val form = Form(
+      mapping(
+        "csv-data-input" -> text.verifying("csvdata.error.required", _.nonEmpty)
+      )(CsvData.apply)(CsvData.unapply)
+    )
+  }
+}
+
 
 @Singleton
 class CsvUploadController @Inject() (

@@ -16,11 +16,12 @@
 
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.forms.FormUtils.AddTeamMemberForm
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.TeamMembersController.AddTeamMemberForm
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include._
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 
 @this(layout: Layout)
+
 
 @(form: Form[AddTeamMemberForm], organisationId: OrganisationId)(implicit request:
 Request[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages,

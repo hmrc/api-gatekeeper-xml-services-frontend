@@ -519,6 +519,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     "updateOrganisationsDetailsAction" should {
       "display organisation details page when create successful result returned from connector" in new Setup {
         givenTheGKUserIsAuthorisedAndIsANormalUser()
+        when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*)).thenReturn(Future.successful(Right(org1)))
         when(mockXmlServiceConnector.updateOrganisationDetails(eqTo(organisationId1), eqTo(org1.name))(*)).thenReturn(Future.successful(UpdateOrganisationDetailsSuccess(org1)))
 
         val result = controller.updateOrganisationsDetailsAction(organisationId1)(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> org1.name))
@@ -529,8 +530,22 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
         verify(mockXmlServiceConnector).updateOrganisationDetails(eqTo(organisationId1), eqTo(org1.name))(*)
       }
 
+      "display internal server error when failure result returned from connector get organisation" in new Setup {
+        givenTheGKUserIsAuthorisedAndIsANormalUser()
+        when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*))
+          .thenReturn(Future.successful(Left(UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
+
+
+        val result = controller.updateOrganisationsDetailsAction(organisationId1)(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> org1.name))
+        status(result) shouldBe INTERNAL_SERVER_ERROR
+
+
+      }
+
+
       "display internal server error when failure result returned from connector" in new Setup {
         givenTheGKUserIsAuthorisedAndIsANormalUser()
+        when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*)).thenReturn(Future.successful(Right(org1)))
         when(mockXmlServiceConnector.updateOrganisationDetails(eqTo(organisationId1), eqTo(org1.name))(*))
           .thenReturn(Future.successful(UpdateOrganisationDetailsFailure(UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
 
@@ -542,17 +557,19 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
 
       "display update page with error messages when invalid form provided" in new Setup {
         givenTheGKUserIsAuthorisedAndIsANormalUser()
+        when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*)).thenReturn(Future.successful(Right(org1)))
 
         val result = controller.updateOrganisationsDetailsAction(organisationId1)(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> ""))
         status(result) shouldBe BAD_REQUEST
         val document = Jsoup.parse(contentAsString(result))
         validateUpdateOrganisationDetailsPage(document)
         validateFormErrors(document, Some("Enter an organisation name"))
-        verifyZeroInteractions(mockXmlServiceConnector)
+
       }
 
       "not allow spaces in form" in new Setup {
         givenTheGKUserIsAuthorisedAndIsANormalUser()
+        when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*)).thenReturn(Future.successful(Right(org1)))
 
         val result = controller.updateOrganisationsDetailsAction(organisationId1)(fakeRequest.withCSRFToken.withFormUrlEncodedBody("organisationName" -> "  "))
 
@@ -560,7 +577,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
         val document = Jsoup.parse(contentAsString(result))
         validateUpdateOrganisationDetailsPage(document)
         validateFormErrors(document, Some("Enter an organisation name"))
-        verifyZeroInteractions(mockXmlServiceConnector)
+
       }
 
       "return forbidden view when not authorised" in new Setup {
