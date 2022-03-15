@@ -103,7 +103,7 @@
                     </tr>
                 </thead>
                 <tbody class="govuk-table__body">
-                @for(member <- users.zipWithIndex) {
+                @for(member <- users.sortBy(_.email).zipWithIndex) {
                     <tr class="govuk-table__row">
                         <td id="user-email-@member._2" scope="row" class="govuk-table__header govuk-!-font-weight-regular">
                             <a id="user-link-@member._2" href="@buildGatekeeperDeveloperUrl(member._1)" class="govuk-link govuk-link--no-visited-state">
@@ -122,7 +122,7 @@
                     </button>
                 }
 
-                <a href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.removeOrganisationPage(organisation.organisationId).url" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+                <a href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.removeOrganisationPage(organisation.organisationId).url" role="button" draggable="false" class="govuk-button govuk-button--warning" data-module="govuk-button">
                     Remove organisation</a>
             </div>
 
