@@ -46,7 +46,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
     def testStandardComponents(document: Document) = {
       document.title() shouldBe "Manage XML Organisations - HMRC API Gatekeeper"
       document.getElementById("page-heading").text() shouldBe "Search for XML organisations"
-      document.getElementById("search-by-hint").text() shouldBe "Choose to search by vendor ID, email address or organisation."
+      document.getElementById("search-by-hint").text() shouldBe "Choose to search by vendor ID or organisation name."
       document.getElementById("vendor-id-label").text() shouldBe "Vendor ID"
     }
   }
