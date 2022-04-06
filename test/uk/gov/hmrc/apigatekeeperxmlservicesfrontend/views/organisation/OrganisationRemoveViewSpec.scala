@@ -40,7 +40,7 @@ class OrganisationRemoveViewSpec extends CommonViewSpec with WithCSRFAddToken wi
 
       val page = organisationRemoveView.render(RemoveOrganisationConfirmationForm.form, org1, FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
-
+      getBackLink(document) should not be None
       validateFormErrors(document)
 
       validateRemoveOrganisationPage(document, org1.name)
@@ -52,7 +52,7 @@ class OrganisationRemoveViewSpec extends CommonViewSpec with WithCSRFAddToken wi
         org1, FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
 
       val document: Document = Jsoup.parse(page.body)
-
+      getBackLink(document) should not be None
       validateFormErrors(document, Some("Please select an option"))
 
       validateRemoveOrganisationPage(document, org1.name)

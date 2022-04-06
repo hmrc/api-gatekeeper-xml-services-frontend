@@ -23,7 +23,7 @@
 
 @(organisation: Organisation)(implicit request: Request[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
 
-@layout(pageTitle = Some("Remove organisation success - HMRC API Gatekeeper")) {
+@layout(pageTitle = Some("Remove organisation success - HMRC API Gatekeeper"), showBacklink = false) {
     <div class="govuk-panel govuk-panel--confirmation">
 
         <h1 id="panel-heading" class="govuk-panel__body">

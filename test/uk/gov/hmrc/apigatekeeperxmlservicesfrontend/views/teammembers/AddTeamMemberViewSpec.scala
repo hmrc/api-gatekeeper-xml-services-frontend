@@ -45,7 +45,7 @@ class AddTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with Vi
         messagesProvider.messages, mockAppConfig)
 
       val document: Document = Jsoup.parse(page.body)
-
+      getBackLink(document) should not be None
       validateFormErrors(document)
       validateAddTeamMemberPage(document)
     }
@@ -60,7 +60,7 @@ class AddTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with Vi
         mockAppConfig)
 
       val document: Document = Jsoup.parse(page.body)
-
+      getBackLink(document) should not be None
       validateFormErrors(document, Some("Enter an email address"))
       validateAddTeamMemberPage(document)
     }
