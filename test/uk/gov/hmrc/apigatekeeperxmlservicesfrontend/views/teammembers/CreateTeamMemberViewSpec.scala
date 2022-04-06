@@ -49,7 +49,7 @@ class CreateTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with
       )
 
       val document: Document = Jsoup.parse(page.body)
-
+      getBackLink(document) should not be None
       validateFormErrors(document)
       validateCreateTeamMemberPage(document, emailAddress)
     }
@@ -70,7 +70,7 @@ class CreateTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with
         )
 
       val document: Document = Jsoup.parse(page.body)
-
+      getBackLink(document) should not be None
       validateFormErrors(document, Some("Enter a first name"))
       validateFormErrors(document, Some("Enter a last name"))
       validateCreateTeamMemberPage(document, emailAddress)

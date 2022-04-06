@@ -17,8 +17,9 @@
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper
 
 
-import java.util.Locale
+import org.jsoup.nodes.Document
 
+import java.util.Locale
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.i18n.{Lang, MessagesImpl, MessagesProvider}
@@ -39,4 +40,7 @@ trait CommonViewSpec extends AsyncHmrcSpec with GuiceOneAppPerSuite {
       .configure(("metrics.jvm", false))
       .build()
 
+  def getBackLink(document: Document) ={
+    Option(document.getElementById("backlink"))
+  }
 }

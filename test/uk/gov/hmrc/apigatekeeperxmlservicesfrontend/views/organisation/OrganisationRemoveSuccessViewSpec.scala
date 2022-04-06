@@ -39,7 +39,7 @@ class OrganisationRemoveSuccessViewSpec extends CommonViewSpec with WithCSRFAddT
 
       val page = organisationRemoveSuccessView.render(org1, FakeRequest(), loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
-
+      getBackLink(document) shouldBe None
       validateRemoveOrganisationSuccessPage(document, org1.name)
     }
   }
