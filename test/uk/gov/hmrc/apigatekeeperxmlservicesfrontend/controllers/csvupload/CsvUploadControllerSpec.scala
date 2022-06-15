@@ -18,7 +18,7 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.csvupload
 
 import org.jsoup.Jsoup
 import play.api.http.Status
-import play.api.mvc.Result
+import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
@@ -43,15 +43,15 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.ServiceName
 class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken with ViewSpecHelpers {
 
   trait Setup extends ControllerSetupBase with OrganisationTestData {
-    val fakeRequest = FakeRequest("GET", "/organisation-page")
-    val organisationActionRequest = FakeRequest("GET", "/organisations-action")
+    val organisationPageRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/organisation-page")
+    val organisationActionRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/organisations-action")
     private lazy val forbiddenView = app.injector.instanceOf[ForbiddenView]
     private lazy val errorTemplate = app.injector.instanceOf[ErrorTemplate]
     private lazy val organisationCsvUploadView = app.injector.instanceOf[OrganisationCsvUploadView]
     private lazy val usersCsvUploadView = app.injector.instanceOf[UsersCsvUploadView]
 
-    val mockCsvService = mock[CsvService]
-    val mockXmlServiceConnector = mock[XmlServicesConnector]
+    val mockCsvService: CsvService = mock[CsvService]
+    val mockXmlServiceConnector: XmlServicesConnector = mock[XmlServicesConnector]
 
     val controller = new CsvUploadController(
       mcc,
@@ -94,17 +94,23 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
       charset(result) shouldBe Some("utf-8")
       contentAsString(result) contains "Upload organisations as CSV"
     }
+
+    def createUploadUsersRequest(payload: String): FakeRequest[AnyContentAsFormUrlEncoded] = {
+      FakeRequest("POST", "/organisation-action")
+        .withCSRFToken
+        .withFormUrlEncodedBody("csv-data-input" -> payload)
+    }
   }
 
   "organisationPage" should {
     "return 200" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-      validatePageIsRendered(controller.organisationPage(fakeRequest.withCSRFToken))
+      validatePageIsRendered(controller.organisationPage(organisationPageRequest.withCSRFToken))
     }
 
     "return forbidden view when not authorised" in new Setup {
       givenAUnsuccessfulLogin()
-      val result = controller.organisationPage(fakeRequest)
+      val result = controller.organisationPage(organisationPageRequest)
       status(result) shouldBe Status.SEE_OTHER
     }
   }
@@ -112,17 +118,19 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
   "uploadOrganisationsCsvAction" should {
 
     "display organisation page with error messages when invalid form provided" in new Setup {
+      val request: FakeRequest[AnyContentAsFormUrlEncoded] = createUploadUsersRequest("")
       givenTheGKUserIsAuthorisedAndIsANormalUser()
-
-      val result = controller.uploadOrganisationsCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> ""))
+      val result: Future[Result] = controller.uploadOrganisationsCsvAction()(request)
       status(result) shouldBe BAD_REQUEST
 
       verifyZeroInteractions(mockCsvService)
     }
 
     "return forbidden view when not authorised" in new Setup {
+      val request: FakeRequest[AnyContentAsFormUrlEncoded] = createUploadUsersRequest(validCsvPayloadWithOneRow)
       givenAUnsuccessfulLogin()
-      val result = controller.uploadOrganisationsCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> validCsvPayloadWithOneRow))
+
+      val result: Future[Result] = controller.uploadOrganisationsCsvAction()(request)
 
       status(result) shouldBe Status.SEE_OTHER
       verifyZeroInteractions(mockCsvService)
@@ -130,11 +138,12 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
     }
 
     "display internal server error when failure result returned from CsvUploadService" in new Setup {
+      val request: FakeRequest[AnyContentAsFormUrlEncoded] = createUploadUsersRequest(validCsvPayloadWithTwoRows)
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       val exceptionMessage = "Parse Exception"
-      when(mockCsvService.mapToOrganisationFromCsv((*))).thenThrow(new RuntimeException(exceptionMessage))
+      when(mockCsvService.mapToOrganisationFromCsv(*)).thenThrow(new RuntimeException(exceptionMessage))
 
-      val result = controller.uploadOrganisationsCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> validCsvPayloadWithTwoRows))
+      val result: Future[Result] = controller.uploadOrganisationsCsvAction()(request)
       status(result) shouldBe INTERNAL_SERVER_ERROR
 
       val document = Jsoup.parse(contentAsString(result))
@@ -146,11 +155,12 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
     }
 
     "Redirect to the organisation page when organisations are successfully parsed and the connector returns Right" in new Setup {
+      val request: FakeRequest[AnyContentAsFormUrlEncoded] = createUploadUsersRequest(validCsvPayloadWithTwoRows)
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       when(mockXmlServiceConnector.bulkAddOrganisations(*)(*)).thenReturn(Future.successful(Right(())))
       when(mockCsvService.mapToOrganisationFromCsv(*)).thenReturn(organisationsWithNameAndVendorIds)
 
-      val result = controller.uploadOrganisationsCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> validCsvPayloadWithTwoRows))
+      val result: Future[Result] = controller.uploadOrganisationsCsvAction()(request)
       status(result) shouldBe SEE_OTHER
 
       verify(mockCsvService).mapToOrganisationFromCsv(*)
@@ -158,11 +168,12 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
     }
 
     "Show error page when organisations are successfully parsed but the connector returns Left" in new Setup {
+      val request: FakeRequest[AnyContentAsFormUrlEncoded] = createUploadUsersRequest(validCsvPayloadWithTwoRows)
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       when(mockXmlServiceConnector.bulkAddOrganisations(*)(*)).thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, 1, Map.empty))))
       when(mockCsvService.mapToOrganisationFromCsv(*)).thenReturn(organisationsWithNameAndVendorIds)
 
-      val result = controller.uploadOrganisationsCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> validCsvPayloadWithTwoRows))
+      val result: Future[Result] = controller.uploadOrganisationsCsvAction()(request)
       status(result) shouldBe INTERNAL_SERVER_ERROR
 
       verify(mockCsvService).mapToOrganisationFromCsv(*)
@@ -174,7 +185,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
     "return 200 and render the page" in new Setup {
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
-      val result = controller.usersPage()(fakeRequest.withCSRFToken)
+      val result: Future[Result] = controller.usersPage()(organisationPageRequest.withCSRFToken)
 
       status(result) shouldBe OK
       val document = Jsoup.parse(contentAsString(result))
@@ -183,7 +194,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
 
     "return forbidden view when not authorised" in new Setup {
       givenAUnsuccessfulLogin()
-      val result = controller.usersPage()(fakeRequest.withCSRFToken)
+      val result: Future[Result] = controller.usersPage()(organisationPageRequest.withCSRFToken)
       status(result) shouldBe Status.SEE_OTHER
     }
   }
@@ -191,12 +202,13 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
   "uploadUsersCsvAction" should {
 
     "Redirect to the users page when users are successfully parsed" in new Setup {
+      val request: FakeRequest[AnyContentAsFormUrlEncoded] = createUploadUsersRequest(csvUsersTestData)
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       when(mockCsvService.mapToUsersFromCsv(*)(*)).thenReturn(Future.successful(List(parsedUser)))
       when(mockXmlServiceConnector.bulkAddUsers(eqTo(Seq(parsedUser)))(*))
         .thenReturn(Future.successful(Right(())))
 
-      val result = controller.uploadUsersCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> csvUsersTestData))
+      val result: Future[Result] = controller.uploadUsersCsvAction()(request)
       status(result) shouldBe SEE_OTHER
 
       verify(mockCsvService).mapToUsersFromCsv(*)(*)
@@ -204,12 +216,13 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
     }
 
     "show error page when call to upload users fails" in new Setup {
+      val request: FakeRequest[AnyContentAsFormUrlEncoded] = createUploadUsersRequest(csvUsersTestData)
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       when(mockCsvService.mapToUsersFromCsv(*)(*)).thenReturn(Future.successful(List(parsedUser)))
       when(mockXmlServiceConnector.bulkAddUsers(eqTo(Seq(parsedUser)))(*))
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, 1, Map.empty))))
 
-      val result = controller.uploadUsersCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> csvUsersTestData))
+      val result: Future[Result] = controller.uploadUsersCsvAction()(request)
       status(result) shouldBe INTERNAL_SERVER_ERROR
 
       verify(mockCsvService).mapToUsersFromCsv(*)(*)
@@ -217,11 +230,12 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
     }
 
     "Redirect to the error page when service throws an exception" in new Setup {
+      val request: FakeRequest[AnyContentAsFormUrlEncoded] = createUploadUsersRequest(csvUsersTestData)
       val exceptionMessage = "parse error"
       givenTheGKUserIsAuthorisedAndIsANormalUser()
       when(mockCsvService.mapToUsersFromCsv(*)(*)).thenThrow(new RuntimeException(exceptionMessage))
 
-      val result = controller.uploadUsersCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> csvUsersTestData))
+      val result: Future[Result] = controller.uploadUsersCsvAction()(request)
       status(result) shouldBe INTERNAL_SERVER_ERROR
 
       val document = Jsoup.parse(contentAsString(result))
@@ -233,9 +247,10 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
     }
 
     "display users page with error messages when invalid form provided" in new Setup {
+      val request: FakeRequest[AnyContentAsFormUrlEncoded] = createUploadUsersRequest("")
       givenTheGKUserIsAuthorisedAndIsANormalUser()
 
-      val result = controller.uploadUsersCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> ""))
+      val result: Future[Result] = controller.uploadUsersCsvAction()(request)
       status(result) shouldBe BAD_REQUEST
 
       verifyZeroInteractions(mockCsvService)
@@ -243,14 +258,14 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
     }
 
     "return forbidden view when not authorised" in new Setup {
+      val request: FakeRequest[AnyContentAsFormUrlEncoded] = createUploadUsersRequest("")
       givenAUnsuccessfulLogin()
 
-      val result = controller.uploadUsersCsvAction()(fakeRequest.withCSRFToken.withFormUrlEncodedBody("csv-data-input" -> ""))
+      val result: Future[Result] = controller.uploadUsersCsvAction()(request)
       status(result) shouldBe Status.SEE_OTHER
 
       verifyZeroInteractions(mockCsvService)
       verifyZeroInteractions(mockXmlServiceConnector)
     }
-
   }
 }

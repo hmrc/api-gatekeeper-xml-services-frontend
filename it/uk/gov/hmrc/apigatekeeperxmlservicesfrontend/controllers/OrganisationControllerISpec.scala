@@ -19,18 +19,20 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.scalatest.BeforeAndAfterEach
+import play.api.http.HeaderNames
+import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NO_CONTENT, SEE_OTHER}
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.http.HeaderNames.CONTENT_TYPE
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
-import play.api.test.Helpers.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, NO_CONTENT, OK, SEE_OTHER}
+import play.api.test.Helpers.{CONTENT_TYPE, FORBIDDEN, NOT_FOUND, OK}
 import play.filters.csrf.CSRF.TokenProvider
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{ApiCategory, Collaborator, Organisation, OrganisationId, OrganisationUser, ServiceName, VendorId, XmlApi}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{AuthServiceStub, ServerBaseISpec}
+import utils.MockCookies
 
 import java.util.UUID
 
@@ -39,6 +41,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
   protected override def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
+        "microservice.services.auth.host" -> wireMockHost,
         "microservice.services.auth.port" -> wireMockPort,
         "metrics.enabled" -> true,
         "auditing.enabled" -> false,
@@ -53,6 +56,9 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
   trait Setup extends XmlServicesStub {
     val wsClient: WSClient = app.injector.instanceOf[WSClient]
     val tokenProvider = app.injector.instanceOf[TokenProvider]
+    val validHeaders: List[(String, String)] = List(HeaderNames.AUTHORIZATION -> "Bearer 123")
+    val contentTypeHeader = CONTENT_TYPE -> "application/x-www-form-urlencoded"
+    val bypassCsrfTokenHeader = "Csrf-Token" -> "nocheck"
 
     val objInTest: XmlServicesConnector = app.injector.instanceOf[XmlServicesConnector]
     val vendorId: VendorId = VendorId(12)
@@ -77,21 +83,20 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       context = "/government/collections/vat-and-ec-sales-list-online-support-for-software-developers",
       description = "description",
       categories  = Some(Seq(ApiCategory.CUSTOMS)))
+
     val xmlApi2 = XmlApi(name = "xml api 3",
       serviceName = ServiceName("customs-import"),
       context = "/government/collections/customs-import",
       description = "description",
       categories  = Some(Seq(ApiCategory.CUSTOMS)))
 
-
     val organisationUsers = List(OrganisationUser(organisationId, UserId(UUID.randomUUID()), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)))
-
-
 
     def callGetEndpoint(url: String, headers: List[(String, String)] = List.empty): WSResponse =
       wsClient
         .url(url)
         .withHttpHeaders(headers: _*)
+        .withCookies(MockCookies.makeWsCookie(app))
         .withFollowRedirects(false)
         .get()
         .futureValue
@@ -100,6 +105,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       wsClient
         .url(url)
         .withHttpHeaders(headers: _*)
+        .withCookies(MockCookies.makeWsCookie(app))
         .withFollowRedirects(false)
         .post(request)
         .futureValue
@@ -116,13 +122,16 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
     "GET /organisations" should {
       "respond with 200 and render organisation search page" in new Setup {
         primeAuthServiceSuccess()
-        val result = callGetEndpoint(s"$url/organisations")
+
+        val result = callGetEndpoint(s"$url/organisations", validHeaders)
+
         result.status mustBe OK
+
         val content = Jsoup.parse(result.body)
         content.getElementById("page-heading").text() mustBe "Search for XML organisations"
       }
 
-      "respond with 403 and render the Forbidden view" in new Setup {
+     "respond with 403 and render the Forbidden view" in new Setup {
         primeAuthServiceFail()
         val result = callGetEndpoint(s"$url/organisations")
         result.status mustBe FORBIDDEN
@@ -314,9 +323,6 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
         result.status mustBe FORBIDDEN
       }
-
-
-
     }
 
     "GET  /:organisationId/update" should {
@@ -343,7 +349,6 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         val result = callGetEndpoint(s"$url/organisations/${organisationId.value.toString}/update")
 
         result.status mustBe INTERNAL_SERVER_ERROR
-
       }
 
       "return 403 when not authorised" in new Setup {
@@ -387,9 +392,9 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         primeAuthServiceSuccess()
         getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
         removeOrganisationStub(organisation.organisationId, NO_CONTENT)
+        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"confirm=Yes;")
 
-        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", List(CONTENT_TYPE -> "application/x-www-form-urlencoded"), s"confirm=Yes;")
-
+        result.headers.foreach(println)
         result.status mustBe OK
       }
 
@@ -398,7 +403,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
         removeOrganisationStub(organisation.organisationId, NOT_FOUND)
 
-        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", List(CONTENT_TYPE -> "application/x-www-form-urlencoded"), s"confirm=Yes;")
+        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"confirm=Yes;")
 
         result.status mustBe INTERNAL_SERVER_ERROR
       }
@@ -407,7 +412,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         primeAuthServiceSuccess()
         getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
 
-        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", List(CONTENT_TYPE -> "application/x-www-form-urlencoded"), s"confirm=No;")
+        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"confirm=No;")
 
         result.status mustBe SEE_OTHER
       }
@@ -416,7 +421,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         primeAuthServiceSuccess()
         getOrganisationByOrganisationIdReturnsError(organisationId, NOT_FOUND)
 
-        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", List(CONTENT_TYPE -> "application/x-www-form-urlencoded"), s"confirm=Yes;")
+        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"confirm=Yes;")
 
         result.status mustBe INTERNAL_SERVER_ERROR
       }
@@ -428,8 +433,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
         result.status mustBe FORBIDDEN
       }
-
     }
-  }
-
+ }
 }
+

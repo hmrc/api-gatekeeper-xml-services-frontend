@@ -19,6 +19,7 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.scalatest.BeforeAndAfterEach
+import play.api.http.HeaderNames
 import play.api.http.HeaderNames.CONTENT_TYPE
 import play.api.http.Status.SEE_OTHER
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -30,6 +31,7 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Collaborator, Organisation, OrganisationId, VendorId}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{AuthServiceStub, ServerBaseISpec}
+import utils.MockCookies
 
 import java.util.UUID
 
@@ -38,6 +40,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
   protected override def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
+        "microservice.services.auth.host" -> wireMockHost,
         "microservice.services.auth.port" -> wireMockPort,
         "metrics.enabled" -> true,
         "auditing.enabled" -> false,
@@ -51,6 +54,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
 
   trait Setup extends XmlServicesStub {
     val wsClient: WSClient = app.injector.instanceOf[WSClient]
+    val validHeaders: List[(String, String)] = List(HeaderNames.AUTHORIZATION -> "Bearer 123")
 
     val objInTest: XmlServicesConnector = app.injector.instanceOf[XmlServicesConnector]
     val vendorId: VendorId = VendorId(12)
@@ -69,6 +73,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       wsClient
         .url(url)
         .withHttpHeaders(headers: _*)
+        .withCookies(MockCookies.makeWsCookie(app))
         .withFollowRedirects(false)
         .get()
         .futureValue

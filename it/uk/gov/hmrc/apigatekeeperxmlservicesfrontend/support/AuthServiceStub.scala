@@ -18,6 +18,11 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.http.Status
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.AuthConnector
+import uk.gov.hmrc.auth.core.{Enrolment, Enrolments, InvalidBearerToken}
+import uk.gov.hmrc.auth.core.retrieve.{Name, Retrieval, ~}
+
+import scala.concurrent.Future.{failed, successful}
 
 trait AuthServiceStub {
   val authUrl = "/auth/authorise"
@@ -61,6 +66,4 @@ trait AuthServiceStub {
       )
     )
   }
-
-
 }

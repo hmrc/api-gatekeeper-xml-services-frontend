@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
-import play.api.data.Form
+import play.api.data.{DefaultFormBinding, Form}
 import play.api.data.Forms.{mapping, optional, text}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, Result}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.{AppConfig, ErrorHandler}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{AuthConnector, ThirdPartyDeveloperConnector, XmlServicesConnector}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.FormUtils.emailValidator
@@ -29,11 +29,12 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation._
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.play.bootstrap.controller.{WithDefaultFormBinding, WithUrlEncodedOnlyFormBinding}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.Future.successful
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 object OrganisationController {
@@ -106,7 +107,8 @@ class OrganisationController @Inject() (
     val forbiddenView: ForbiddenView,
     errorHandler: ErrorHandler,
     xmlServicesConnector: XmlServicesConnector,
-    thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector)(implicit val ec: ExecutionContext, appConfig: AppConfig) extends FrontendController(mcc) with GatekeeperAuthWrapper {
+    thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector)(implicit val ec: ExecutionContext, appConfig: AppConfig) extends FrontendController(mcc)
+  with GatekeeperAuthWrapper with WithDefaultFormBinding {
 
   val addOrganisationForm: Form[AddOrganisationForm] = AddOrganisationForm.form
   val addOrganisationWithNewUserForm: Form[AddOrganisationWithNewUserForm] = AddOrganisationWithNewUserForm.form
