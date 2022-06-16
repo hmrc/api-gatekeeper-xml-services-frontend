@@ -43,7 +43,6 @@ trait GatekeeperAuthWrapper extends I18nSupport {
       implicit request: Request[AnyContent] =>
         val predicate = authPredicate(minimumRoleRequired)
         val retrieval = Retrievals.name and Retrievals.authorisedEnrolments
-
         authConnector.authorise(predicate, retrieval) flatMap {
           case Some(name) ~ authorisedEnrolments => body(LoggedInRequest(name.name, authorisedEnrolments, request))
           case None ~ authorisedEnrolments       => Future.successful(Forbidden(forbiddenView()))

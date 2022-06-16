@@ -18,16 +18,15 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.services
 
 import org.apache.commons.csv.CSVRecord
 import org.apache.commons.io.IOUtils
+import play.api.Logging
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.http.HeaderCarrier
 
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 import javax.inject.{Inject, Singleton}
 import scala.collection.JavaConverters._
-import play.api.Logging
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
-import uk.gov.hmrc.http.HeaderCarrier
-
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton

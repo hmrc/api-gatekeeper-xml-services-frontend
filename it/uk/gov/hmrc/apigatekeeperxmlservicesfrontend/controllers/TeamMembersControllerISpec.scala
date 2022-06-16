@@ -19,17 +19,19 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.scalatest.BeforeAndAfterEach
+import play.api.http.HeaderNames
 import play.api.http.HeaderNames.CONTENT_TYPE
 import play.api.http.Status.SEE_OTHER
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
-import play.api.test.Helpers.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, OK}
+import play.api.test.Helpers.{BAD_REQUEST, CONTENT_TYPE, FORBIDDEN, INTERNAL_SERVER_ERROR, OK}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Collaborator, Organisation, OrganisationId, VendorId}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{AuthServiceStub, ServerBaseISpec}
+import utils.MockCookies
 
 import java.util.UUID
 
@@ -38,6 +40,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
   protected override def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
+        "microservice.services.auth.host" -> wireMockHost,
         "microservice.services.auth.port" -> wireMockPort,
         "metrics.enabled" -> true,
         "auditing.enabled" -> false,
@@ -51,6 +54,9 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
 
   trait Setup extends XmlServicesStub {
     val wsClient: WSClient = app.injector.instanceOf[WSClient]
+    val validHeaders: List[(String, String)] = List(HeaderNames.AUTHORIZATION -> "Bearer 123")
+    val contentTypeHeader = HeaderNames.CONTENT_TYPE -> "application/x-www-form-urlencoded"
+    val bypassCsrfTokenHeader = "Csrf-Token" -> "nocheck"
 
     val objInTest: XmlServicesConnector = app.injector.instanceOf[XmlServicesConnector]
     val vendorId: VendorId = VendorId(12)
@@ -69,6 +75,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       wsClient
         .url(url)
         .withHttpHeaders(headers: _*)
+        .withCookies(MockCookies.makeWsCookie(app))
         .withFollowRedirects(false)
         .get()
         .futureValue
@@ -77,6 +84,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       wsClient
         .url(url)
         .withHttpHeaders(headers: _*)
+        .withCookies(MockCookies.makeWsCookie(app))
         .withFollowRedirects(false)
         .post(request)
         .futureValue
@@ -183,7 +191,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
         removeTeamMemberReturnsResponse(organisationId, collaborator.email, "bob", OK, organisationWithTeamMembers.copy(collaborators = List.empty))
 
         val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/team-members/${collaborator.userId}/remove",
-         List(CONTENT_TYPE -> "application/x-www-form-urlencoded"), s"email=${collaborator.email};confirm=Yes;")
+          validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"email=${collaborator.email};confirm=Yes;")
 
         result.status mustBe SEE_OTHER
 
@@ -197,7 +205,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
         removeTeamMemberReturnsError(organisationId, organisationWithTeamMembers.collaborators.head.email, "bob", INTERNAL_SERVER_ERROR)
 
         val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/team-members/${collaborator.userId}/remove",
-          List(CONTENT_TYPE -> "application/x-www-form-urlencoded"), s"email=${collaborator.email};confirm=Yes;")
+          validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"email=${collaborator.email};confirm=Yes;")
 
         result.status mustBe INTERNAL_SERVER_ERROR
 
@@ -208,7 +216,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
         primeAuthServiceSuccess()
 
         val result = callPostEndpoint(s"$url/organisations/someInvalidOrg/team-members/${organisationWithTeamMembers.collaborators.head.userId}/remove",
-          List(CONTENT_TYPE -> "application/x-www-form-urlencoded"), s"email=${collaborator.email};confirm=Yes;")
+          validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"email=${collaborator.email};confirm=Yes;")
 
         result.status mustBe BAD_REQUEST
 
@@ -218,7 +226,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
         primeAuthServiceFail()
 
         val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/team-members/${collaborator.userId}/remove",
-          List(CONTENT_TYPE -> "application/x-www-form-urlencoded"), s"email=${collaborator.email};confirm=Yes;")
+          validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"email=${collaborator.email};confirm=Yes;")
 
         result.status mustBe FORBIDDEN
 

@@ -18,18 +18,20 @@ package controllers.csvupload
 
 import org.jsoup.Jsoup
 import org.scalatest.BeforeAndAfterEach
+import play.api.http.HeaderNames
 import play.api.http.HeaderNames.CONTENT_TYPE
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.Helpers.{FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SEE_OTHER}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{OrganisationName, OrganisationWithNameAndVendorId, VendorId, ServiceName}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{OrganisationName, OrganisationWithNameAndVendorId, ServiceName, VendorId}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{AuthServiceStub, ServerBaseISpec}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.ParsedUser
 import play.api.libs.json.Json
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.XmlApi
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.ApiCategory
+import utils.MockCookies
 
 class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with AuthServiceStub {
 
@@ -48,6 +50,10 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
   val url = s"http://localhost:$port/api-gatekeeper-xml-services"
 
   trait Setup extends XmlServicesStub {
+    val validHeaders: List[(String, String)] = List(HeaderNames.AUTHORIZATION -> "Bearer 123")
+    val contentTypeHeader = HeaderNames.CONTENT_TYPE -> "application/x-www-form-urlencoded"
+    val bypassCsrfTokenHeader = "Csrf-Token" -> "nocheck"
+
     val wsClient: WSClient = app.injector.instanceOf[WSClient]
 
     val invalidCsvPayload = """,NAME
@@ -97,6 +103,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
       wsClient
         .url(url)
         .withHttpHeaders(headers: _*)
+        .withCookies(MockCookies.makeWsCookie(app))
         .withFollowRedirects(false)
         .get()
         .futureValue
@@ -105,6 +112,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
       wsClient
         .url(url)
         .withHttpHeaders(headers: _*)
+        .withCookies(MockCookies.makeWsCookie(app))
         .withFollowRedirects(false)
         .post(request)
         .futureValue
@@ -149,7 +157,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
         val result = callPostEndpoint(
           url = s"$url/csvupload/organisation-action",
-          List(CONTENT_TYPE -> "application/x-www-form-urlencoded"),
+          validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader,
           s"csv-data-input=${validCsvPayloadWithTwoRows};"
         )
         result.status mustBe SEE_OTHER
@@ -161,7 +169,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
         val result = callPostEndpoint(
           url = s"$url/csvupload/organisation-action",
-          List(CONTENT_TYPE -> "application/x-www-form-urlencoded"),
+          validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader,
           s"csv-data-input=${validCsvPayloadWithTwoRows};"
         )
         result.status mustBe INTERNAL_SERVER_ERROR
@@ -172,7 +180,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
         val result = callPostEndpoint(
           url = s"$url/csvupload/organisation-action",
-          List(CONTENT_TYPE -> "application/x-www-form-urlencoded"),
+          validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader,
           s"csv-data-input=${invalidCsvPayload};"
         )
 
@@ -212,7 +220,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
         val result = callPostEndpoint(
           url = s"$url/csvupload/users-action",
-          List(CONTENT_TYPE -> "application/x-www-form-urlencoded"),
+          validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader,
           s"csv-data-input=${validUserCsvPayload};"
         )
         result.status mustBe SEE_OTHER
@@ -224,7 +232,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
         val result = callPostEndpoint(
           url = s"$url/csvupload/users-action",
-          List(CONTENT_TYPE -> "application/x-www-form-urlencoded"),
+          validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader,
           s"csv-data-input=${validUserCsvPayload};"
         )
         result.status mustBe INTERNAL_SERVER_ERROR
@@ -235,7 +243,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
         val result = callPostEndpoint(
           url = s"$url/csvupload/users-action",
-          List(CONTENT_TYPE -> "application/x-www-form-urlencoded"),
+          validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader,
           s"csv-data-input=${invalidCsvPayload};"
         )
 
