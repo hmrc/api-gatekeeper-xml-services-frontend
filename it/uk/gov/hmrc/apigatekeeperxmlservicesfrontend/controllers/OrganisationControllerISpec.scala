@@ -57,7 +57,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
     val wsClient: WSClient = app.injector.instanceOf[WSClient]
     val tokenProvider = app.injector.instanceOf[TokenProvider]
     val validHeaders: List[(String, String)] = List(HeaderNames.AUTHORIZATION -> "Bearer 123")
-    val contentTypeHeader = CONTENT_TYPE -> "application/x-www-form-urlencoded"
+    val contentTypeHeader = HeaderNames.CONTENT_TYPE -> "application/x-www-form-urlencoded"
     val bypassCsrfTokenHeader = "Csrf-Token" -> "nocheck"
 
     val objInTest: XmlServicesConnector = app.injector.instanceOf[XmlServicesConnector]

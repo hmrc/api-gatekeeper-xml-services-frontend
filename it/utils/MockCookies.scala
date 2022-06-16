@@ -20,7 +20,6 @@ import org.openqa.selenium.{Cookie => SeleniumCookie}
 import play.api.Application
 import play.api.libs.ws.WSCookie
 import play.api.mvc.{Cookie, Session, SessionCookieBaker}
-import play.api.test.CSRFTokenHelper
 import uk.gov.hmrc.crypto.PlainText
 import uk.gov.hmrc.http.SessionKeys
 import uk.gov.hmrc.play.bootstrap.frontend.filters.crypto.SessionCookieCrypto
@@ -28,16 +27,11 @@ import uk.gov.hmrc.play.bootstrap.frontend.filters.crypto.SessionCookieCrypto
 object MockCookies {
 
   private val sessionCookieName = "mdtp"
-  private val playSessionCookieName = "PLAY_SESSION"
 
   val mockSession = Session(Map(
     SessionKeys.lastRequestTimestamp -> System.currentTimeMillis().toString,
     SessionKeys.authToken -> "mock-bearer-token",
     SessionKeys.sessionId -> "mock-sessionid"
-  ))
-
-  val mockPlaySession = Session(Map(
-    "Csrf-Token" -> "testCsrfToken"
   ))
 
   def makeSessionCookie(session: Session, app: Application): Cookie = {
@@ -50,10 +44,6 @@ object MockCookies {
 
   def makeWsCookie(application: Application) = {
     createWsCookie(sessionCookieName, mockSession, application)
-  }
-
-  def makePlaySessionCookie(application: Application) = {
-    createWsCookie(playSessionCookieName, mockPlaySession, application)
   }
 
   def createWsCookie(cookieName: String, session: Session, application: Application) = {
