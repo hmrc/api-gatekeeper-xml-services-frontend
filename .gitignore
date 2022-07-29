@@ -22,7 +22,7 @@ lib_managed
 log
 logs
 .metals/
-modules
+/modules
 /out
 precompiled
 /.project

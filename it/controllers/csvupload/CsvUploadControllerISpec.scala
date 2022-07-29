@@ -19,13 +19,12 @@ package controllers.csvupload
 import org.jsoup.Jsoup
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.HeaderNames
-import play.api.http.HeaderNames.CONTENT_TYPE
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.Helpers.{FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SEE_OTHER}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{OrganisationName, OrganisationWithNameAndVendorId, ServiceName, VendorId}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{AuthServiceStub, ServerBaseISpec}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{StrideAuthorisationStub, ServerBaseISpec}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.ParsedUser
 import play.api.libs.json.Json
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.XmlApi
@@ -33,7 +32,7 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.ApiCategory
 import utils.MockCookies
 
-class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with AuthServiceStub {
+class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with StrideAuthorisationStub {
 
   protected override def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
@@ -73,11 +72,13 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
     val serviceName1 = ServiceName("vat-and-ec-sales-list")
     val serviceName2 = ServiceName("stamp-taxes-online")
-    val xmlApi1 = XmlApi(name = "xml api",
+    val xmlApi1 = XmlApi(
+      name = "xml api",
       serviceName = serviceName1,
       context = "context",
       description = "description",
-      categories  = Some(Seq(ApiCategory.CUSTOMS)))
+      categories  = Some(Seq(ApiCategory.CUSTOMS))
+    )
     val xmlApi2 = xmlApi1.copy(serviceName = serviceName2)
     val xmlApis = Seq(xmlApi1, xmlApi2)
 
@@ -128,7 +129,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
     "GET /csvupload/organisation-page" should {
       "respond with 200 and render organisation page" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         val result = callGetEndpoint(s"$url/csvupload/organisation-page")
         result.status mustBe OK
         val content = Jsoup.parse(result.body)
@@ -136,7 +137,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
       }
 
       "respond with 403 and render the Forbidden view" in new Setup {
-        primeAuthServiceFail()
+        strideAuthorisationFails()
         val result = callGetEndpoint(s"$url/csvupload/organisation-page")
         result.status mustBe FORBIDDEN
         val content = Jsoup.parse(result.body)
@@ -152,7 +153,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
     "POST /csvupload/organisation-action" should {
 
       "redirect to organisation page when valid form provided and connector returns 200" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         bulkFindAndCreateOrUpdateReturnsResponse(organisationsWithNameAndVendorIds, OK)
 
         val result = callPostEndpoint(
@@ -164,7 +165,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
       }
 
       "show error page when valid form provided but connector returns error" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         bulkFindAndCreateOrUpdateReturnsResponse(organisationsWithNameAndVendorIds, INTERNAL_SERVER_ERROR)
 
         val result = callPostEndpoint(
@@ -176,7 +177,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
       }
 
       "show error page when invalid form provided" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
 
         val result = callPostEndpoint(
           url = s"$url/csvupload/organisation-action",
@@ -190,7 +191,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
     "GET /csvupload/users-page" should {
       "respond with 200 and render organisation page" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         val result = callGetEndpoint(s"$url/csvupload/users-page")
         result.status mustBe OK
         val content = Jsoup.parse(result.body)
@@ -198,7 +199,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
       }
 
       "respond with 403 and render the Forbidden view" in new Setup {
-        primeAuthServiceFail()
+        strideAuthorisationFails()
         val result = callGetEndpoint(s"$url/csvupload/users-page")
         result.status mustBe FORBIDDEN
         val content = Jsoup.parse(result.body)
@@ -212,9 +213,8 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
     }
 
     "POST /csvupload/users-action" should {
-
       "redirect to users page when valid form provided and connector returns 200" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         getAllApisResponseWithBody(OK, (Json.toJson(xmlApis)).toString)
         bulkAddUsersReturnsResponse(users, OK)
 
@@ -227,7 +227,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
       }
 
       "show error page when valid form provided but connector returns error" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         bulkAddUsersReturnsResponse(users, INTERNAL_SERVER_ERROR)
 
         val result = callPostEndpoint(
@@ -239,7 +239,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
       }
 
       "show error page when invalid form provided" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
 
         val result = callPostEndpoint(
           url = s"$url/csvupload/users-action",

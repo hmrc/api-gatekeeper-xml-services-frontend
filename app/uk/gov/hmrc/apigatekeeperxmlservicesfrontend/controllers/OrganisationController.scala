@@ -16,26 +16,28 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
-import play.api.data.{DefaultFormBinding, Form}
+import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, text}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.{AppConfig, ErrorHandler}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{AuthConnector, ThirdPartyDeveloperConnector, XmlServicesConnector}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{ThirdPartyDeveloperConnector, XmlServicesConnector}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.FormUtils.emailValidator
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.LdapAuthorisationService
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationService
+import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.actions.GatekeeperStrideAuthorisationActions
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation._
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
-import uk.gov.hmrc.play.bootstrap.controller.{WithDefaultFormBinding, WithUrlEncodedOnlyFormBinding}
+import uk.gov.hmrc.play.bootstrap.controller.WithDefaultFormBinding
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future.successful
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
 
 object OrganisationController {
   val vendorIdParameterName = "vendor-id"
@@ -103,29 +105,30 @@ class OrganisationController @Inject() (
     organisationUpdateView: OrganisationUpdateView,
     organisationRemoveView: OrganisationRemoveView,
     organisationRemoveSuccessView: OrganisationRemoveSuccessView,
-    override val authConnector: AuthConnector,
-    val forbiddenView: ForbiddenView,
+    ldapAuthorisationService: LdapAuthorisationService,
+    val strideAuthorisationService: StrideAuthorisationService,
     errorHandler: ErrorHandler,
     xmlServicesConnector: XmlServicesConnector,
-    thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector)(implicit val ec: ExecutionContext, appConfig: AppConfig) extends FrontendController(mcc)
-  with GatekeeperAuthWrapper with WithDefaultFormBinding {
+    thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector)(implicit val ec: ExecutionContext, appConfig: AppConfig)
+  extends FrontendController(mcc)
+  with GatekeeperStrideAuthorisationActions
+  with WithDefaultFormBinding {
 
   val addOrganisationForm: Form[AddOrganisationForm] = AddOrganisationForm.form
   val addOrganisationWithNewUserForm: Form[AddOrganisationWithNewUserForm] = AddOrganisationWithNewUserForm.form
   val updateOrganisationDetailsForm: Form[UpdateOrganisationDetailsForm] = UpdateOrganisationDetailsForm.form
   val removeOrganisationConfirmationForm: Form[RemoveOrganisationConfirmationForm] = RemoveOrganisationConfirmationForm.form
 
-  val organisationsPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  val organisationsPage: Action[AnyContent] = anyStrideUserAction {
     implicit request =>
-      loggedIn(request)
       successful(Ok(organisationSearchView(List.empty, showTable = false)))
   }
 
-  val organisationsAddPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  val organisationsAddPage: Action[AnyContent] = anyStrideUserAction {
     implicit request => successful(Ok(organisationAddView(addOrganisationForm)))
   }
 
-  def organisationsAddAction(): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  def organisationsAddAction(): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
       addOrganisationForm.bindFromRequest.fold(
         formWithErrors => successful(BadRequest(organisationAddView(formWithErrors))),
@@ -143,7 +146,7 @@ class OrganisationController @Inject() (
       )
   }
 
-  def organisationsAddWithNewUserAction(): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  def organisationsAddWithNewUserAction(): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
       addOrganisationWithNewUserForm.bindFromRequest.fold(
         formWithErrors => successful(BadRequest(organisationAddNewUserView(formWithErrors, None, None))),
@@ -168,7 +171,7 @@ class OrganisationController @Inject() (
       }
   }
 
-  def viewOrganisationPage(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  def viewOrganisationPage(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
       (for {
         getOrganisationResult <- xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
@@ -180,7 +183,7 @@ class OrganisationController @Inject() (
       }
   }
 
-  def updateOrganisationsDetailsPage(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  def updateOrganisationsDetailsPage(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
         .map {
@@ -189,7 +192,7 @@ class OrganisationController @Inject() (
         }
   }
 
-  def updateOrganisationsDetailsAction(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  def updateOrganisationsDetailsAction(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
 
      def handleFormAction(organisation: Organisation)(implicit request: LoggedInRequest[_]): Future[Result] ={
        updateOrganisationDetailsForm.bindFromRequest.fold(
@@ -213,7 +216,7 @@ class OrganisationController @Inject() (
 
   }
 
-  def removeOrganisationPage(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  def removeOrganisationPage(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
         .map {
@@ -222,7 +225,7 @@ class OrganisationController @Inject() (
         }
   }
 
-  def removeOrganisationAction(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  def removeOrganisationAction(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
       def handleRemoveOrganisation(organisation: Organisation) = {
         xmlServicesConnector.removeOrganisation(organisation.organisationId).map {
@@ -250,7 +253,7 @@ class OrganisationController @Inject() (
 
   }
 
-  def organisationsSearchAction(searchType: String, searchText: Option[String]): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  def organisationsSearchAction(searchType: String, searchText: Option[String]): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
       def toVendorIdOrNone(txtVal: Option[String]): Option[VendorId] = {
         txtVal.flatMap(x => Try(x.toLong).toOption.map(VendorId))

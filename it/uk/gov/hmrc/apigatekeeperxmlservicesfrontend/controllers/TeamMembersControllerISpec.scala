@@ -20,22 +20,21 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.HeaderNames
-import play.api.http.HeaderNames.CONTENT_TYPE
 import play.api.http.Status.SEE_OTHER
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
-import play.api.test.Helpers.{BAD_REQUEST, CONTENT_TYPE, FORBIDDEN, INTERNAL_SERVER_ERROR, OK}
+import play.api.test.Helpers.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, OK}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Collaborator, Organisation, OrganisationId, VendorId}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{AuthServiceStub, ServerBaseISpec}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{StrideAuthorisationStub, ServerBaseISpec}
 import utils.MockCookies
 
 import java.util.UUID
 
-class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with AuthServiceStub {
+class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with StrideAuthorisationStub {
 
   protected override def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
@@ -100,21 +99,21 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
 
     "GET /organisations/:organisationId/team-members" should {
       "respond with 400 if invalid OrganisationId" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         val result = callGetEndpoint(s"$url/organisations/aldskjflaskjdf/team-members")
         result.status mustBe BAD_REQUEST
 
       }
 
       "respond with 403 if auth fails" in new Setup {
-        primeAuthServiceFail()
+        strideAuthorisationFails()
         val result = callGetEndpoint(s"$url/organisations/${UUID.randomUUID.toString}/team-members")
         result.status mustBe FORBIDDEN
 
       }
 
       "respond with 200 and render manage team members page" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         val orgId = organisationWithTeamMembers.organisationId
         getOrganisationByOrganisationIdReturnsResponseWithBody(orgId, OK, Json.toJson(organisationWithTeamMembers).toString())
         val result = callGetEndpoint(s"$url/organisations/${orgId.value.toString}/team-members")
@@ -127,7 +126,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       }
 
       "respond with 500 and render error template" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         val orgId = organisationWithTeamMembers.organisationId
         getOrganisationByOrganisationIdReturnsError(orgId, INTERNAL_SERVER_ERROR)
         val result = callGetEndpoint(s"$url/organisations/${orgId.value.toString}/team-members")
@@ -142,7 +141,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
     "GET /organisations/:organisationId/team-members/:userId/remove" should {
 
       "respond with 200 when remove team member is successful" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
 
         getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
 
@@ -161,7 +160,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
 
 
       "respond with 400 if invalid OrganisationId" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
 
         val result = callGetEndpoint(s"$url/organisations/aldskjflaskjdf/team-members/${organisationWithTeamMembers.collaborators.head.userId}/remove")
 
@@ -170,7 +169,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       }
 
       "respond with 403 if auth fails" in new Setup {
-        primeAuthServiceFail()
+        strideAuthorisationFails()
         val orgId = organisationWithTeamMembers.organisationId
 
         val result = callGetEndpoint(s"$url/organisations/${orgId.value.toString}/team-members/${organisationWithTeamMembers.collaborators.head.userId}/remove")
@@ -184,7 +183,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
     "POST /organisations/:organisationId/remove-team-member/:userId" should {
 
       "respond with 200 when remove team member action is successful" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
 
         getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
 
@@ -198,7 +197,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       }
 
       "respond with 500 when remove team member fails" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
 
         getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
 
@@ -213,7 +212,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
 
 
       "respond with 400 if invalid OrganisationId" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
 
         val result = callPostEndpoint(s"$url/organisations/someInvalidOrg/team-members/${organisationWithTeamMembers.collaborators.head.userId}/remove",
           validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"email=${collaborator.email};confirm=Yes;")
@@ -223,7 +222,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       }
 
       "respond with 403 if auth fails" in new Setup {
-        primeAuthServiceFail()
+        strideAuthorisationFails()
 
         val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/team-members/${collaborator.userId}/remove",
           validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"email=${collaborator.email};confirm=Yes;")

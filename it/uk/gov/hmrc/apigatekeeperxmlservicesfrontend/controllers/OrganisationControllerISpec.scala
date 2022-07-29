@@ -31,12 +31,12 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{AuthServiceStub, ServerBaseISpec}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{StrideAuthorisationStub, ServerBaseISpec}
 import utils.MockCookies
 
 import java.util.UUID
 
-class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with AuthServiceStub {
+class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with StrideAuthorisationStub {
 
   protected override def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
@@ -121,7 +121,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
     "GET /organisations" should {
       "respond with 200 and render organisation search page" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
 
         val result = callGetEndpoint(s"$url/organisations", validHeaders)
 
@@ -132,7 +132,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       }
 
      "respond with 403 and render the Forbidden view" in new Setup {
-        primeAuthServiceFail()
+        strideAuthorisationFails()
         val result = callGetEndpoint(s"$url/organisations")
         result.status mustBe FORBIDDEN
         val content = Jsoup.parse(result.body)
@@ -148,7 +148,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
     "GET /organisations-search" should {
 
       "respond with 403 and render the Forbidden view when auth fails" in new Setup {
-        primeAuthServiceFail()
+        strideAuthorisationFails()
         val result = callGetEndpoint(s"$url/organisations/search?searchType=vendorId&searchText=hello")
         result.status mustBe FORBIDDEN
         val content = Jsoup.parse(result.body)
@@ -156,28 +156,28 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       }
 
       "respond with 200 and render organisation search page correctly when no params provided" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         findOrganisationByParamsReturnsResponseWithBody(None, None, OK, Json.toJson(organisation).toString)
         val result = callGetEndpoint(s"$url/organisations/search")
         result.status mustBe BAD_REQUEST
       }
 
       "respond with 200 and render organisation search page when searchType is empty" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         findOrganisationByParamsReturnsResponseWithBody(None, None, OK, Json.toJson(organisation).toString)
         val result = callGetEndpoint(s"$url/organisations/search?searchType=")
         result.status mustBe OK
       }
 
       "respond with 200 and render organisation search page when searchType query parameter is populated" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         findOrganisationByParamsReturnsResponseWithBody(None, None, OK, Json.toJson(organisation).toString)
         val result = callGetEndpoint(s"$url/organisations/search?searchType=vendor-id")
         result.status mustBe OK
       }
 
       "respond with 200 and render organisation search page when organisation-name searchType and searchText query parameters are populated" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
 
         findOrganisationByParamsReturnsResponseWithBody(None, Some("hello"), OK, Json.toJson(List(organisation)).toString)
 
@@ -191,21 +191,21 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       }
 
       "respond with 400 when searchType query parameter is missing" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
 
         val result = callGetEndpoint(s"$url/organisations/search?searchText=")
         result.status mustBe BAD_REQUEST
       }
 
       "respond with 400 when backend returns error" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
 
         val result = callGetEndpoint(s"$url/organisations/search?searchText=")
         result.status mustBe BAD_REQUEST
       }
 
       "respond with 200 and render organisation search page when both searchType and searchText query parameters are empty" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
 
         findOrganisationByParamsReturnsResponseWithBody(None, None, OK, Json.toJson(List(organisation)).toString)
 
@@ -217,7 +217,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       }
 
       "respond with 200 and render organisation search page when searchType is populated and searchText query parameters is empty" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         val jsonToReturn = Json.toJson(List(organisation)).toString
 
         findOrganisationByParamsReturnsResponseWithBody(None, None, OK, jsonToReturn)
@@ -230,7 +230,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       }
 
       "respond with 200 and render organisation search page when searchType is empty and searchText query parameters is populated" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         val result = callGetEndpoint(s"$url/organisations/search?searchType=&searchText=hello")
         result.status mustBe OK
         val content = Jsoup.parse(result.body)
@@ -239,7 +239,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       }
 
       "respond with 200 and render organisation search page when vendor-id searchType and searchText query parameters are populated" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         val result = callGetEndpoint(s"$url/organisations/search?searchType=vendor-id&searchText=hello")
         result.status mustBe OK
         val content = Jsoup.parse(result.body)
@@ -251,7 +251,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
     "GET /add" should {
 
       "return 200 and display the add page when authorised " in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
 
         val result = callGetEndpoint(s"$url/organisations/add")
         result.status mustBe OK
@@ -264,7 +264,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       }
 
       "return 403 when not authorised" in new Setup {
-        primeAuthServiceFail()
+        strideAuthorisationFails()
 
         val result = callGetEndpoint(s"$url/organisations/add")
         result.status mustBe FORBIDDEN
@@ -275,7 +275,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
     "GET  /:organisationId" should {
 
       "return 200 and display details page when authorised" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
         getOrganisationUsersByOrganisationIdReturnsResponse(organisationId, OK, organisationUsers)
 
@@ -295,7 +295,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       }
 
       "return 500 when organisation not found" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         getOrganisationByOrganisationIdReturnsError(organisationId, NOT_FOUND)
         getOrganisationUsersByOrganisationIdReturnsResponse(organisationId, OK, organisationUsers)
 
@@ -306,7 +306,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       }
 
       "return 500 when organisation users retrieve fails" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
         getOrganisationUsersByOrganisationIdReturnsError(organisationId, NOT_FOUND)
 
@@ -317,7 +317,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       }
 
       "return 403 when not authorised" in new Setup {
-        primeAuthServiceFail()
+        strideAuthorisationFails()
 
         val result = callGetEndpoint(s"$url/organisations/${organisationId.value.toString}")
 
@@ -327,7 +327,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
     "GET  /:organisationId/update" should {
       "return 200 and organisationDetails EditPage when auth is successful and organisationId exists" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
 
         getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
 
@@ -342,7 +342,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       }
 
       "return 500 and when auth is successful but organisation cannot be found" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
 
         getOrganisationByOrganisationIdReturnsError(organisationId, NOT_FOUND)
 
@@ -352,7 +352,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       }
 
       "return 403 when not authorised" in new Setup {
-        primeAuthServiceFail()
+        strideAuthorisationFails()
 
         val result = callGetEndpoint(s"$url/organisations/${organisationId.value.toString}/update")
 
@@ -362,7 +362,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
     "GET /:organisationId/remove" should {
       "return the removeOrganisationView when organisationId exists" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
 
         val result = callGetEndpoint(s"$url/organisations/${organisationId.value.toString}/remove")
@@ -371,7 +371,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       }
 
       "return the error page when organisationId does not exist" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         getOrganisationByOrganisationIdReturnsError(organisationId, NOT_FOUND)
 
         val result = callGetEndpoint(s"$url/organisations/${organisationId.value.toString}/remove")
@@ -380,7 +380,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       }
 
       "return 403 when not authorised" in new Setup {
-        primeAuthServiceFail()
+        strideAuthorisationFails()
 
         val result = callGetEndpoint(s"$url/organisations/${organisationId.value.toString}/remove")
         result.status mustBe FORBIDDEN
@@ -389,7 +389,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
     "POST /:organisationId/remove" should {
       "return OK when organisation exists, confirm is YES and remove call is successful" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
         removeOrganisationStub(organisation.organisationId, NO_CONTENT)
         val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"confirm=Yes;")
@@ -399,7 +399,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       }
 
       "return INTERNAL SERVER ERROR when organisation exists, confirm is YES and remove call fails" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
         removeOrganisationStub(organisation.organisationId, NOT_FOUND)
 
@@ -409,7 +409,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       }
 
       "return SEE_OTHER when organisation exists and confirm is No" in new Setup {
-        primeAuthServiceSuccess()
+        strideAuthorisationSucceeds()
         getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
 
         val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"confirm=No;")
@@ -417,8 +417,8 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         result.status mustBe SEE_OTHER
       }
 
-      "return INTERNALSERVER ERROR when organisation does not exists" in new Setup {
-        primeAuthServiceSuccess()
+      "return INTERNAL_SERVER ERROR when organisation does not exists" in new Setup {
+        strideAuthorisationSucceeds()
         getOrganisationByOrganisationIdReturnsError(organisationId, NOT_FOUND)
 
         val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"confirm=Yes;")
@@ -427,7 +427,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       }
 
       "return FORBIDDEN when auth fails" in new Setup {
-        primeAuthServiceFail()
+        strideAuthorisationFails()
 
         val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", List(CONTENT_TYPE -> "application/x-www-form-urlencoded"), s"confirm=Yes;")
 

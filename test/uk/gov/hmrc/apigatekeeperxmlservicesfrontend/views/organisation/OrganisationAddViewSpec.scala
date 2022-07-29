@@ -26,13 +26,14 @@ import org.jsoup.nodes.Document
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.AddOrganisationForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.ViewSpecHelpers
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServiceMockModule
 
 class OrganisationAddViewSpec extends CommonViewSpec with WithCSRFAddToken with ViewSpecHelpers {
 
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
     val organisationAddView = app.injector.instanceOf[OrganisationAddView]
-    val loggedInUser = LoggedInUser(Some("Test User"))
+     val loggedInUser = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
   }
 
   "Organisation Add View" should {

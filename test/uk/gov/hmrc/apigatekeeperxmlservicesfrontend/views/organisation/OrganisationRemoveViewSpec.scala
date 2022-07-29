@@ -25,13 +25,14 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.{CommonViewSpec, WithCSRFAddToken}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationRemoveView
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServiceMockModule
 
 class OrganisationRemoveViewSpec extends CommonViewSpec with WithCSRFAddToken with ViewSpecHelpers {
 
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
     val organisationRemoveView = app.injector.instanceOf[OrganisationRemoveView]
-    val loggedInUser = LoggedInUser(Some("Test User"))
+    val loggedInUser = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
   }
 
   "Organisation Remove View" should {

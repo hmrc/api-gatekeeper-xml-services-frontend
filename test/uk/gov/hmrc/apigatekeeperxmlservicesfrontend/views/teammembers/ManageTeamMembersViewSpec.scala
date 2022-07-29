@@ -24,13 +24,14 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.Manag
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServiceMockModule
 
 class ManageTeamMembersViewSpec extends CommonViewSpec with ViewSpecHelpers {
 
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
     val manageTeamMembersView = app.injector.instanceOf[ManageTeamMembersView]
-    val loggedInUser = LoggedInUser(Some("Test User"))
+     val loggedInUser = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
   }
 
   "Manage Team Members View" should {

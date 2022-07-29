@@ -16,22 +16,10 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
-import play.api.test.FakeRequest
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.GatekeeperSessionKeys
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.connectors.AuthConnectorMock
 import uk.gov.hmrc.http.HeaderCarrier
+import org.mockito.MockitoSugar
+import org.mockito.ArgumentMatchersSugar
 
-trait ControllerSetupBase extends AuthConnectorMock {
-  
+trait ControllerSetupBase extends MockitoSugar with ArgumentMatchersSugar {
   implicit val hc = HeaderCarrier()
-
-  val authToken = GatekeeperSessionKeys.AuthToken -> "some-bearer-token"
-  val userToken = GatekeeperSessionKeys.LoggedInUser -> userName
-  val superUserToken = GatekeeperSessionKeys.LoggedInUser -> superUserName
-  val adminToken = GatekeeperSessionKeys.LoggedInUser -> adminName
-  val aLoggedInRequest = FakeRequest().withSession(authToken, userToken)
-  val aSuperUserLoggedInRequest = FakeRequest().withSession(authToken, superUserToken)
-  val anAdminLoggedInRequest = FakeRequest().withSession(authToken, adminToken)
-  val aLoggedOutRequest = FakeRequest().withSession()
-
 }

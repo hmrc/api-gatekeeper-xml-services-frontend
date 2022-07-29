@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models
+package uk.gov.hmrc.apiplatform.modules.gkauth.utils
 
-import play.api.mvc.{Request, WrappedRequest}
-import uk.gov.hmrc.auth.core.Enrolments
+import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models._
 
-case class LoggedInRequest[A](name: Option[String], authorisedEnrolments: Enrolments, request: Request[A]) extends WrappedRequest(request)
+// $COVERAGE-OFF$
+trait GatekeeperAuthorisationHelper {
+  implicit def loggedIn(implicit request: LoggedInRequest[_]): LoggedInUser = LoggedInUser(request.name)
+}
+// $COVERAGE-ON$

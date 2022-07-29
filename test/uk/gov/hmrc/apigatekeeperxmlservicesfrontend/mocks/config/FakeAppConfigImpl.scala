@@ -25,7 +25,7 @@ import play.api.Configuration
 class FakeAppConfigImpl @Inject()(config: Configuration)
   extends AppConfigImpl(config) {
 
-  override val strideLoginUrl = "https://loginUri"
+  // override val strideLoginUrl = "https://loginUri"
   override val gatekeeperSuccessUrl = "http://mock-gatekeeper-frontend/api-gatekeeper/applications"
 
 }

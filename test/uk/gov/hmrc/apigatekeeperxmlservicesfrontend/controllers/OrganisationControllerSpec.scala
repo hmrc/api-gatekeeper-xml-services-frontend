@@ -29,20 +29,20 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.{UserId, UserResponse}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation._
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServiceMockModule
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.LdapAuthorisationServiceMockModule
 
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-
+import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.GatekeeperRoles
 class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToken {
 
-  trait Setup extends ControllerSetupBase with OrganisationTestData with ViewSpecHelpers {
+  trait Setup extends ControllerSetupBase with OrganisationTestData with ViewSpecHelpers with StrideAuthorisationServiceMockModule with LdapAuthorisationServiceMockModule {
     val fakeRequest = FakeRequest("GET", "/organisations")
     val organisationSearchRequest = FakeRequest("GET", "/organisations-search")
-    private lazy val forbiddenView = app.injector.instanceOf[ForbiddenView]
     private lazy val errorHandler = app.injector.instanceOf[ErrorHandler]
     private lazy val organisationSearchView = app.injector.instanceOf[OrganisationSearchView]
     private lazy val organisationDetailsView = app.injector.instanceOf[OrganisationDetailsView]
@@ -64,8 +64,8 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       organisationUpdateView,
       organisationRemoveView,
       organisationRemoveSuccessView,
-      mockAuthConnector,
-      forbiddenView,
+      LdapAuthorisationServiceMock.aMock,
+      StrideAuthorisationServiceMock.aMock,
       errorHandler,
       mockXmlServiceConnector,
       mockThirdPartDeveloperConnector
@@ -86,13 +86,13 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
 
   "GET /organisations" should {
     "return 200" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       validatePageIsRendered(controller.organisationsPage(fakeRequest))
     }
 
     "return forbidden view" in new Setup {
-      givenAUnsuccessfulLogin()
+      StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
       val result = controller.organisationsPage(fakeRequest)
 
       status(result) shouldBe Status.SEE_OTHER
@@ -102,7 +102,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
   "GET /organisations/search" should {
 
     "return 200 and render search page when vendor-id search type and valid vendor id" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
       when(mockXmlServiceConnector.findOrganisationsByParams(eqTo(Some(VendorId(vendorId))), eqTo(None))(*))
         .thenReturn(Future.successful(Right(organisations)))
 
@@ -113,7 +113,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "return 200 and render search page  when vendor-id search type and invalid (non numeric) vendor id" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       val result = controller.organisationsSearchAction(vendorIdParameterName, Some("NotANumber"))(organisationSearchRequest)
 
@@ -122,7 +122,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "return 200 and render search page  when vendor-id search type and empty string provided for vendor id" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
       when(mockXmlServiceConnector.findOrganisationsByParams(eqTo(None), eqTo(None))(*))
         .thenReturn(Future.successful(Right(organisations)))
 
@@ -134,7 +134,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
 
     "return 200 and render search page when organisation-name search type and search text" in new Setup {
       val orgName = "I am an Org Name"
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
       when(mockXmlServiceConnector.findOrganisationsByParams(eqTo(None), eqTo(Some(orgName)))(*))
         .thenReturn(Future.successful(Right(organisations)))
 
@@ -145,7 +145,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "return 200 and render search page when organisation-name search type without search text" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
       when(mockXmlServiceConnector.findOrganisationsByParams(eqTo(None), eqTo(Some("")))(*))
         .thenReturn(Future.successful(Right(organisations)))
 
@@ -156,7 +156,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "return 200 and render search page connector receives and error" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
       when(mockXmlServiceConnector.findOrganisationsByParams(eqTo(None), eqTo(Some("")))(*))
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", NOT_FOUND, NOT_FOUND))))
 
@@ -167,7 +167,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "return 200 and render search page when no search type and without search text" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       val result = controller.organisationsSearchAction("", Some(""))(organisationSearchRequest)
 
@@ -176,7 +176,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "return 200 and render search page when invalid search type provided and valid vendor id" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       val result = controller.organisationsSearchAction("unknown", Some(vendorId.toString))(organisationSearchRequest)
       val document = Jsoup.parse(contentAsString(result))
@@ -190,7 +190,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "return 500 and render error page when connector returns any error other than 404" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockXmlServiceConnector.findOrganisationsByParams(eqTo(Some(VendorId(vendorId))), eqTo(None))(*))
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
@@ -207,7 +207,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "return forbidden view" in new Setup {
-      givenAUnsuccessfulLogin()
+      StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
 
       val result = controller.organisationsSearchAction("unknown", Some(vendorId.toString))(organisationSearchRequest)
 
@@ -233,7 +233,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "return 200 and display details view page when users in org" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(*))
         .thenReturn(Future.successful(Right(org1)))
 
@@ -248,7 +248,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "return 200 and display details view page no users in org" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(*))
         .thenReturn(Future.successful(Right(org1)))
       when(mockXmlServiceConnector.getOrganisationUsersByOrganisationId(eqTo(org1.organisationId))(*))
@@ -262,7 +262,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "return 500 and render error page when connector returns any error other than 404" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(*))
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
@@ -282,7 +282,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
 
 
     "return 500 and render error page when connector returns error getting users" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(*))
         .thenReturn(Future.successful(Right(org1)))
@@ -301,7 +301,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "return forbidden view" in new Setup {
-      givenAUnsuccessfulLogin()
+      StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
 
       val result = controller.viewOrganisationPage(org1.organisationId)(fakeRequest)
 
@@ -311,7 +311,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
 
   "organisationsAddPage" should {
     "display add page when authorised" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       val result = controller.organisationsAddPage()(fakeRequest.withCSRFToken)
       val document = Jsoup.parse(contentAsString(result))
@@ -322,7 +322,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "return forbidden view when not authorised" in new Setup {
-      givenAUnsuccessfulLogin()
+      StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
 
       val result = controller.organisationsAddPage()(fakeRequest.withCSRFToken)
 
@@ -333,7 +333,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
   "organisationsAddAction" should {
 
     "display organisation details page when email is existing user and create successful result returned from connector" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
       val userId = UserId(UUID.randomUUID())
       val userResponse = UserResponse(collaborator1.email, firstName, lastName, verified = true,  userId)
 
@@ -349,7 +349,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "display add new user page when user does not exist" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockThirdPartDeveloperConnector.getByEmails(eqTo(List(collaborator1.email)))(*)).thenReturn(Future.successful(Right(List.empty)))
 
@@ -363,7 +363,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "return 500 when third party developer returns error" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockThirdPartDeveloperConnector.getByEmails(eqTo(List(collaborator1.email)))(*)).thenReturn(Future.successful(Left(UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
 
@@ -375,7 +375,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "not allow spaces as organisation name" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       val result = controller.organisationsAddAction()(createFakePostRequest("organisationName" -> "  ", "emailAddress" -> "  "))
       val document = Jsoup.parse(contentAsString(result))
@@ -389,7 +389,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "display internal server error when failure result returned from connector" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
       val userId = UserId(UUID.randomUUID())
       val userResponse = UserResponse(collaborator1.email, firstName, lastName, verified = true,  userId)
 
@@ -405,7 +405,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "display add page with error messages when invalid form provided" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       val result = controller.organisationsAddAction()(createFakePostRequest("organisationName" -> "", "emailAddress" -> ""))
       val document = Jsoup.parse(contentAsString(result))
@@ -418,7 +418,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "return forbidden view when not authorised" in new Setup {
-      givenAUnsuccessfulLogin()
+      StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
       val result = controller.organisationsAddAction()(createFakePostRequest("organisationName" -> org1.name))
 
       status(result) shouldBe Status.SEE_OTHER
@@ -428,7 +428,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
   "organisationsAddWithNewUserAction" should {
 
     "redirect to organisation page, call add organisation when user is authorised and form is valid" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
       when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name), eqTo(collaborator1.email), eqTo(firstName), eqTo(lastName))(*))
         .thenReturn(Future.successful(CreateOrganisationSuccess(org1)))
 
@@ -445,7 +445,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "display the add new user page with errors when user is authorised but form is invalid" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       val result = controller.organisationsAddWithNewUserAction()(createFakePostRequest(
         "organisationName" -> organisationWithCollaborators.name,
@@ -463,7 +463,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "return 500 when call to add organisation fails but the user is authorised and form is valid" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
       when(mockXmlServiceConnector.addOrganisation(eqTo(org1.name), eqTo(collaborator1.email), eqTo(firstName), eqTo(lastName))(*))
         .thenReturn(Future.successful(CreateOrganisationFailure(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
 
@@ -480,7 +480,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
 
   "updateOrganisationsDetailsPage" should {
     "display updateOrganisationsDetails page when authorised and organisation exists" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*[HeaderCarrier]))
         .thenReturn(Future.successful(Right(org1)))
 
@@ -494,7 +494,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "display internal server error page when authorised and but organisation does not exist" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*[HeaderCarrier]))
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", NOT_FOUND, NOT_FOUND))))
 
@@ -504,7 +504,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     }
 
     "return forbidden view when not authorised" in new Setup {
-      givenAUnsuccessfulLogin()
+      StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
 
       val result = controller.updateOrganisationsDetailsPage(organisationId1)(fakeRequest.withCSRFToken)
 
@@ -514,7 +514,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     "updateOrganisationsDetailsAction" should {
 
       "display organisation details page when create successful result returned from connector" in new Setup {
-        givenTheGKUserIsAuthorisedAndIsANormalUser()
+        StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
         when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*)).thenReturn(Future.successful(Right(org1)))
         when(mockXmlServiceConnector.updateOrganisationDetails(eqTo(organisationId1), eqTo(org1.name))(*)).thenReturn(Future.successful(UpdateOrganisationDetailsSuccess(org1)))
 
@@ -526,7 +526,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       }
 
       "display internal server error when failure result returned from connector get organisation" in new Setup {
-        givenTheGKUserIsAuthorisedAndIsANormalUser()
+        StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
         when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*))
           .thenReturn(Future.successful(Left(UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
@@ -536,7 +536,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       }
 
       "display internal server error when failure result returned from connector" in new Setup {
-        givenTheGKUserIsAuthorisedAndIsANormalUser()
+        StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
         when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*)).thenReturn(Future.successful(Right(org1)))
         when(mockXmlServiceConnector.updateOrganisationDetails(eqTo(organisationId1), eqTo(org1.name))(*))
           .thenReturn(Future.successful(UpdateOrganisationDetailsFailure(UpstreamErrorResponse("some error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
@@ -547,7 +547,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       }
 
       "display update page with error messages when invalid form provided" in new Setup {
-        givenTheGKUserIsAuthorisedAndIsANormalUser()
+        StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
         when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*)).thenReturn(Future.successful(Right(org1)))
 
         val result = controller.updateOrganisationsDetailsAction(organisationId1)(createFakePostRequest("organisationName" -> ""))
@@ -559,7 +559,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       }
 
       "not allow spaces in form" in new Setup {
-        givenTheGKUserIsAuthorisedAndIsANormalUser()
+        StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
         when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*)).thenReturn(Future.successful(Right(org1)))
 
         val result = controller.updateOrganisationsDetailsAction(organisationId1)(createFakePostRequest("organisationName" -> "  "))
@@ -571,7 +571,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       }
 
       "return forbidden view when not authorised" in new Setup {
-        givenAUnsuccessfulLogin()
+        StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
         val result = controller.updateOrganisationsDetailsAction(organisationId1)(createFakePostRequest("organisationName" -> org1.name))
 
         status(result) shouldBe Status.SEE_OTHER
@@ -582,7 +582,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
   "removeOrganisationAction" should {
 
     "returns removeOrganisationPage with errors when form is invalid" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*[HeaderCarrier]))
         .thenReturn(Future.successful(Right(org1)))
 

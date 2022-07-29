@@ -21,16 +21,18 @@ import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, text}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.{AppConfig, ErrorHandler}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{AuthConnector, ThirdPartyDeveloperConnector, XmlServicesConnector}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{ThirdPartyDeveloperConnector, XmlServicesConnector}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.FormUtils.emailValidator
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.TeamMembersController.{AddTeamMemberForm, CreateAndAddTeamMemberForm, RemoveTeamMemberConfirmationForm}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.LdapAuthorisationService
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationService
+import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.actions.GatekeeperStrideAuthorisationActions
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
 
 import javax.inject.Inject
 import scala.concurrent.Future.successful
@@ -80,20 +82,20 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
                                       addTeamMemberView: AddTeamMemberView,
                                       createTeamMemberView: CreateTeamMemberView,
                                       removeTeamMemberView: RemoveTeamMemberView,
-                                      override val authConnector: AuthConnector,
-                                      val forbiddenView: ForbiddenView,
                                       errorHandler: ErrorHandler,
                                       xmlServicesConnector: XmlServicesConnector,
-                                      thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector
+                                      thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector,
+                                      ldapAuthorisationService: LdapAuthorisationService,
+                                      val strideAuthorisationService: StrideAuthorisationService
                                      )(implicit val ec: ExecutionContext,
                                        appConfig: AppConfig)
-  extends FrontendController(mcc) with GatekeeperAuthWrapper with Logging {
+  extends FrontendController(mcc) with GatekeeperStrideAuthorisationActions with Logging {
 
   val addTeamMemberForm: Form[AddTeamMemberForm] = AddTeamMemberForm.form
   val createAndAddTeamMemberForm: Form[CreateAndAddTeamMemberForm] = CreateAndAddTeamMemberForm.form
   val confirmRemoveForm: Form[RemoveTeamMemberConfirmationForm] = RemoveTeamMemberConfirmationForm.form
 
-  def manageTeamMembers(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  def manageTeamMembers(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
     implicit request => {
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId).map {
         case Right(org: Organisation) => Ok(manageTeamMembersView(org))
@@ -103,11 +105,11 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
     }
   }
 
-  def addTeamMemberPage(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  def addTeamMemberPage(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
     implicit request => successful(Ok(addTeamMemberView(addTeamMemberForm, organisationId)))
   }
 
-  def addTeamMemberAction(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  def addTeamMemberAction(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
 
       def handleGetUsersFromTPD(teamMemberAddData: AddTeamMemberForm) = {
@@ -135,7 +137,7 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
 
   }
 
-  def createTeamMemberAction(organisationId: OrganisationId): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  def createTeamMemberAction(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
       createAndAddTeamMemberForm.bindFromRequest.fold(
         formWithErrors => {
@@ -158,7 +160,7 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
       }
   }
 
-  def removeTeamMember(organisationId: OrganisationId, userId: String): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  def removeTeamMember(organisationId: OrganisationId, userId: String): Action[AnyContent] = anyStrideUserAction {
     implicit request => {
       getCollaboratorByUserIdAndOrganisationId(organisationId, userId).flatMap {
         case Some(collaborator: Collaborator) =>
@@ -170,7 +172,7 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
     }
   }
 
-  def removeTeamMemberAction(organisationId: OrganisationId, userId: String): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  def removeTeamMemberAction(organisationId: OrganisationId, userId: String): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
 
       def handleRemoveTeamMember(): Future[Result] = {
