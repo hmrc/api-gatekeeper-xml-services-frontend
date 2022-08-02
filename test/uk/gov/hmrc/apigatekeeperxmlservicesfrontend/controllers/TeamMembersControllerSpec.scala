@@ -27,20 +27,22 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.{UserId, UserResponse}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.{AddTeamMemberView, CreateTeamMemberView, ManageTeamMembersView, RemoveTeamMemberView}
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServiceMockModule
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.LdapAuthorisationServiceMockModule
 
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.GatekeeperRoles
 
 
 class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken with ViewSpecHelpers {
 
-  trait Setup extends ControllerSetupBase with OrganisationTestData {
+  trait Setup extends ControllerSetupBase with OrganisationTestData with LdapAuthorisationServiceMockModule with StrideAuthorisationServiceMockModule {
     val fakeRequest = FakeRequest().withMethod(GET)
-    private lazy val forbiddenView = app.injector.instanceOf[ForbiddenView]
     private lazy val errorHandler = app.injector.instanceOf[ErrorHandler]
     private lazy val manageTeamMembersView = app.injector.instanceOf[ManageTeamMembersView]
     private lazy val addTeamMembersView = app.injector.instanceOf[AddTeamMemberView]
@@ -56,11 +58,11 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       addTeamMembersView,
       createTeamMembersView,
       removeTeamMembersView,
-      mockAuthConnector,
-      forbiddenView,
       errorHandler,
       mockXmlServiceConnector,
-      mockThirdPartyDeveloperConnector
+      mockThirdPartyDeveloperConnector,
+      LdapAuthorisationServiceMock.aMock,
+      StrideAuthorisationServiceMock.aMock
     )
 
     def validatePageIsRendered(result: Future[Result]) = {
@@ -79,7 +81,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
   "manageTeamMembers" should {
 
     "return 200 and render the manage team member view when organisation exists" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
@@ -96,7 +98,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "return 500 and render the error page when organisation doesn't exist" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
@@ -109,7 +111,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "return forbidden view when not authorised" in new Setup {
-      givenAUnsuccessfulLogin()
+      StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
       val result = controller.manageTeamMembers(org1.organisationId)(createFakePostRequest("organisationname" -> org1.name))
 
       status(result) shouldBe Status.SEE_OTHER
@@ -119,7 +121,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
   "addTeamMemberPage" should {
 
     "return 200 and display the add team member page" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       val result = controller.addTeamMemberPage(org1.organisationId)(fakeRequest.withCSRFToken)
 
@@ -131,7 +133,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "return forbidden view when not authorised" in new Setup {
-      givenAUnsuccessfulLogin()
+      StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
       val result = controller.addTeamMemberPage(organisationId1)(fakeRequest.withCSRFToken)
 
       status(result) shouldBe Status.SEE_OTHER
@@ -140,7 +142,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
 
   "addTeamMemberAction" should {
     "call add user with existing user details when they are not linked to the organisation and they exist in third party developer" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
       val userId = UserId(UUID.randomUUID())
       val userResponse = UserResponse(emailAddress, firstName, lastName, verified = true,  userId)
 
@@ -159,7 +161,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "display the createTeamMemberView when  when the user does not exist in third party developer" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
@@ -175,7 +177,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "return 400 and display the add team member page with errors when the collaborator already exists against the organisation" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*))
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
@@ -193,7 +195,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "display internal server error page when third party developer returns error" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*))
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
@@ -206,7 +208,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "call add team member via connector, then show Internal server error page when call fails" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
       val userId = UserId(UUID.randomUUID())
       val userResponse = UserResponse(emailAddress, firstName, lastName, verified = true,  userId)
 
@@ -224,7 +226,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "return 400 and display the add team member page with errors when the form is invalid" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       val result = controller.addTeamMemberAction(organisationId1)(createFakePostRequest("emailAddress" -> ""))
 
@@ -237,7 +239,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "return forbidden view when not authorised" in new Setup {
-      givenAUnsuccessfulLogin()
+      StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
       val result = controller.addTeamMemberAction(organisationId1)(createFakePostRequest("emailAddress" -> "dontcareAbout@this"))
 
       status(result) shouldBe Status.SEE_OTHER
@@ -247,7 +249,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
 
   "createTeamMemberAction" should {
     "call add teamMember and redirect to the organisation page when form is valid and call is successful" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockXmlServiceConnector.addTeamMember(eqTo(organisationId1), eqTo(emailAddress), eqTo(firstName), eqTo(lastName))(*[HeaderCarrier]))
         .thenReturn(Future.successful(AddCollaboratorSuccess(org1)))
@@ -260,7 +262,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "return 400 and display the create team member page with errors when the form is invalid" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       val result = controller.createTeamMemberAction(organisationId1)(createFakePostRequest("emailAddress" -> emailAddress, "firstName" -> "", "lastName" -> ""))
 
@@ -274,7 +276,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "return 500 when call to add team member fails" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockXmlServiceConnector.addTeamMember(eqTo(organisationId1), eqTo(emailAddress), eqTo(firstName), eqTo(lastName))(*[HeaderCarrier]))
         .thenReturn(Future.successful(AddCollaboratorFailure(UpstreamErrorResponse("", NOT_FOUND, NOT_FOUND))))
@@ -287,7 +289,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "return forbidden page when not authorised" in new Setup {
-      givenAUnsuccessfulLogin()
+      StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
 
       val result = controller.createTeamMemberAction(organisationId1)(createFakePostRequest("emailAddress" -> emailAddress))
 
@@ -299,7 +301,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
   "removeTeamMember" should {
 
     "return 200 and display the confirmation page when organisation is retrieved and call to remove team member is successful" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
@@ -317,7 +319,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "return 500 when organisation is retrieved but userId does not match any collaborator" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
@@ -331,7 +333,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "return 500 when connector returns 500" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
@@ -345,7 +347,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "return forbidden view when not authorised" in new Setup {
-      givenAUnsuccessfulLogin()
+      StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
       val result = controller.removeTeamMember(org1.organisationId, "")(createFakePostRequest("organisationname" -> org1.name))
 
       status(result) shouldBe Status.SEE_OTHER
@@ -354,7 +356,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
 
   "removeTeamMemberAction" should {
     "return 303 when form is valid, confirm is yes, organisation is retrieved and call to remove team member is successful" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*))
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
@@ -372,7 +374,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "return 303 when form is valid, confirm is no, organisation is retrieved and call to remove team member is successful" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
         createFakePostRequest("email" -> collaborator1.email, "confirm" -> "No"))
@@ -383,7 +385,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "return 400 when form is invalid (email missing),  organisation is retrieved and call to remove team member is successful" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
         createFakePostRequest("confirm" -> "No"))
@@ -393,7 +395,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "return 400 when form is invalid (email value missing),  organisation is retrieved and call to remove team member is successful" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
         createFakePostRequest("email" -> "", "confirm" -> "No"))
@@ -403,7 +405,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "return 400 when form is invalid (confirmation is missing),  organisation is retrieved and call to remove team member is successful" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
         createFakePostRequest("email" ->  collaborator1.email))
@@ -413,7 +415,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "return 500 when organisation is retrieved and call to remove team member fails" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
@@ -430,7 +432,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "return 500 when organisation is retrieved but userId does not match any collaborator" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
@@ -444,7 +446,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "return 500 when connector returns 500" in new Setup {
-      givenTheGKUserIsAuthorisedAndIsANormalUser()
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
@@ -458,7 +460,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     }
 
     "return forbidden view when not authorised" in new Setup {
-      givenAUnsuccessfulLogin()
+      StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
       val result =
         controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
           createFakePostRequest("email" -> collaborator1.email, "confirm" -> "Yes"))

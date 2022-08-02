@@ -25,19 +25,19 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.{CommonViewSpec, WithCSRFAddToken}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.RemoveTeamMemberView
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServiceMockModule
 
 class RemoveTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with ViewSpecHelpers {
 
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
     val removeTeamMemberView = app.injector.instanceOf[RemoveTeamMemberView]
-    val loggedInUser = LoggedInUser(Some("Test User"))
+    val loggedInUser = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
   }
 
   "Remove Team Member View" should {
 
     "render the remove team member page correctly when no errors" in new Setup {
-
       val page = removeTeamMemberView.render(RemoveTeamMemberConfirmationForm.form, org1.organisationId, collaborator1.userId, collaborator1.email, FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       getBackLink(document) should not be None
@@ -47,7 +47,6 @@ class RemoveTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with
     }
 
     "render the remove team member page correctly when errors exist" in new Setup {
-
       val page = removeTeamMemberView.render(RemoveTeamMemberConfirmationForm.form.withError("email", "team.member.remove.email.error.required"),
         org1.organisationId, collaborator1.userId, collaborator1.email, FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
 

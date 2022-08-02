@@ -17,19 +17,8 @@
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
-import uk.gov.hmrc.http.SessionKeys
 
 import java.{util => ju}
-
-object GatekeeperRole extends Enumeration {
-  type GatekeeperRole = Value
-  val USER,SUPERUSER,ADMIN = Value
-}
-
-object GatekeeperSessionKeys {
-  val LoggedInUser = "LoggedInUser"
-  val AuthToken = SessionKeys.authToken
-}
 
 case class OrganisationId(value: ju.UUID) extends AnyVal
 

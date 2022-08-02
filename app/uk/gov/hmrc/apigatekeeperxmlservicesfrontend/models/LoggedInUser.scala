@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models
 
+import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
+
 case class LoggedInUser(userFullName: Option[String])
 
 object LoggedInUser {

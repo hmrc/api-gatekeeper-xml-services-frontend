@@ -24,13 +24,14 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.SiteHeader
 
 import scala.collection.JavaConverters._
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServiceMockModule
 
 class SiteHeaderSpec extends CommonViewSpec {
 
   trait Setup {
     val mockAppConfig = mock[AppConfig]
     val siteHeader = app.injector.instanceOf[SiteHeader]
-    val loggedInUser = LoggedInUser(Some("Test User"))
+     val loggedInUser = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
 
     val apiGatekeeperUrl = "/api-gatekeeper"
 

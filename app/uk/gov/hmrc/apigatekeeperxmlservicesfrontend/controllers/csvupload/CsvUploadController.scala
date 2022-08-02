@@ -22,14 +22,11 @@ import play.api.data.Forms.{mapping, text}
 import play.api.mvc.Action
 import play.api.mvc.AnyContent
 import play.api.mvc.MessagesControllerComponents
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.AuthConnector
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.GatekeeperRole
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.services.CsvService
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.GatekeeperAuthWrapper
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationService
+import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.actions.GatekeeperStrideAuthorisationActions
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ErrorTemplate
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.{OrganisationCsvUploadView, UsersCsvUploadView}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
@@ -61,27 +58,25 @@ class CsvUploadController @Inject() (
     organisationCsvUploadView: OrganisationCsvUploadView,
     usersCsvUploadView: UsersCsvUploadView,
     errorTemplate: ErrorTemplate,
-    override val authConnector: AuthConnector,
-    val forbiddenView: ForbiddenView,
     val csvService: CsvService,
-    val xmlServicesConnector: XmlServicesConnector
-  )(implicit val ec: ExecutionContext,
-    appConfig: AppConfig)
+    val xmlServicesConnector: XmlServicesConnector,
+    val strideAuthorisationService: StrideAuthorisationService
+  )(implicit val ec: ExecutionContext)
     extends FrontendController(mcc)
-    with GatekeeperAuthWrapper
+    with GatekeeperStrideAuthorisationActions
     with Logging {
 
   val csvDataForm: Form[CsvData] = CsvData.form
 
-  def organisationPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  def organisationPage: Action[AnyContent] = anyStrideUserAction {
     implicit request => Future.successful(Ok(organisationCsvUploadView(csvDataForm)))
   }
 
-  def usersPage: Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  def usersPage: Action[AnyContent] = anyStrideUserAction {
     implicit request => Future.successful(Ok(usersCsvUploadView(csvDataForm)))
   }
 
-  def uploadUsersCsvAction(): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  def uploadUsersCsvAction(): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
       csvDataForm.bindFromRequest.fold(
         formWithErrors => {
@@ -106,7 +101,7 @@ class CsvUploadController @Inject() (
 
   }
 
-  def uploadOrganisationsCsvAction(): Action[AnyContent] = requiresAtLeast(GatekeeperRole.USER) {
+  def uploadOrganisationsCsvAction(): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
       csvDataForm.bindFromRequest.fold(
         formWithErrors => {

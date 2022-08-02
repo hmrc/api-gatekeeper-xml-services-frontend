@@ -25,6 +25,7 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.OrganisationCsvUploadView
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServiceMockModule
 
 
 class OrganisationCsvUploadViewSpec extends CommonViewSpec with WithCSRFAddToken {
@@ -32,7 +33,7 @@ class OrganisationCsvUploadViewSpec extends CommonViewSpec with WithCSRFAddToken
   trait Setup {
     val mockAppConfig = mock[AppConfig]
     val organisationCsvUploadView = app.injector.instanceOf[OrganisationCsvUploadView]
-    val loggedInUser = LoggedInUser(Some("Test User"))
+     val loggedInUser = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
   }
 
   "CSV Upload View" should {

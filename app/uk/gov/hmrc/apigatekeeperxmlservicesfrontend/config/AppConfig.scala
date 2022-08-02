@@ -27,17 +27,10 @@ trait AppConfig {
   def welshLanguageSupportEnabled: Boolean
 
   def appName: String
-  def authBaseUrl: String
-  def strideLoginUrl: String
 
   def gatekeeperSuccessUrl: String
 
-  def superUserRole: String
-  def userRole: String
-  def adminRole: String
-
   def apiGatekeeperUrl: String
-
 }
 
 @Singleton
@@ -46,15 +39,7 @@ class AppConfigImpl @Inject() (config: Configuration) extends ServicesConfig(con
   val welshLanguageSupportEnabled: Boolean = config.getOptional[Boolean]("features.welsh-language-support").getOrElse(false)
 
   val appName = getString("appName")
-  val authBaseUrl: String = baseUrl("auth")
-  val strideLoginUrl = s"${baseUrl("stride-auth-frontend")}/stride/sign-in"
 
   val gatekeeperSuccessUrl = getString("api-gatekeeper-frontend-success-url")
   val apiGatekeeperUrl = s"${baseUrl("api-gatekeeper-frontend")}/api-gatekeeper"
-
-  val superUserRole = getString("roles.super-user")
-  val userRole = getString("roles.user")
-  val adminRole = getString("roles.admin")
-
-
 }

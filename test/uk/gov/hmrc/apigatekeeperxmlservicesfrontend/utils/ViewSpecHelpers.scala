@@ -19,6 +19,7 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils
 import org.jsoup.nodes.Document
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServiceMockModule
 
 trait ViewSpecHelpers extends Matchers {
 
@@ -69,7 +70,7 @@ trait ViewSpecHelpers extends Matchers {
     document.getElementById("last-name-label").text() shouldBe "Last name"
     document.getElementById("organisationname-hidden").`val`() shouldBe expectedOrganisation
     document.getElementById("email-hidden").`val`() shouldBe expectedEmail
-    document.getElementById("logged-in-user").text() shouldBe "Test User"
+    document.getElementById("logged-in-user").text() shouldBe StrideAuthorisationServiceMockModule.StrideUserName
     Option(document.getElementById("continue-button")).isDefined shouldBe true
   }
 
@@ -78,7 +79,7 @@ trait ViewSpecHelpers extends Matchers {
     document.getElementById("organisation-name-label").text() shouldBe "Change organisation name"
     Option(document.getElementById("organisationName")).isDefined shouldBe true
     Option(document.getElementById("continue-button")).isDefined shouldBe true
-    document.getElementById("logged-in-user").text() shouldBe "Test User"
+    document.getElementById("logged-in-user").text() shouldBe StrideAuthorisationServiceMockModule.StrideUserName
   }
 
   def validateRemoveOrganisationPage(document: Document, organisationName: String) = {
@@ -86,7 +87,7 @@ trait ViewSpecHelpers extends Matchers {
     Option(document.getElementById("yes")).isDefined shouldBe true
     Option(document.getElementById("no")).isDefined shouldBe true
     Option(document.getElementById("continue-button")).isDefined shouldBe true
-    document.getElementById("logged-in-user").text() shouldBe "Test User"
+    document.getElementById("logged-in-user").text() shouldBe StrideAuthorisationServiceMockModule.StrideUserName
   }
 
   def validateRemoveOrganisationSuccessPage(document: Document, organisationName: String) = {
@@ -94,7 +95,7 @@ trait ViewSpecHelpers extends Matchers {
     document.getElementById("panel-heading").text() shouldBe s"You removed $organisationName"
     Option(document.getElementById("back-to-xml-link")).isDefined shouldBe true
     document.getElementById("back-to-xml-link").text() shouldBe "Back to XML organisations"
-    document.getElementById("logged-in-user").text() shouldBe "Test User"
+    document.getElementById("logged-in-user").text() shouldBe StrideAuthorisationServiceMockModule.StrideUserName
   }
 
   def validateAddTeamMemberPage(document: Document) = {
@@ -102,7 +103,7 @@ trait ViewSpecHelpers extends Matchers {
     document.getElementById("email-address-label").text() shouldBe "Email address"
     Option(document.getElementById("emailAddress")).isDefined shouldBe true
     Option(document.getElementById("continue-button")).isDefined shouldBe true
-    document.getElementById("logged-in-user").text() shouldBe "Test User"
+    document.getElementById("logged-in-user").text() shouldBe StrideAuthorisationServiceMockModule.StrideUserName
   }
 
   def validateCreateTeamMemberPage(document: Document, expectedEmail: String) = {
@@ -111,7 +112,7 @@ trait ViewSpecHelpers extends Matchers {
     document.getElementById("last-name-label").text() shouldBe "Last name"
     document.getElementById("email-hidden").`val`() shouldBe expectedEmail
     Option(document.getElementById("continue-button")).isDefined shouldBe true
-    document.getElementById("logged-in-user").text() shouldBe "Test User"
+    document.getElementById("logged-in-user").text() shouldBe StrideAuthorisationServiceMockModule.StrideUserName
   }
 
   def validateRemoveTeamMemberPage(document: Document) = {
@@ -119,13 +120,13 @@ trait ViewSpecHelpers extends Matchers {
     Option(document.getElementById("yes")).isDefined shouldBe true
     Option(document.getElementById("no")).isDefined shouldBe true
     Option(document.getElementById("continue-button")).isDefined shouldBe true
-    document.getElementById("logged-in-user").text() shouldBe "Test User"
+    document.getElementById("logged-in-user").text() shouldBe StrideAuthorisationServiceMockModule.StrideUserName
   }
 
   def validateManageTeamMembersPage(document: Document, organisation: Organisation) = {
     document.getElementById("org-name-caption").text() shouldBe organisation.name
     document.getElementById("team-member-heading").text() shouldBe "Manage team members"
-    document.getElementById("logged-in-user").text() shouldBe "Test User"
+    document.getElementById("logged-in-user").text() shouldBe StrideAuthorisationServiceMockModule.StrideUserName
 
     if (organisation.collaborators.nonEmpty) {
       document.getElementById("team-members-email-0").text() shouldBe organisation.collaborators.head.email
@@ -142,6 +143,6 @@ trait ViewSpecHelpers extends Matchers {
     document.getElementById("csv-data-input-label").text() shouldBe "Provide CSV input here please"
     Option(document.getElementById("csv-data-input")).isDefined shouldBe true
     Option(document.getElementById("upload-csv-button")).isDefined shouldBe true
-    document.getElementById("logged-in-user").text() shouldBe "Test User"
+    document.getElementById("logged-in-user").text() shouldBe StrideAuthorisationServiceMockModule.StrideUserName
   }
 }
