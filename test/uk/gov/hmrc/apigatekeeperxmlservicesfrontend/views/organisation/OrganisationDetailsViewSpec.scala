@@ -62,7 +62,7 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
       document.getElementById("user-services-1").text() shouldBe "xml api 1 xml api 3"
     }
 
-      "render the organisation details correctly and display the team member when not present" in new Setup {
+    "render the organisation details correctly and display the team member when not present" in new Setup {
 
       val page = organisationDetailsView.render(organisationWithCollaborators, List.empty, FakeRequest(), loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
