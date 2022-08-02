@@ -17,11 +17,12 @@
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
+@import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
 
 @this(layout: Layout)
 
 
-@(organisations: List[Organisation], showTable: Boolean = true, isVendorIdSearch: Boolean = true)(implicit request: Request[_],  loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages,
+@(organisations: List[Organisation], showTable: Boolean = true, isVendorIdSearch: Boolean = true)(implicit request: LoggedInRequest[_],  loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages,
 appConfig: AppConfig)
 
 @buildManageOrgPath(org: Organisation) = @{
@@ -81,27 +82,29 @@ uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationCont
 </div>
 }
 @if(showTable) {
-<table id="results-table" class="govuk-table">
-    <caption class="govuk-table__caption govuk-visually-hidden">Search results</caption>
-    <thead class="govuk-table__head">
-        <tr class="govuk-table__row">
-            <th id="vendor-head" scope="col" class="govuk-table__header govuk-!-width-one-quarter">Vendor ID</th>
-            <th id="organisation-head" scope="col" class="govuk-table__header">Organisation</th>
-        </tr>
-    </thead>
-    <tbody class="govuk-table__body">
-        @for(orgs <- organisations.zipWithIndex) { <tr class="govuk-table__row">
-            <th id="vendor-id-@orgs._2" scope="row" class="govuk-table__cell">@orgs._1.vendorId.value</th>
-            <td id="name-@orgs._2" class="govuk-table__cell">
-                <a id="manage-org-@orgs._2-link" href=@buildManageOrgPath(orgs._1)>@orgs._1.name</a>
-            </td>
+    <table id="results-table" class="govuk-table">
+        <caption class="govuk-table__caption govuk-visually-hidden">Search results</caption>
+        <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+                <th id="vendor-head" scope="col" class="govuk-table__header govuk-!-width-one-quarter">Vendor ID</th>
+                <th id="organisation-head" scope="col" class="govuk-table__header">Organisation</th>
             </tr>
-            }
-    </tbody>
-</table>
-<a id="add-organisation-link" href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsAddPage().url" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
-    Add organisation
-    </a>
+        </thead>
+        <tbody class="govuk-table__body">
+            @for(orgs <- organisations.zipWithIndex) { <tr class="govuk-table__row">
+                <th id="vendor-id-@orgs._2" scope="row" class="govuk-table__cell">@orgs._1.vendorId.value</th>
+                <td id="name-@orgs._2" class="govuk-table__cell">
+                    <a id="manage-org-@orgs._2-link" href=@buildManageOrgPath(orgs._1)>@orgs._1.name</a>
+                </td>
+                </tr>
+                }
+        </tbody>
+    </table>
+    @if(request.role.isUser) {
+        <a id="add-organisation-link" href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsAddPage().url" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+            Add organisation
+        </a>
+    }
 }
 
 }
