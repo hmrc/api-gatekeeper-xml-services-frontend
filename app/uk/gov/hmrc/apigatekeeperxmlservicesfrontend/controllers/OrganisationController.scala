@@ -38,6 +38,7 @@ import scala.concurrent.Future.successful
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
+import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.actions.GatekeeperAuthorisationActions
 
 object OrganisationController {
   val vendorIdParameterName = "vendor-id"
@@ -105,13 +106,14 @@ class OrganisationController @Inject() (
     organisationUpdateView: OrganisationUpdateView,
     organisationRemoveView: OrganisationRemoveView,
     organisationRemoveSuccessView: OrganisationRemoveSuccessView,
-    ldapAuthorisationService: LdapAuthorisationService,
+    val ldapAuthorisationService: LdapAuthorisationService,
     val strideAuthorisationService: StrideAuthorisationService,
     errorHandler: ErrorHandler,
     xmlServicesConnector: XmlServicesConnector,
     thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector)(implicit val ec: ExecutionContext, appConfig: AppConfig)
   extends FrontendController(mcc)
   with GatekeeperStrideAuthorisationActions
+  with GatekeeperAuthorisationActions
   with WithDefaultFormBinding {
 
   val addOrganisationForm: Form[AddOrganisationForm] = AddOrganisationForm.form
@@ -119,9 +121,37 @@ class OrganisationController @Inject() (
   val updateOrganisationDetailsForm: Form[UpdateOrganisationDetailsForm] = UpdateOrganisationDetailsForm.form
   val removeOrganisationConfirmationForm: Form[RemoveOrganisationConfirmationForm] = RemoveOrganisationConfirmationForm.form
 
-  val organisationsPage: Action[AnyContent] = anyStrideUserAction {
+  val organisationsPage: Action[AnyContent] = anyAuthenticatedUserAction {
     implicit request =>
       successful(Ok(organisationSearchView(List.empty, showTable = false)))
+  }
+
+  def organisationsSearchAction(searchType: String, searchText: Option[String]): Action[AnyContent] = anyAuthenticatedUserAction {
+    implicit request =>
+      def toVendorIdOrNone(txtVal: Option[String]): Option[VendorId] = {
+        txtVal.flatMap(x => Try(x.toLong).toOption.map(VendorId))
+      }
+
+      def isValidVendorId(txtVal: Option[String]): Boolean = {
+        if (txtVal.nonEmpty && txtVal.head.isEmpty) true
+        else toVendorIdOrNone(txtVal).nonEmpty
+      }
+
+      def handleResults(result: Either[Throwable, List[Organisation]], isVendorIdSearch: Boolean) = {
+        result match {
+          case Right(orgs: List[Organisation])                 => Ok(organisationSearchView(orgs, isVendorIdSearch = isVendorIdSearch))
+          case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) => Ok(organisationSearchView(List.empty, isVendorIdSearch = isVendorIdSearch))
+          case Left(_)                                         => InternalServerError(errorHandler.internalServerErrorTemplate)
+        }
+      }
+
+      searchType match {
+        case x: String if isValidVendorId(searchText) && (x == vendorIdParameterName) =>
+          xmlServicesConnector.findOrganisationsByParams(toVendorIdOrNone(searchText), None).map(handleResults(_, isVendorIdSearch = true))
+        case x: String if x == organisationNameParamName                              =>
+          xmlServicesConnector.findOrganisationsByParams(None, searchText).map(handleResults(_, isVendorIdSearch = false))
+        case _                                                                        => successful(Ok(organisationSearchView(List.empty)))
+      }
   }
 
   val organisationsAddPage: Action[AnyContent] = anyStrideUserAction {
@@ -171,7 +201,7 @@ class OrganisationController @Inject() (
       }
   }
 
-  def viewOrganisationPage(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
+  def viewOrganisationPage(organisationId: OrganisationId): Action[AnyContent] = anyAuthenticatedUserAction {
     implicit request =>
       (for {
         getOrganisationResult <- xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
@@ -251,34 +281,6 @@ class OrganisationController @Inject() (
           case Left(_)                  => Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
         }
 
-  }
-
-  def organisationsSearchAction(searchType: String, searchText: Option[String]): Action[AnyContent] = anyStrideUserAction {
-    implicit request =>
-      def toVendorIdOrNone(txtVal: Option[String]): Option[VendorId] = {
-        txtVal.flatMap(x => Try(x.toLong).toOption.map(VendorId))
-      }
-
-      def isValidVendorId(txtVal: Option[String]): Boolean = {
-        if (txtVal.nonEmpty && txtVal.head.isEmpty) true
-        else toVendorIdOrNone(txtVal).nonEmpty
-      }
-
-      def handleResults(result: Either[Throwable, List[Organisation]], isVendorIdSearch: Boolean) = {
-        result match {
-          case Right(orgs: List[Organisation])                 => Ok(organisationSearchView(orgs, isVendorIdSearch = isVendorIdSearch))
-          case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) => Ok(organisationSearchView(List.empty, isVendorIdSearch = isVendorIdSearch))
-          case Left(_)                                         => InternalServerError(errorHandler.internalServerErrorTemplate)
-        }
-      }
-
-      searchType match {
-        case x: String if isValidVendorId(searchText) && (x == vendorIdParameterName) =>
-          xmlServicesConnector.findOrganisationsByParams(toVendorIdOrNone(searchText), None).map(handleResults(_, isVendorIdSearch = true))
-        case x: String if x == organisationNameParamName                              =>
-          xmlServicesConnector.findOrganisationsByParams(None, searchText).map(handleResults(_, isVendorIdSearch = false))
-        case _                                                                        => successful(Ok(organisationSearchView(List.empty)))
-      }
   }
 
 }

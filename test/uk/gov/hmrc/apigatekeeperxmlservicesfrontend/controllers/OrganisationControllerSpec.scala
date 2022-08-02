@@ -85,14 +85,22 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
   }
 
   "GET /organisations" should {
-    "return 200" in new Setup {
+    "return 200 for Stride authorised user" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
+
+      validatePageIsRendered(controller.organisationsPage(fakeRequest))
+    }
+
+    "return 200 for LDAP User" in new Setup {
+      StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
+      LdapAuthorisationServiceMock.Auth.succeeds
 
       validatePageIsRendered(controller.organisationsPage(fakeRequest))
     }
 
     "return forbidden view" in new Setup {
       StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
+      LdapAuthorisationServiceMock.Auth.notAuthorised
       val result = controller.organisationsPage(fakeRequest)
 
       status(result) shouldBe Status.SEE_OTHER
@@ -206,8 +214,19 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       verifyNoMoreInteractions(mockXmlServiceConnector)
     }
 
+
+    "return view when LDAP" in new Setup {
+      StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
+      LdapAuthorisationServiceMock.Auth.succeeds
+      
+      val result = controller.organisationsSearchAction("unknown", Some(vendorId.toString))(organisationSearchRequest)
+
+      status(result) shouldBe Status.OK
+    }
+
     "return forbidden view" in new Setup {
       StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
+      LdapAuthorisationServiceMock.Auth.notAuthorised
 
       val result = controller.organisationsSearchAction("unknown", Some(vendorId.toString))(organisationSearchRequest)
 
@@ -302,6 +321,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
 
     "return forbidden view" in new Setup {
       StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
+      LdapAuthorisationServiceMock.Auth.notAuthorised
 
       val result = controller.viewOrganisationPage(org1.organisationId)(fakeRequest)
 

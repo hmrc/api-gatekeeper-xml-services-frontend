@@ -19,11 +19,12 @@
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationUser
 @import play.twirl.api.HtmlFormat
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
+@import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
 
 @this(layout: Layout)
 
 
-@(organisation: Organisation, users: List[OrganisationUser])(implicit request: Request[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
+@(organisation: Organisation, users: List[OrganisationUser])(implicit request: LoggedInRequest[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
 
 @emails() = @{
     if(users.nonEmpty) {
@@ -35,6 +36,7 @@
 @buildGatekeeperDeveloperUrl(user: OrganisationUser) = @{
     appConfig.apiGatekeeperUrl+"/developer?developerId="+user.userId.value
 }
+
 @combinedXMLPreferencesList() = @{
        users.flatMap(_.xmlApis).distinct.map(_.name).sorted.mkString("<br>")
 }
@@ -55,10 +57,12 @@
             @organisation.name
             </dd>
             <dd class="govuk-summary-list__actions">
-                <a href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.updateOrganisationsDetailsPage(organisation.organisationId).url" class="govuk-link--no-visited-state">
-                    Change
-                    <span class="govuk-visually-hidden"> name</span>
-                </a>
+                @if(request.role.isUser) {
+                    <a id="change-org-details-link" href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.updateOrganisationsDetailsPage(organisation.organisationId).url" class="govuk-link--no-visited-state">
+                        Change
+                        <span class="govuk-visually-hidden"> name</span>
+                    </a>
+                }
             </dd>
         </div>
         <div class="govuk-summary-list__row">
@@ -89,9 +93,11 @@
             <h2 class="govuk-heading-m govuk-!-margin-bottom-1">Team members</h2>
 
             <p class="govuk-body govuk-!-margin-bottom-3">
-                <a id="manage-team-members-link" href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.TeamMembersController.manageTeamMembers(organisation.organisationId).url" class="govuk-link--no-visited-state">
-                    Manage<span class="govuk-visually-hidden"> team members</span>
-                </a>
+                @if(request.role.isUser) {
+                    <a id="manage-team-members-link" href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.TeamMembersController.manageTeamMembers(organisation.organisationId).url" class="govuk-link--no-visited-state">
+                        Manage<span class="govuk-visually-hidden"> team members</span>
+                    </a>
+                }
             </p>
 
             <table class="govuk-table govuk-!-margin-bottom-7">
@@ -115,17 +121,18 @@
                 </tbody>
             </table>
 
-            <div class="govuk-button-group">
-                @if(emails.nonEmpty){
-                    <button id="copy-emails" onclick="copyToClipboard('@emails');" class="govuk-button" data-module="govuk-button">
-                        Copy email addresses to clipboard
-                    </button>
-                }
+            @if(request.role.isUser) {
+              <div class="govuk-button-group">
+                  @if(emails.nonEmpty){
+                      <button id="copy-emails" onclick="copyToClipboard('@emails');" class="govuk-button" data-module="govuk-button">
+                          Copy email addresses to clipboard
+                      </button>
+                  }
 
-                <a id="remove-organisation-button" href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.removeOrganisationPage(organisation.organisationId).url" role="button" draggable="false" class="govuk-button govuk-button--warning" data-module="govuk-button">
-                    Remove organisation</a>
-            </div>
-
+                  <a id="remove-organisation-button" href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.removeOrganisationPage(organisation.organisationId).url" role="button" draggable="false" class="govuk-button govuk-button--warning" data-module="govuk-button">
+                      Remove organisation</a>
+              </div>
+            }
         </div>
 
 

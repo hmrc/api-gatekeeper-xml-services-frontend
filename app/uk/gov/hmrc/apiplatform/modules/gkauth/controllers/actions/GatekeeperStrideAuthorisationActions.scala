@@ -102,5 +102,14 @@ trait GatekeeperAuthorisationActions {
       .value
     }
   }
+
+  def anyAuthenticatedUserAction(block: LoggedInRequest[_] => Future[Result]): Action[AnyContent] =  {
+    Action.async { implicit request =>
+      (
+        anyAuthenticatedUserRefiner
+      )
+      .invokeBlock(request, block)
+    }
+  }
 }
 // $COVERAGE-ON$

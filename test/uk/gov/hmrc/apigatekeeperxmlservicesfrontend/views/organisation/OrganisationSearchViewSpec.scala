@@ -27,15 +27,21 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationSearchView
 
 import scala.collection.JavaConverters._
-import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServiceMockModule
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.{LdapAuthorisationServiceMockModule, StrideAuthorisationServiceMockModule}
+import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.GatekeeperRoles
+import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
+import play.api.i18n.MessagesApi
+import play.api.mvc.MessagesRequest
 
 class OrganisationSearchViewSpec extends CommonViewSpec {
+
 
   trait Setup extends OrganisationTestData {
     val mockAppConfig = mock[AppConfig]
     val organisationSearchView = app.injector.instanceOf[OrganisationSearchView]
-     val loggedInUser = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
-
+    val loggedInUser = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
+    def loggedInRequest: LoggedInRequest[_]
+    
     def testRadioButton(document: Document, radioButtonId: String, isChecked: Boolean) = {
       withClue(s"radio button $radioButtonId test failed") {
         document.getElementById(radioButtonId)
@@ -53,7 +59,29 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
     }
   }
 
+  trait LdapAuth {
+    self : Setup =>
+      val loggedInRequest = new LoggedInRequest(name = Some(LdapAuthorisationServiceMockModule.LdapUserName), role = GatekeeperRoles.READ_ONLY, request = new MessagesRequest(FakeRequest("GET", "/"), mock[MessagesApi]))
+  }
+
+  trait StrideAuth {
+    self : Setup =>
+      val loggedInRequest = new LoggedInRequest(name = Some(StrideAuthorisationServiceMockModule.StrideUserName), role = GatekeeperRoles.USER, request = new MessagesRequest(FakeRequest("GET", "/"), mock[MessagesApi]))
+  }
+
   "Organisation Search View" should {
+
+    def validateAddOrganisationButton(isPresent: Boolean, document: Document) =  {
+      Option(document.getElementById("add-organisation-link")).isDefined shouldBe isPresent
+    }
+
+    def validateAddOrganisationButtonPresent(document: Document) = {
+      validateAddOrganisationButton(true, document)
+      document.getElementById("add-organisation-link").text shouldBe "Add organisation"
+      document.getElementById("add-organisation-link").attr("href") shouldBe "/api-gatekeeper-xml-services/organisations/add"
+    }
+
+    def validateAddOrganisationButtonAbsent(document: Document) = validateAddOrganisationButton(false, document)
 
     def validateOrganisationRow(rowId: Int, org: Organisation, document: Document) = {
       document.getElementById(s"vendor-id-$rowId").text() shouldBe org.vendorId.value.toString
@@ -61,8 +89,8 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
       document.getElementById(s"manage-org-$rowId-link").attr("href") shouldBe s"/api-gatekeeper-xml-services/organisations/${org.organisationId.value.toString}"
     }
 
-    "render page correctly on initial load when organisations list is empty" in new Setup {
-      val page: Html = organisationSearchView.render(List.empty, showTable = false, isVendorIdSearch = true, FakeRequest(), loggedInUser, messagesProvider.messages, mockAppConfig)
+    "render page correctly on initial load when organisations list is empty" in new Setup with StrideAuth {
+      val page: Html = organisationSearchView.render(List.empty, showTable = false, isVendorIdSearch = true, loggedInRequest, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       testStandardComponents(document)
       testRadioButton(document, "vendor-id-input", true)
@@ -78,8 +106,8 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
       Option(document.getElementById("add-organisation-link")).isDefined shouldBe false
     }
 
-    "render page correctly when organisations list is populated" in new Setup {
-      val page: Html = organisationSearchView.render(organisations, showTable = true, isVendorIdSearch = true, FakeRequest(), loggedInUser, messagesProvider.messages, mockAppConfig)
+    "render page correctly when organisations list is populated" in new Setup with StrideAuth {
+      val page: Html = organisationSearchView.render(organisations, showTable = true, isVendorIdSearch = true, loggedInRequest, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       testStandardComponents(document)
 
@@ -91,13 +119,12 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
       validateOrganisationRow(1, org2, document)
       validateOrganisationRow(2, org3, document)
 
-      Option(document.getElementById("add-organisation-link")).isDefined shouldBe true
-      document.getElementById("add-organisation-link").text shouldBe "Add organisation"
-      document.getElementById("add-organisation-link").attr("href") shouldBe "/api-gatekeeper-xml-services/organisations/add"
+
+      validateAddOrganisationButtonPresent(document)
     }
 
-    "render page correctly when organisations list is empty" in new Setup {
-      val page: Html = organisationSearchView.render(List.empty, showTable = true, isVendorIdSearch = false, FakeRequest(), loggedInUser, messagesProvider.messages, mockAppConfig)
+    "render page correctly when organisations list is empty" in new Setup with StrideAuth {
+      val page: Html = organisationSearchView.render(List.empty, showTable = true, isVendorIdSearch = false, loggedInRequest, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       testStandardComponents(document)
       testRadioButton(document, "vendor-id-input", false)
@@ -110,9 +137,16 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
       Option(document.getElementById("vendor-head")).isDefined shouldBe true
       Option(document.getElementById("organisation-head")).isDefined shouldBe true
 
-      Option(document.getElementById("add-organisation-link")).isDefined shouldBe true
-      document.getElementById("add-organisation-link").text shouldBe "Add organisation"
-      document.getElementById("add-organisation-link").attr("href") shouldBe "/api-gatekeeper-xml-services/organisations/add"
+      validateAddOrganisationButtonPresent(document)
+    }
+
+
+    "render page without add organisation button for LDAP" in new Setup with LdapAuth {
+      val page: Html = organisationSearchView.render(List.empty, showTable = true, isVendorIdSearch = false, loggedInRequest, loggedInUser, messagesProvider.messages, mockAppConfig)
+      val document: Document = Jsoup.parse(page.body)
+      testStandardComponents(document)
+
+      validateAddOrganisationButtonAbsent(document)
     }
   }
 }
