@@ -321,6 +321,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
 
     "return forbidden view" in new Setup {
       StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
+      LdapAuthorisationServiceMock.Auth.notAuthorised
 
       val result = controller.viewOrganisationPage(org1.organisationId)(fakeRequest)
 
