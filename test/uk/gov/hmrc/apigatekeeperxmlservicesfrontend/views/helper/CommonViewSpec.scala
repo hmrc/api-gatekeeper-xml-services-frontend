@@ -27,6 +27,13 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.MessagesControllerComponents
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.AsyncHmrcSpec
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.{LdapAuthorisationServiceMockModule, StrideAuthorisationServiceMockModule}
+import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.GatekeeperRoles
+import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
+import play.api.i18n.MessagesApi
+import play.api.mvc.MessagesRequest
+import play.api.test.FakeRequest
 
 trait CommonViewSpec extends AsyncHmrcSpec with GuiceOneAppPerSuite {
   val mcc = app.injector.instanceOf[MessagesControllerComponents]
@@ -42,5 +49,20 @@ trait CommonViewSpec extends AsyncHmrcSpec with GuiceOneAppPerSuite {
 
   def getBackLink(document: Document) ={
     Option(document.getElementById("backlink"))
+  }
+
+  trait BaseSetup {
+    def loggedInRequest: LoggedInRequest[_]
+    lazy val loggedInUser: LoggedInUser = LoggedInUser.fromRequest(loggedInRequest)
+  }
+
+  trait LdapAuth {
+    self : BaseSetup =>
+      val loggedInRequest = new LoggedInRequest(name = Some(LdapAuthorisationServiceMockModule.LdapUserName), role = GatekeeperRoles.READ_ONLY, request = new MessagesRequest(FakeRequest("GET", "/"), mock[MessagesApi]))
+  }
+
+  trait StrideAuth {
+    self : BaseSetup =>
+      val loggedInRequest = new LoggedInRequest(name = Some(StrideAuthorisationServiceMockModule.StrideUserName), role = GatekeeperRoles.USER, request = new MessagesRequest(FakeRequest("GET", "/"), mock[MessagesApi]))
   }
 }

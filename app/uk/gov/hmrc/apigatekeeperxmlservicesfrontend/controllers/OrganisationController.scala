@@ -201,7 +201,7 @@ class OrganisationController @Inject() (
       }
   }
 
-  def viewOrganisationPage(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
+  def viewOrganisationPage(organisationId: OrganisationId): Action[AnyContent] = anyAuthenticatedUserAction {
     implicit request =>
       (for {
         getOrganisationResult <- xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
