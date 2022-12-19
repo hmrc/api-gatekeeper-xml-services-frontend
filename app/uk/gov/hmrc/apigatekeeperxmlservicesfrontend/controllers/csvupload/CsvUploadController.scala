@@ -88,7 +88,7 @@ class CsvUploadController @Inject() (
               logger.info(s"Number of Users successfully parsed: ${users.size}")
 
               xmlServicesConnector.bulkAddUsers(users).map {
-                case Right(_)                       => Redirect(routes.CsvUploadController.usersPage())
+                case Right(_)                       => Redirect(routes.CsvUploadController.usersPage)
                 case Left(e: UpstreamErrorResponse) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", e.getMessage))
               }}
           } catch {
@@ -115,7 +115,7 @@ class CsvUploadController @Inject() (
             logger.info(s"About to persist Organisations, check api-platform-xml-services logs for progress")
 
             xmlServicesConnector.bulkAddOrganisations(organisations).map {
-              case Right(_)                       => Redirect(routes.CsvUploadController.organisationPage())
+              case Right(_)                       => Redirect(routes.CsvUploadController.organisationPage)
               case Left(e: UpstreamErrorResponse) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", e.getMessage))
             }
 

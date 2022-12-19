@@ -114,7 +114,7 @@ class OrganisationController @Inject() (
   extends FrontendController(mcc)
   with GatekeeperStrideAuthorisationActions
   with GatekeeperAuthorisationActions
-  with WithDefaultFormBinding {
+  with WithUnsafeDefaultFormBinding {
 
   val addOrganisationForm: Form[AddOrganisationForm] = AddOrganisationForm.form
   val addOrganisationWithNewUserForm: Form[AddOrganisationWithNewUserForm] = AddOrganisationWithNewUserForm.form
