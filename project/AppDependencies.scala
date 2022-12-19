@@ -24,6 +24,6 @@ object AppDependencies {
     "uk.gov.hmrc"             %% "bootstrap-test-play-28"             % bootstrapVersion,
     "org.mockito"             %% "mockito-scala-scalatest"            % "1.7.1",
     "org.jsoup"               %  "jsoup"                              % "1.13.1",
-    "com.vladsch.flexmark"    %  "flexmark-all"                       % "0.36.8"        
-  ).map(_ % "test, it")
+    "com.vladsch.flexmark"    %  "flexmark-all"                       % "0.36.8")
+    .map(_ % "test, it")
 }
