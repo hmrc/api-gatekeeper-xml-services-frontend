@@ -1,8 +1,19 @@
 
 # api-gatekeeper-xml-services-frontend
 
-This is a placeholder README.md for a new repository
+This service provides pages to search and perform crud operations on XML Organisations.
+It also provides pages to bulk upload XML Organisations and collaborators on those XML Organisations.
 
-### License
+## csvupload/organisations-page
 
-This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").
+An example csv for this is:
+VENDORID,NAME
+1,Organisation 1
+2,Organisation 2
+3,Organisation 3
+
+## csvupload/users-page
+
+An example csv for this is:
+EMAIL, FIRSTNAME, LASTNAME, SERVICES, VENDORIDS, DUPLICATENAMES
+hello@example.com,firstname,lastname,service1|service2,1|2,
