@@ -36,7 +36,7 @@ appConfig: AppConfig)
         Add organisation
     </h1>
     @helper.form(action =
-    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsAddAction()) {
+    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsAddAction) {
         @helper.CSRF.formField
     <div id="form-group" class="govuk-form-group @if(form.errors("organisationName").nonEmpty) {govuk-form-group--error}">
         <label id="organisation-name-label" class="govuk-label govuk-label--m" for="organisationName">
