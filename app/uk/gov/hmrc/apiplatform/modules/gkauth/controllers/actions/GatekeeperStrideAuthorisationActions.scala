@@ -39,8 +39,8 @@ trait GatekeeperStrideAuthorisationActions {
   def strideAuthorisationService: StrideAuthorisationService
 
   implicit def ec: ExecutionContext
-  
-  def gatekeeperRoleActionRefiner(minimumRoleRequired: GatekeeperStrideRole): ActionRefiner[MessagesRequest, LoggedInRequest] = 
+
+  def gatekeeperRoleActionRefiner(minimumRoleRequired: GatekeeperStrideRole): ActionRefiner[MessagesRequest, LoggedInRequest] =
     new ActionRefiner[MessagesRequest, LoggedInRequest] {
       def executionContext = ec
 
@@ -49,7 +49,7 @@ trait GatekeeperStrideAuthorisationActions {
       }
     }
 
- private def gatekeeperRoleAction(minimumRoleRequired: GatekeeperStrideRole)(block: LoggedInRequest[_] => Future[Result]): Action[AnyContent] =
+  private def gatekeeperRoleAction(minimumRoleRequired: GatekeeperStrideRole)(block: LoggedInRequest[_] => Future[Result]): Action[AnyContent] =
     Action.async { implicit request =>
       gatekeeperRoleActionRefiner(minimumRoleRequired).invokeBlock(request, block)
     }
@@ -72,43 +72,43 @@ trait GatekeeperStrideAuthorisationActions {
 // $COVERAGE-OFF$
 trait GatekeeperAuthorisationActions {
   self: FrontendBaseController with GatekeeperStrideAuthorisationActions =>
-    
+
   def ldapAuthorisationService: LdapAuthorisationService
-    
+
   val anyAuthenticatedUserRefiner = new ActionRefiner[MessagesRequest, LoggedInRequest] {
 
     override def executionContext = ec
 
-    override protected def refine[A](msgRequest: MessagesRequest[A]): Future[Either[Result,LoggedInRequest[A]]] = {
-      type FERLIR = Future[Either[Result,LoggedInRequest[A]]]
+    override protected def refine[A](msgRequest: MessagesRequest[A]): Future[Either[Result, LoggedInRequest[A]]] = {
+      type FERLIR = Future[Either[Result, LoggedInRequest[A]]]
 
-      def refineLdap = 
+      def refineLdap =
         ldapAuthorisationService.refineLdap(msgRequest)
-          .recover { 
-            case NonFatal(_) => Left(()) 
+          .recover {
+            case NonFatal(_) => Left(())
           }
-      
+
       def refineStride: FERLIR =
         strideAuthorisationService.refineStride(GatekeeperRoles.USER)(msgRequest)
-          .recover { 
-            case NonFatal(_) => Left(Unauthorized("")) 
+          .recover {
+            case NonFatal(_) => Left(Unauthorized(""))
           }
 
       import cats.implicits._
       import cats.data.EitherT
-      EitherT(refineStride).leftFlatMap { strideFailureResult => 
+      EitherT(refineStride).leftFlatMap { strideFailureResult =>
         EitherT(refineLdap).leftMap(_ => strideFailureResult)
       }
-      .value
+        .value
     }
   }
 
-  def anyAuthenticatedUserAction(block: LoggedInRequest[_] => Future[Result]): Action[AnyContent] =  {
+  def anyAuthenticatedUserAction(block: LoggedInRequest[_] => Future[Result]): Action[AnyContent] = {
     Action.async { implicit request =>
       (
         anyAuthenticatedUserRefiner
       )
-      .invokeBlock(request, block)
+        .invokeBlock(request, block)
     }
   }
 }

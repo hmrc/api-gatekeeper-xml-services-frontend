@@ -27,21 +27,20 @@ case class ParsedUser(email: String, firstName: String, lastName: String, servic
 
 sealed trait CreateOrganisationResult
 case class CreateOrganisationSuccess(organisation: Organisation) extends CreateOrganisationResult
-case class CreateOrganisationFailure(error: Throwable) extends CreateOrganisationResult
+case class CreateOrganisationFailure(error: Throwable)           extends CreateOrganisationResult
 
 sealed trait UpdateOrganisationDetailsResult
 case class UpdateOrganisationDetailsSuccess(organisation: Organisation) extends UpdateOrganisationDetailsResult
-case class UpdateOrganisationDetailsFailure(error: Throwable) extends UpdateOrganisationDetailsResult
-
+case class UpdateOrganisationDetailsFailure(error: Throwable)           extends UpdateOrganisationDetailsResult
 
 sealed trait AddCollaboratorResult
 case class AddCollaboratorSuccess(organisation: Organisation) extends AddCollaboratorResult
-case class AddCollaboratorFailure(error: Throwable) extends AddCollaboratorResult
+case class AddCollaboratorFailure(error: Throwable)           extends AddCollaboratorResult
 
 sealed trait RemoveCollaboratorResult
 case class RemoveCollaboratorSuccess(organisation: Organisation) extends RemoveCollaboratorResult
-case class RemoveCollaboratorFailure(error: Throwable) extends RemoveCollaboratorResult
+case class RemoveCollaboratorFailure(error: Throwable)           extends RemoveCollaboratorResult
 
 sealed trait ParseOrganisationCsvFailureResult
-case class InvalidNumberOfColumnsInCsvResult(error: Throwable) extends ParseOrganisationCsvFailureResult
+case class InvalidNumberOfColumnsInCsvResult(error: Throwable)  extends ParseOrganisationCsvFailureResult
 case class OrganisationCsvParseFailurerResult(error: Throwable) extends ParseOrganisationCsvFailureResult

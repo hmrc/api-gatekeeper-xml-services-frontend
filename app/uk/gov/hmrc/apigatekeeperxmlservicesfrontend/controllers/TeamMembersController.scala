@@ -52,14 +52,15 @@ object TeamMembersController {
 
   }
 
-  case class CreateAndAddTeamMemberForm(emailAddress: String , firstName: String, lastName:String)
+  case class CreateAndAddTeamMemberForm(emailAddress: String, firstName: String, lastName: String)
 
   object CreateAndAddTeamMemberForm {
+
     val form = Form(
       mapping(
         "emailAddress" -> emailValidator(),
-        "firstName" -> text.verifying("firstname.error.required", x => x.trim.nonEmpty),
-        "lastName" ->  text.verifying("lastname.error.required", x => x.trim.nonEmpty)
+        "firstName"    -> text.verifying("firstname.error.required", x => x.trim.nonEmpty),
+        "lastName"     -> text.verifying("lastname.error.required", x => x.trim.nonEmpty)
       )(CreateAndAddTeamMemberForm.apply)(CreateAndAddTeamMemberForm.unapply)
     )
   }
@@ -67,9 +68,10 @@ object TeamMembersController {
   final case class RemoveTeamMemberConfirmationForm(email: String, confirm: Option[String] = Some(""))
 
   object RemoveTeamMemberConfirmationForm {
+
     val form: Form[RemoveTeamMemberConfirmationForm] = Form(
       mapping(
-        "email" ->  emailValidator(),
+        "email"   -> emailValidator(),
         "confirm" -> optional(text).verifying("team.member.error.confirmation.no.choice.field", _.isDefined)
       )(RemoveTeamMemberConfirmationForm.apply)(RemoveTeamMemberConfirmationForm.unapply)
     )
@@ -77,32 +79,35 @@ object TeamMembersController {
 
 }
 
-class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
-                                      manageTeamMembersView: ManageTeamMembersView,
-                                      addTeamMemberView: AddTeamMemberView,
-                                      createTeamMemberView: CreateTeamMemberView,
-                                      removeTeamMemberView: RemoveTeamMemberView,
-                                      errorHandler: ErrorHandler,
-                                      xmlServicesConnector: XmlServicesConnector,
-                                      thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector,
-                                      ldapAuthorisationService: LdapAuthorisationService,
-                                      val strideAuthorisationService: StrideAuthorisationService
-                                     )(implicit val ec: ExecutionContext,
-                                       appConfig: AppConfig)
-  extends FrontendController(mcc) with GatekeeperStrideAuthorisationActions with Logging {
+class TeamMembersController @Inject() (
+    mcc: MessagesControllerComponents,
+    manageTeamMembersView: ManageTeamMembersView,
+    addTeamMemberView: AddTeamMemberView,
+    createTeamMemberView: CreateTeamMemberView,
+    removeTeamMemberView: RemoveTeamMemberView,
+    errorHandler: ErrorHandler,
+    xmlServicesConnector: XmlServicesConnector,
+    thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector,
+    ldapAuthorisationService: LdapAuthorisationService,
+    val strideAuthorisationService: StrideAuthorisationService
+  )(implicit val ec: ExecutionContext,
+    appConfig: AppConfig
+  ) extends FrontendController(mcc) with GatekeeperStrideAuthorisationActions with Logging {
 
-  val addTeamMemberForm: Form[AddTeamMemberForm] = AddTeamMemberForm.form
+  val addTeamMemberForm: Form[AddTeamMemberForm]                   = AddTeamMemberForm.form
   val createAndAddTeamMemberForm: Form[CreateAndAddTeamMemberForm] = CreateAndAddTeamMemberForm.form
-  val confirmRemoveForm: Form[RemoveTeamMemberConfirmationForm] = RemoveTeamMemberConfirmationForm.form
+  val confirmRemoveForm: Form[RemoveTeamMemberConfirmationForm]    = RemoveTeamMemberConfirmationForm.form
 
   def manageTeamMembers(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
-    implicit request => {
-      xmlServicesConnector.getOrganisationByOrganisationId(organisationId).map {
-        case Right(org: Organisation) => Ok(manageTeamMembersView(org))
-        case Left(error: Throwable) => logger.info(s"manageTeamMembers failed getting organisation for ${organisationId.value}", error)
-          InternalServerError(errorHandler.internalServerErrorTemplate)
+    implicit request =>
+      {
+        xmlServicesConnector.getOrganisationByOrganisationId(organisationId).map {
+          case Right(org: Organisation) => Ok(manageTeamMembersView(org))
+          case Left(error: Throwable)   =>
+            logger.info(s"manageTeamMembers failed getting organisation for ${organisationId.value}", error)
+            InternalServerError(errorHandler.internalServerErrorTemplate)
+        }
       }
-    }
   }
 
   def addTeamMemberPage(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
@@ -111,12 +116,11 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
 
   def addTeamMemberAction(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
-
       def handleGetUsersFromTPD(teamMemberAddData: AddTeamMemberForm) = {
         thirdPartyDeveloperConnector.getByEmails(List(teamMemberAddData.emailAddress)).flatMap {
-          case Right(Nil) => successful(Ok(createTeamMemberView(createAndAddTeamMemberForm, organisationId, teamMemberAddData.emailAddress)))
+          case Right(Nil)                       => successful(Ok(createTeamMemberView(createAndAddTeamMemberForm, organisationId, teamMemberAddData.emailAddress)))
           case Right(users: List[UserResponse]) => addOrCreateTeamMember(organisationId, users.head.email, users.head.firstName, users.head.lastName)
-          case Left(error: Throwable) =>
+          case Left(error: Throwable)           =>
             logger.info(s"addTeamMemberAction failed for ${organisationId.value}", error)
             successful(InternalServerError(errorHandler.internalServerErrorTemplate))
         }
@@ -128,9 +132,9 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
           getCollaboratorByEmailAddressAndOrganisationId(organisationId, teamMemberAddData.emailAddress).flatMap {
             case Some(user: Collaborator) =>
               logger.info(s"error in addOrCreateTeamMember for organisation ${organisationId.value} duplicate collaborator ${user.userId}")
-              val formWithError= AddTeamMemberForm.form.fill(teamMemberAddData).withError("emailAddress", "team.member.error.emailAddress.already.exists.field")
+              val formWithError = AddTeamMemberForm.form.fill(teamMemberAddData).withError("emailAddress", "team.member.error.emailAddress.already.exists.field")
               successful(BadRequest(addTeamMemberView(formWithError, organisationId)))
-            case None => handleGetUsersFromTPD(teamMemberAddData)
+            case None                     => handleGetUsersFromTPD(teamMemberAddData)
           }
         }
       )
@@ -143,16 +147,23 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
         formWithErrors => {
           logger.info(s"createTeamMemberAction invalid form provided for ${organisationId.value}")
           successful(BadRequest(createTeamMemberView(formWithErrors, organisationId, "")))
-        }, formData => addOrCreateTeamMember(organisationId, formData.emailAddress, formData.firstName, formData.lastName)
+        },
+        formData => addOrCreateTeamMember(organisationId, formData.emailAddress, formData.firstName, formData.lastName)
       )
   }
 
-  private def addOrCreateTeamMember(organisationId: OrganisationId, emailAddress: String, firstname: String, lastname: String)
-                                   (implicit hc: HeaderCarrier, request: LoggedInRequest[_]): Future[Result] = {
+  private def addOrCreateTeamMember(
+      organisationId: OrganisationId,
+      emailAddress: String,
+      firstname: String,
+      lastname: String
+    )(implicit hc: HeaderCarrier,
+      request: LoggedInRequest[_]
+    ): Future[Result] = {
     xmlServicesConnector
       .addTeamMember(organisationId, emailAddress, firstname, lastname)
       .map {
-        case AddCollaboratorSuccess(x: Organisation) =>
+        case AddCollaboratorSuccess(x: Organisation)  =>
           Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.TeamMembersController.manageTeamMembers(x.organisationId))
         case AddCollaboratorFailure(error: Throwable) =>
           logger.info(s"error in addOrCreateTeamMember attempting to add team member to ${organisationId.value}", error)
@@ -161,30 +172,32 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
   }
 
   def removeTeamMember(organisationId: OrganisationId, userId: String): Action[AnyContent] = anyStrideUserAction {
-    implicit request => {
-      getCollaboratorByUserIdAndOrganisationId(organisationId, userId).flatMap {
-        case Some(collaborator: Collaborator) =>
-          successful(Ok(removeTeamMemberView(RemoveTeamMemberConfirmationForm.form, organisationId, userId, collaborator.email)))
-        case _ =>
-          logger.info(s"getCollaboratorByUserIdAndOrganisationId failed for orgId:${organisationId.value} & userId: $userId ")
-          successful(InternalServerError(errorHandler.internalServerErrorTemplate))
+    implicit request =>
+      {
+        getCollaboratorByUserIdAndOrganisationId(organisationId, userId).flatMap {
+          case Some(collaborator: Collaborator) =>
+            successful(Ok(removeTeamMemberView(RemoveTeamMemberConfirmationForm.form, organisationId, userId, collaborator.email)))
+          case _                                =>
+            logger.info(s"getCollaboratorByUserIdAndOrganisationId failed for orgId:${organisationId.value} & userId: $userId ")
+            successful(InternalServerError(errorHandler.internalServerErrorTemplate))
+        }
       }
-    }
   }
 
   def removeTeamMemberAction(organisationId: OrganisationId, userId: String): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
-
       def handleRemoveTeamMember(): Future[Result] = {
         getCollaboratorByUserIdAndOrganisationId(organisationId, userId).flatMap {
           case Some(collaborator: Collaborator) =>
             xmlServicesConnector.removeTeamMember(organisationId, collaborator.email, request.name.getOrElse("Unknown Name"))
               .map {
                 case RemoveCollaboratorSuccess(_) => Redirect(routes.TeamMembersController.manageTeamMembers(organisationId).url, SEE_OTHER)
-                case _ => logger.info(s"removeTeamMemberAction connector failed for  orgId:${organisationId.value} & userId: $userId ")
+                case _                            =>
+                  logger.info(s"removeTeamMemberAction connector failed for  orgId:${organisationId.value} & userId: $userId ")
                   InternalServerError(errorHandler.internalServerErrorTemplate)
               }
-          case _ => logger.info(s"removeTeamMemberAction: getCollaboratorByUserIdAndOrganisationId failed for  orgId:${organisationId.value} & userId: $userId ")
+          case _                                =>
+            logger.info(s"removeTeamMemberAction: getCollaboratorByUserIdAndOrganisationId failed for  orgId:${organisationId.value} & userId: $userId ")
             successful(InternalServerError(errorHandler.internalServerErrorTemplate))
         }
       }
@@ -192,7 +205,7 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
       def handleValidForm(form: RemoveTeamMemberConfirmationForm): Future[Result] = {
         form.confirm match {
           case Some("Yes") => handleRemoveTeamMember()
-          case _ => successful(Redirect(routes.OrganisationController.viewOrganisationPage(organisationId).url))
+          case _           => successful(Redirect(routes.OrganisationController.viewOrganisationPage(organisationId).url))
         }
       }
 
@@ -202,22 +215,22 @@ class TeamMembersController @Inject()(mcc: MessagesControllerComponents,
       RemoveTeamMemberConfirmationForm.form.bindFromRequest.fold(handleInvalidForm, handleValidForm)
   }
 
-  private def getCollaboratorByUserIdAndOrganisationId(organisationId: OrganisationId, userId: String)
-                                                      (implicit hc: HeaderCarrier): Future[Option[Collaborator]] = {
+  private def getCollaboratorByUserIdAndOrganisationId(organisationId: OrganisationId, userId: String)(implicit hc: HeaderCarrier): Future[Option[Collaborator]] = {
     xmlServicesConnector.getOrganisationByOrganisationId(organisationId).map {
       case Right(organisation: Organisation) =>
         organisation.collaborators.find(_.userId.equalsIgnoreCase(userId))
-      case Left(error: Throwable) => logger.error(s"getOrganisationByOrganisationId failed for orgId:${organisationId.value}", error)
+      case Left(error: Throwable)            =>
+        logger.error(s"getOrganisationByOrganisationId failed for orgId:${organisationId.value}", error)
         None
     }
   }
 
-  private def getCollaboratorByEmailAddressAndOrganisationId(organisationId: OrganisationId, emailAddress: String)
-                                                            (implicit hc: HeaderCarrier): Future[Option[Collaborator]] = {
+  private def getCollaboratorByEmailAddressAndOrganisationId(organisationId: OrganisationId, emailAddress: String)(implicit hc: HeaderCarrier): Future[Option[Collaborator]] = {
     xmlServicesConnector.getOrganisationByOrganisationId(organisationId).map {
       case Right(organisation: Organisation) =>
         organisation.collaborators.find(_.email.equalsIgnoreCase(emailAddress.trim))
-      case Left(error: Throwable) => logger.error(s"getCollaboratorByEmailAddressAndOrganisationId failed for orgId:${organisationId.value}", error)
+      case Left(error: Throwable)            =>
+        logger.error(s"getCollaboratorByEmailAddressAndOrganisationId failed for orgId:${organisationId.value}", error)
         None
     }
   }

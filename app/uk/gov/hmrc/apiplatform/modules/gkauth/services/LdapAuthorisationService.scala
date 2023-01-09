@@ -26,7 +26,7 @@ import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
 import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.GatekeeperRoles
 import uk.gov.hmrc.internalauth.client._
 import scala.concurrent.ExecutionContext
-import javax.inject.{Singleton, Inject}
+import javax.inject.{Inject, Singleton}
 import play.api.Logging
 
 @Singleton
@@ -44,11 +44,11 @@ class LdapAuthorisationService @Inject() (auth: FrontendAuthComponents)(implicit
     })(authorization => {
       auth.authConnector.authenticate(predicate = None, Retrieval.username ~ Retrieval.hasPredicate(LdapAuthorisationPredicate.gatekeeperReadPermission))
         .map {
-          case (name ~ true) => Right(new LoggedInRequest(Some(name.value), GatekeeperRoles.READ_ONLY, msgRequest)) 
-          case (name ~ false) => 
+          case (name ~ true)  => Right(new LoggedInRequest(Some(name.value), GatekeeperRoles.READ_ONLY, msgRequest))
+          case (name ~ false) =>
             logger.debug("No LDAP predicate matched")
             notAuthenticatedOrAuthorized
-          case _ => 
+          case _              =>
             logger.debug("LDAP Authenticate failed to find user")
             notAuthenticatedOrAuthorized
         }

@@ -41,5 +41,5 @@ class AppConfigImpl @Inject() (config: Configuration) extends ServicesConfig(con
   val appName = getString("appName")
 
   val gatekeeperSuccessUrl = getString("api-gatekeeper-frontend-success-url")
-  val apiGatekeeperUrl = s"${baseUrl("api-gatekeeper-frontend")}/api-gatekeeper"
+  val apiGatekeeperUrl     = s"${baseUrl("api-gatekeeper-frontend")}/api-gatekeeper"
 }

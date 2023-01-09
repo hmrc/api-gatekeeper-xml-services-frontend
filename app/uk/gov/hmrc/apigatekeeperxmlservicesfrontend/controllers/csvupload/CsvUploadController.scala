@@ -43,6 +43,7 @@ object CsvUploadController {
   case class CsvData(csv: String)
 
   object CsvData {
+
     val form = Form(
       mapping(
         "csv-data-input" -> text.verifying("csvdata.error.required", _.nonEmpty)
@@ -50,7 +51,6 @@ object CsvUploadController {
     )
   }
 }
-
 
 @Singleton
 class CsvUploadController @Inject() (
@@ -61,8 +61,8 @@ class CsvUploadController @Inject() (
     val csvService: CsvService,
     val xmlServicesConnector: XmlServicesConnector,
     val strideAuthorisationService: StrideAuthorisationService
-  )(implicit val ec: ExecutionContext)
-    extends FrontendController(mcc)
+  )(implicit val ec: ExecutionContext
+  ) extends FrontendController(mcc)
     with GatekeeperStrideAuthorisationActions
     with Logging {
 
@@ -90,7 +90,8 @@ class CsvUploadController @Inject() (
               xmlServicesConnector.bulkAddUsers(users).map {
                 case Right(_)                       => Redirect(routes.CsvUploadController.usersPage)
                 case Left(e: UpstreamErrorResponse) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", e.getMessage))
-              }}
+              }
+            }
           } catch {
             case exception: Throwable =>
               logger.error("Error during upload", exception)

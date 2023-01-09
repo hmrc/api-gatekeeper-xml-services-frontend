@@ -25,7 +25,7 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.HandleForbiddenW
 class ConfigurationModule extends Module {
 
   override def bindings(environment: Environment, configuration: Configuration) = {
-    Seq (
+    Seq(
       bind[XmlServicesConnector.Config].toProvider[XmlServicesConnectorProvider],
       bind[ThirdPartyDeveloperConnector.Config].toProvider[ThirdPartyDeveloperConnectorProvider],
       bind[ForbiddenHandler].to(classOf[HandleForbiddenWithView])

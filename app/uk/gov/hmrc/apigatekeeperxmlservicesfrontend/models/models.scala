@@ -34,4 +34,4 @@ case class ServiceName(value: String) extends AnyVal
 
 case class XmlApi(name: String, serviceName: ServiceName, context: String, description: String, categories: Option[Seq[ApiCategory]] = None)
 
-case class OrganisationUser(organisationId: OrganisationId, userId: UserId, email: String, firstName:String, lastName: String, xmlApis: List[XmlApi])
+case class OrganisationUser(organisationId: OrganisationId, userId: UserId, email: String, firstName: String, lastName: String, xmlApis: List[XmlApi])

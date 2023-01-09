@@ -25,6 +25,6 @@ import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.actions.ForbiddenHandl
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
 
 @Singleton
-class HandleForbiddenWithView @Inject()(forbiddenView: ForbiddenView) extends ForbiddenHandler {
+class HandleForbiddenWithView @Inject() (forbiddenView: ForbiddenView) extends ForbiddenHandler {
   def handle(m: MessagesRequest[_]) = Forbidden(forbiddenView()(m, m.messages))
 }

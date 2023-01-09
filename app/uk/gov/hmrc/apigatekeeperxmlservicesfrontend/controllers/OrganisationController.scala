@@ -41,7 +41,7 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.U
 import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.actions.GatekeeperAuthorisationActions
 
 object OrganisationController {
-  val vendorIdParameterName = "vendor-id"
+  val vendorIdParameterName     = "vendor-id"
   val organisationNameParamName = "organisation-name"
 
   case class AddOrganisationForm(organisationName: String, emailAddress: String)
@@ -51,7 +51,7 @@ object OrganisationController {
     val form = Form(
       mapping(
         "organisationName" -> text.verifying(error = "organisationname.error.required", x => x.trim.nonEmpty),
-        "emailAddress" -> emailValidator()
+        "emailAddress"     -> emailValidator()
       )(AddOrganisationForm.apply)(AddOrganisationForm.unapply)
     )
 
@@ -64,9 +64,9 @@ object OrganisationController {
     val form = Form(
       mapping(
         "organisationName" -> text.verifying(error = "organisationname.error.required", x => x.trim.nonEmpty),
-        "emailAddress" -> emailValidator(),
-        "firstName" -> text.verifying("firstname.error.required", x => x.trim.nonEmpty),
-        "lastName" -> text.verifying("lastname.error.required", x => x.trim.nonEmpty)
+        "emailAddress"     -> emailValidator(),
+        "firstName"        -> text.verifying("firstname.error.required", x => x.trim.nonEmpty),
+        "lastName"         -> text.verifying("lastname.error.required", x => x.trim.nonEmpty)
       )(AddOrganisationWithNewUserForm.apply)(AddOrganisationWithNewUserForm.unapply)
     )
 
@@ -110,15 +110,17 @@ class OrganisationController @Inject() (
     val strideAuthorisationService: StrideAuthorisationService,
     errorHandler: ErrorHandler,
     xmlServicesConnector: XmlServicesConnector,
-    thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector)(implicit val ec: ExecutionContext, appConfig: AppConfig)
-  extends FrontendController(mcc)
-  with GatekeeperStrideAuthorisationActions
-  with GatekeeperAuthorisationActions
-  with WithUnsafeDefaultFormBinding {
+    thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector
+  )(implicit val ec: ExecutionContext,
+    appConfig: AppConfig
+  ) extends FrontendController(mcc)
+    with GatekeeperStrideAuthorisationActions
+    with GatekeeperAuthorisationActions
+    with WithUnsafeDefaultFormBinding {
 
-  val addOrganisationForm: Form[AddOrganisationForm] = AddOrganisationForm.form
-  val addOrganisationWithNewUserForm: Form[AddOrganisationWithNewUserForm] = AddOrganisationWithNewUserForm.form
-  val updateOrganisationDetailsForm: Form[UpdateOrganisationDetailsForm] = UpdateOrganisationDetailsForm.form
+  val addOrganisationForm: Form[AddOrganisationForm]                               = AddOrganisationForm.form
+  val addOrganisationWithNewUserForm: Form[AddOrganisationWithNewUserForm]         = AddOrganisationWithNewUserForm.form
+  val updateOrganisationDetailsForm: Form[UpdateOrganisationDetailsForm]           = UpdateOrganisationDetailsForm.form
   val removeOrganisationConfirmationForm: Form[RemoveOrganisationConfirmationForm] = RemoveOrganisationConfirmationForm.form
 
   val organisationsPage: Action[AnyContent] = anyAuthenticatedUserAction {
@@ -205,7 +207,7 @@ class OrganisationController @Inject() (
     implicit request =>
       (for {
         getOrganisationResult <- xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
-        getUsersResult <- xmlServicesConnector.getOrganisationUsersByOrganisationId(organisationId)
+        getUsersResult        <- xmlServicesConnector.getOrganisationUsersByOrganisationId(organisationId)
       } yield (getOrganisationResult, getUsersResult)).map {
         case (Right(org: Organisation), Right(users: List[OrganisationUser])) => Ok(organisationDetailsView(org, users))
 
@@ -218,30 +220,30 @@ class OrganisationController @Inject() (
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
         .map {
           case Right(organisation: Organisation) => Ok(organisationUpdateView(updateOrganisationDetailsForm, organisation))
-          case Left(_)                => InternalServerError(errorHandler.internalServerErrorTemplate)
+          case Left(_)                           => InternalServerError(errorHandler.internalServerErrorTemplate)
         }
   }
 
   def updateOrganisationsDetailsAction(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
 
-     def handleFormAction(organisation: Organisation)(implicit request: LoggedInRequest[_]): Future[Result] ={
-       updateOrganisationDetailsForm.bindFromRequest.fold(
-         formWithErrors => successful(BadRequest(organisationUpdateView(formWithErrors, organisation))),
-         formData =>
-           xmlServicesConnector.updateOrganisationDetails(organisationId, formData.organisationName).map {
-             case UpdateOrganisationDetailsSuccess(_) =>
-               Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(organisationId))
-             case _                                   =>
-               InternalServerError(errorHandler.internalServerErrorTemplate)
-           }
-       )
-     }
+    def handleFormAction(organisation: Organisation)(implicit request: LoggedInRequest[_]): Future[Result] = {
+      updateOrganisationDetailsForm.bindFromRequest.fold(
+        formWithErrors => successful(BadRequest(organisationUpdateView(formWithErrors, organisation))),
+        formData =>
+          xmlServicesConnector.updateOrganisationDetails(organisationId, formData.organisationName).map {
+            case UpdateOrganisationDetailsSuccess(_) =>
+              Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(organisationId))
+            case _                                   =>
+              InternalServerError(errorHandler.internalServerErrorTemplate)
+          }
+      )
+    }
 
     implicit request =>
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
         .flatMap {
           case Right(organisation: Organisation) => handleFormAction(organisation)
-          case Left(_)                => Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
+          case Left(_)                           => Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
         }
 
   }

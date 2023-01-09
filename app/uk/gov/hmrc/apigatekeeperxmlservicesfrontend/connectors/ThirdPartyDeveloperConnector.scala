@@ -42,14 +42,14 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-
 @Singleton
-class ThirdPartyDeveloperConnector @Inject()(http: HttpClient, config: Config)(implicit val ec: ExecutionContext) extends Logging {
+class ThirdPartyDeveloperConnector @Inject() (http: HttpClient, config: Config)(implicit val ec: ExecutionContext) extends Logging {
 
   def getByEmails(emails: List[String])(implicit hc: HeaderCarrier): Future[Either[Throwable, List[UserResponse]]] = {
     http.POST[List[String], List[UserResponse]](s"${config.thirdPartyDeveloperUrl}/developers/get-by-emails", emails)
       .map(x => Right(x)).recover {
-        case NonFatal(e) => logger.error(e.getMessage)
+        case NonFatal(e) =>
+          logger.error(e.getMessage)
           Left(e)
       }
   }

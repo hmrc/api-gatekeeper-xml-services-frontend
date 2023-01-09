@@ -17,11 +17,11 @@
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config
 
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import com.google.inject.{Provider, Inject, Singleton}
+import com.google.inject.{Inject, Provider, Singleton}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 
 @Singleton
-class XmlServicesConnectorProvider @Inject()(config: ServicesConfig) extends Provider[XmlServicesConnector.Config] {
+class XmlServicesConnectorProvider @Inject() (config: ServicesConfig) extends Provider[XmlServicesConnector.Config] {
 
   override def get(): XmlServicesConnector.Config =
     XmlServicesConnector.Config(serviceBaseUrl = config.baseUrl("api-platform-xml-services"))

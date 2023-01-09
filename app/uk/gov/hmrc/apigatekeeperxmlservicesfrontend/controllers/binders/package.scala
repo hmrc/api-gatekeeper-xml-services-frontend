@@ -22,7 +22,6 @@ import scala.util.Try
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
 
 package object binders {
-  
 
   private def organisationIdFromString(text: String): Either[String, OrganisationId] = {
     Try(UUID.fromString(text))

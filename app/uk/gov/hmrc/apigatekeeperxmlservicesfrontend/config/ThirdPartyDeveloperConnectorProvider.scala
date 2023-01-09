@@ -22,7 +22,7 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import javax.inject.{Inject, Provider, Singleton}
 
 @Singleton
-class ThirdPartyDeveloperConnectorProvider @Inject()(servicesConfig: ServicesConfig) extends Provider[ThirdPartyDeveloperConnector.Config] {
+class ThirdPartyDeveloperConnectorProvider @Inject() (servicesConfig: ServicesConfig) extends Provider[ThirdPartyDeveloperConnector.Config] {
 
   override def get(): ThirdPartyDeveloperConnector.Config = {
     ThirdPartyDeveloperConnector.Config(servicesConfig.baseUrl("third-party-developer"))
