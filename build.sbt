@@ -18,8 +18,8 @@ lazy val microservice = Project(appName, file("."))
       "unused=false",
       "dead_code=true"
     ),
-    includeFilter in uglify := GlobFilter("apis-*.js"),
-    pipelineStages in Assets := Seq(
+    uglify / includeFilter := GlobFilter("apis-*.js"),
+    Assets / pipelineStages := Seq(
       concat,
       uglify
     ),
@@ -51,6 +51,6 @@ lazy val scoverageSettings = {
     ScoverageKeys.coverageMinimum := 97,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true,
-    parallelExecution in Test := false
+    Test / parallelExecution := false
   )
 }
