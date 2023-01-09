@@ -117,7 +117,10 @@ class CsvUploadController @Inject() (
             }
 
           } catch {
-            case exception: Throwable => Future.successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", exception.getMessage)))
+            case exception: Throwable =>
+              Future.successful(
+                InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", exception.getMessage))
+              )
           }
         }
       )

@@ -33,7 +33,10 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
 
   val baseUrl: String = s"${config.serviceBaseUrl}/api-platform-xml-services"
 
-  def findOrganisationsByParams(vendorId: Option[VendorId], organisationName: Option[String])(implicit hc: HeaderCarrier): Future[Either[Throwable, List[Organisation]]] = {
+  def findOrganisationsByParams(vendorId: Option[VendorId],
+                                organisationName: Option[String])(
+    implicit hc: HeaderCarrier): Future[Either[Throwable, List[Organisation]]] = {
+
     val vendorIdParams = vendorId.map(v => Seq("vendorId" -> v.value.toString)).getOrElse(Seq.empty)
     val orgNameParams  = organisationName.map(o => Seq("organisationName" -> o)).getOrElse(Seq.empty)
     val sortByParams   = (vendorId, organisationName) match {
@@ -51,7 +54,8 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
     handleResult(http.GET[Organisation](url = s"$baseUrl/organisations/${organisationId.value}"))
   }
 
-  def addOrganisation(organisationName: String, email: String, firstName: String, lastName: String)(implicit hc: HeaderCarrier): Future[CreateOrganisationResult] = {
+  def addOrganisation(organisationName: String, email: String, firstName: String,
+                      lastName: String)(implicit hc: HeaderCarrier): Future[CreateOrganisationResult] = {
     val createOrganisationRequest: CreateOrganisationRequest = CreateOrganisationRequest(organisationName, email, firstName, lastName)
 
     http.POST[CreateOrganisationRequest, Either[UpstreamErrorResponse, Organisation]](
@@ -64,7 +68,9 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
 
   }
 
-  def updateOrganisationDetails(organisationId: OrganisationId, organisationName: String)(implicit hc: HeaderCarrier): Future[UpdateOrganisationDetailsResult] = {
+  def updateOrganisationDetails(organisationId: OrganisationId,
+                                organisationName: String)(
+    implicit hc: HeaderCarrier): Future[UpdateOrganisationDetailsResult] = {
     val updateOrganisationDetailsRequest: UpdateOrganisationDetailsRequest = UpdateOrganisationDetailsRequest(organisationName)
 
     http.POST[UpdateOrganisationDetailsRequest, Either[UpstreamErrorResponse, Organisation]](
@@ -89,7 +95,10 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
       }
   }
 
-  def addTeamMember(organisationId: OrganisationId, email: String, firstname: String, lastname: String)(implicit hc: HeaderCarrier): Future[AddCollaboratorResult] = {
+  def addTeamMember(organisationId: OrganisationId, email: String,
+                    firstname: String, lastname: String)(
+    implicit hc: HeaderCarrier): Future[AddCollaboratorResult] = {
+
     http.POST[AddCollaboratorRequest, Either[UpstreamErrorResponse, Organisation]](
       url = s"$baseUrl/organisations/${organisationId.value}/add-collaborator",
       AddCollaboratorRequest(email, firstname, lastname)
@@ -114,7 +123,9 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
     )
   }
 
-  def removeTeamMember(organisationId: OrganisationId, email: String, gateKeeperUserId: String)(implicit hc: HeaderCarrier): Future[RemoveCollaboratorResult] = {
+  def removeTeamMember(organisationId: OrganisationId, email: String,
+                       gateKeeperUserId: String)(implicit hc: HeaderCarrier): Future[RemoveCollaboratorResult] = {
+
     http.POST[RemoveCollaboratorRequest, Either[UpstreamErrorResponse, Organisation]](
       url = s"$baseUrl/organisations/${organisationId.value}/remove-collaborator",
       RemoveCollaboratorRequest(email, gateKeeperUserId)
@@ -129,7 +140,8 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
     handleResult(http.GET[Seq[XmlApi]](url = s"$baseUrl/xml/apis"))
   }
 
-  def getOrganisationUsersByOrganisationId(organisationId: OrganisationId)(implicit hc: HeaderCarrier): Future[Either[Throwable, List[OrganisationUser]]] = {
+  def getOrganisationUsersByOrganisationId(organisationId: OrganisationId)(
+    implicit hc: HeaderCarrier): Future[Either[Throwable, List[OrganisationUser]]] = {
     handleResult(http.GET[List[OrganisationUser]](url = s"$baseUrl/organisations/${organisationId.value}/get-users"))
   }
 

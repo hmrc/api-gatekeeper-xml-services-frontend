@@ -27,7 +27,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.{AppConfig, ErrorHandler}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{ThirdPartyDeveloperConnector, XmlServicesConnector}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.FormUtils.emailValidator
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.TeamMembersController.{AddTeamMemberForm, CreateAndAddTeamMemberForm, RemoveTeamMemberConfirmationForm}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.TeamMembersController._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers._
@@ -117,8 +117,10 @@ class TeamMembersController @Inject() (
     implicit request =>
       def handleGetUsersFromTPD(teamMemberAddData: AddTeamMemberForm) = {
         thirdPartyDeveloperConnector.getByEmails(List(teamMemberAddData.emailAddress)).flatMap {
-          case Right(Nil)                       => successful(Ok(createTeamMemberView(createAndAddTeamMemberForm, organisationId, teamMemberAddData.emailAddress)))
-          case Right(users: List[UserResponse]) => addOrCreateTeamMember(organisationId, users.head.email, users.head.firstName, users.head.lastName)
+          case Right(Nil)                       =>
+            successful(Ok(createTeamMemberView(createAndAddTeamMemberForm, organisationId, teamMemberAddData.emailAddress)))
+          case Right(users: List[UserResponse]) =>
+            addOrCreateTeamMember(organisationId, users.head.email, users.head.firstName, users.head.lastName)
           case Left(error: Throwable)           =>
             logger.info(s"addTeamMemberAction failed for ${organisationId.value}", error)
             successful(InternalServerError(errorHandler.internalServerErrorTemplate))
@@ -131,7 +133,8 @@ class TeamMembersController @Inject() (
           getCollaboratorByEmailAddressAndOrganisationId(organisationId, teamMemberAddData.emailAddress).flatMap {
             case Some(user: Collaborator) =>
               logger.info(s"error in addOrCreateTeamMember for organisation ${organisationId.value} duplicate collaborator ${user.userId}")
-              val formWithError = AddTeamMemberForm.form.fill(teamMemberAddData).withError("emailAddress", "team.member.error.emailAddress.already.exists.field")
+              val formWithError = AddTeamMemberForm.form.fill(teamMemberAddData)
+                .withError("emailAddress", "team.member.error.emailAddress.already.exists.field")
               successful(BadRequest(addTeamMemberView(formWithError, organisationId)))
             case None                     => handleGetUsersFromTPD(teamMemberAddData)
           }
@@ -214,7 +217,10 @@ class TeamMembersController @Inject() (
       RemoveTeamMemberConfirmationForm.form.bindFromRequest.fold(handleInvalidForm, handleValidForm)
   }
 
-  private def getCollaboratorByUserIdAndOrganisationId(organisationId: OrganisationId, userId: String)(implicit hc: HeaderCarrier): Future[Option[Collaborator]] = {
+  private def getCollaboratorByUserIdAndOrganisationId(organisationId: OrganisationId,
+                                                       userId: String)(
+    implicit hc: HeaderCarrier): Future[Option[Collaborator]] = {
+
     xmlServicesConnector.getOrganisationByOrganisationId(organisationId).map {
       case Right(organisation: Organisation) =>
         organisation.collaborators.find(_.userId.equalsIgnoreCase(userId))
@@ -224,7 +230,10 @@ class TeamMembersController @Inject() (
     }
   }
 
-  private def getCollaboratorByEmailAddressAndOrganisationId(organisationId: OrganisationId, emailAddress: String)(implicit hc: HeaderCarrier): Future[Option[Collaborator]] = {
+  private def getCollaboratorByEmailAddressAndOrganisationId(organisationId: OrganisationId,
+                                                             emailAddress: String)(
+    implicit hc: HeaderCarrier): Future[Option[Collaborator]] = {
+
     xmlServicesConnector.getOrganisationByOrganisationId(organisationId).map {
       case Right(organisation: Organisation) =>
         organisation.collaborators.find(_.email.equalsIgnoreCase(emailAddress.trim))

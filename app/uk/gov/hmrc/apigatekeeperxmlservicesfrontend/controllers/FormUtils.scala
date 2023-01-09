@@ -20,8 +20,9 @@ import play.api.data.{Forms, Mapping}
 import uk.gov.hmrc.emailaddress.EmailAddress
 
 object FormUtils {
+  lazy val DefaultMaxLength: Int = 320
 
-  def emailValidator(maxLength: Int = 320): Mapping[String] = {
+  def emailValidator(maxLength: Int = DefaultMaxLength): Mapping[String] = {
     Forms.text
       .verifying("emailAddress.error.not.valid.field", email => EmailAddress.isValid(email) || email.isEmpty)
       .verifying("emailAddress.error.maxLength.field", email => email.length <= maxLength)
