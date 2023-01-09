@@ -17,9 +17,11 @@
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config
 
 import javax.inject.{Inject, Singleton}
+
+import com.google.inject.ImplementedBy
+
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import com.google.inject.ImplementedBy
 
 @ImplementedBy(classOf[AppConfigImpl])
 trait AppConfig {

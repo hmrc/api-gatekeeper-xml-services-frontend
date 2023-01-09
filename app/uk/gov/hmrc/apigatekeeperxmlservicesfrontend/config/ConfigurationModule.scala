@@ -19,8 +19,8 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config
 import play.api.inject.Module
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{ThirdPartyDeveloperConnector, XmlServicesConnector}
-import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.actions.ForbiddenHandler
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.HandleForbiddenWithView
+import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.actions.ForbiddenHandler
 
 class ConfigurationModule extends Module {
 

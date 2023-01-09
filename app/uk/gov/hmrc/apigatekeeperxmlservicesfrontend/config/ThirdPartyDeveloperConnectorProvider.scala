@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config
 
+import javax.inject.{Inject, Provider, Singleton}
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.ThirdPartyDeveloperConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-
-import javax.inject.{Inject, Provider, Singleton}
 
 @Singleton
 class ThirdPartyDeveloperConnectorProvider @Inject() (servicesConfig: ServicesConfig) extends Provider[ThirdPartyDeveloperConnector.Config] {

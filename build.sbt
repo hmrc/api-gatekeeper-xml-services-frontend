@@ -6,6 +6,18 @@ import com.typesafe.sbt.uglify.Import._
 
 val appName = "api-gatekeeper-xml-services-frontend"
 
+ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.6.0"
+
+ThisBuild / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
+
+inThisBuild(
+  List(
+    scalaVersion := "2.12.15",
+    semanticdbEnabled := true,
+    semanticdbVersion := scalafixSemanticdb.revision
+  )
+)
+
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin, SbtAutoBuildPlugin, SbtGitVersioning)
   .settings(
@@ -24,7 +36,7 @@ lazy val microservice = Project(appName, file("."))
       uglify
     ),
     majorVersion := 0,
-    scalaVersion := "2.12.13",
+    scalaVersion := "2.12.15",
     routesImport += "uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.binders._",
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
     TwirlKeys.templateImports ++= Seq(

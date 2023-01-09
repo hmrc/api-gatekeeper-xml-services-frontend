@@ -16,6 +16,10 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
+import javax.inject.Inject
+import scala.concurrent.Future.successful
+import scala.concurrent.{ExecutionContext, Future}
+
 import play.api.Logging
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, text}
@@ -26,17 +30,12 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.FormUtils.emailV
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.TeamMembersController.{AddTeamMemberForm, CreateAndAddTeamMemberForm, RemoveTeamMemberConfirmationForm}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
-import uk.gov.hmrc.apiplatform.modules.gkauth.services.LdapAuthorisationService
-import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationService
-import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.actions.GatekeeperStrideAuthorisationActions
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers._
+import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.actions.GatekeeperStrideAuthorisationActions
+import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.{LdapAuthorisationService, StrideAuthorisationService}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
-
-import javax.inject.Inject
-import scala.concurrent.Future.successful
-import scala.concurrent.{ExecutionContext, Future}
 
 object TeamMembersController {
 
