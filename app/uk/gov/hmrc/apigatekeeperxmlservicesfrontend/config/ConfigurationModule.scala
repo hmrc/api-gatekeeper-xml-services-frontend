@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config
 import play.api.inject.Module
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{ThirdPartyDeveloperConnector, XmlServicesConnector}
-import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.actions.ForbiddenHandler
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.HandleForbiddenWithView
+import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.actions.ForbiddenHandler
 
 class ConfigurationModule extends Module {
 
   override def bindings(environment: Environment, configuration: Configuration) = {
-    Seq (
+    Seq(
       bind[XmlServicesConnector.Config].toProvider[XmlServicesConnectorProvider],
       bind[ThirdPartyDeveloperConnector.Config].toProvider[ThirdPartyDeveloperConnectorProvider],
       bind[ForbiddenHandler].to(classOf[HandleForbiddenWithView])

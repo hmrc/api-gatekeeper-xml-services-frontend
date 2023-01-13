@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,33 +16,30 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.csvupload
 
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
 import play.api.Logging
 import play.api.data.Form
 import play.api.data.Forms.{mapping, text}
-import play.api.mvc.Action
-import play.api.mvc.AnyContent
-import play.api.mvc.MessagesControllerComponents
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.services.CsvService
-import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationService
-import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.actions.GatekeeperStrideAuthorisationActions
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ErrorTemplate
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.{OrganisationCsvUploadView, UsersCsvUploadView}
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-
-import javax.inject.Inject
-import javax.inject.Singleton
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.csvupload.CsvUploadController.CsvData
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.services.CsvService
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ErrorTemplate
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.{OrganisationCsvUploadView, UsersCsvUploadView}
+import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.actions.GatekeeperStrideAuthorisationActions
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationService
 import uk.gov.hmrc.http.UpstreamErrorResponse
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 object CsvUploadController {
 
   case class CsvData(csv: String)
 
   object CsvData {
+
     val form = Form(
       mapping(
         "csv-data-input" -> text.verifying("csvdata.error.required", _.nonEmpty)
@@ -50,7 +47,6 @@ object CsvUploadController {
     )
   }
 }
-
 
 @Singleton
 class CsvUploadController @Inject() (
@@ -61,8 +57,8 @@ class CsvUploadController @Inject() (
     val csvService: CsvService,
     val xmlServicesConnector: XmlServicesConnector,
     val strideAuthorisationService: StrideAuthorisationService
-  )(implicit val ec: ExecutionContext)
-    extends FrontendController(mcc)
+  )(implicit val ec: ExecutionContext
+  ) extends FrontendController(mcc)
     with GatekeeperStrideAuthorisationActions
     with Logging {
 
@@ -90,7 +86,8 @@ class CsvUploadController @Inject() (
               xmlServicesConnector.bulkAddUsers(users).map {
                 case Right(_)                       => Redirect(routes.CsvUploadController.usersPage)
                 case Left(e: UpstreamErrorResponse) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", e.getMessage))
-              }}
+              }
+            }
           } catch {
             case exception: Throwable =>
               logger.error("Error during upload", exception)
@@ -120,7 +117,10 @@ class CsvUploadController @Inject() (
             }
 
           } catch {
-            case exception: Throwable => Future.successful(InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", exception.getMessage)))
+            case exception: Throwable =>
+              Future.successful(
+                InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", exception.getMessage))
+              )
           }
         }
       )

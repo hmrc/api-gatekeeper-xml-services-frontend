@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,19 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.services
 
-import org.apache.commons.csv.CSVRecord
-import org.apache.commons.io.IOUtils
-import play.api.Logging
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
-import uk.gov.hmrc.http.HeaderCarrier
-
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 import javax.inject.{Inject, Singleton}
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
+
+import org.apache.commons.csv.CSVRecord
+import org.apache.commons.io.IOUtils
+
+import play.api.Logging
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.http.HeaderCarrier
 
 @Singleton
 class CsvService @Inject() (xmlServicesConnector: XmlServicesConnector)(implicit val ec: ExecutionContext) extends Logging {

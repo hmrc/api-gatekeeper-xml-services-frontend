@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
-import play.api.mvc.PathBindable
 import java.util.UUID
 import scala.util.Try
+
+import play.api.mvc.PathBindable
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
 
 package object binders {
-  
 
   private def organisationIdFromString(text: String): Either[String, OrganisationId] = {
     Try(UUID.fromString(text))

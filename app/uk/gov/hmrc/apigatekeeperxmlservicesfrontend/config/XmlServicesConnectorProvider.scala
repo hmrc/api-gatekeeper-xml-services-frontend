@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config
 
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import com.google.inject.{Provider, Inject, Singleton}
+import com.google.inject.{Inject, Provider, Singleton}
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
-class XmlServicesConnectorProvider @Inject()(config: ServicesConfig) extends Provider[XmlServicesConnector.Config] {
+class XmlServicesConnectorProvider @Inject() (config: ServicesConfig) extends Provider[XmlServicesConnector.Config] {
 
   override def get(): XmlServicesConnector.Config =
     XmlServicesConnector.Config(serviceBaseUrl = config.baseUrl("api-platform-xml-services"))

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,16 @@
 
 package uk.gov.hmrc.apiplatform.modules.gkauth.services
 
-import uk.gov.hmrc.internalauth.client.FrontendAuthComponents
-import play.api.mvc._
-import scala.concurrent.Future
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future.successful
-import uk.gov.hmrc.play.http.HeaderCarrierConverter
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
-import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.GatekeeperRoles
-import uk.gov.hmrc.internalauth.client._
-import scala.concurrent.ExecutionContext
-import javax.inject.{Singleton, Inject}
+import scala.concurrent.{ExecutionContext, Future}
+
 import play.api.Logging
+import play.api.mvc._
+import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.{GatekeeperRoles, LoggedInRequest}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, _}
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 @Singleton
 class LdapAuthorisationService @Inject() (auth: FrontendAuthComponents)(implicit ec: ExecutionContext) extends Logging {
@@ -44,11 +42,11 @@ class LdapAuthorisationService @Inject() (auth: FrontendAuthComponents)(implicit
     })(authorization => {
       auth.authConnector.authenticate(predicate = None, Retrieval.username ~ Retrieval.hasPredicate(LdapAuthorisationPredicate.gatekeeperReadPermission))
         .map {
-          case (name ~ true) => Right(new LoggedInRequest(Some(name.value), GatekeeperRoles.READ_ONLY, msgRequest)) 
-          case (name ~ false) => 
+          case (name ~ true)  => Right(new LoggedInRequest(Some(name.value), GatekeeperRoles.READ_ONLY, msgRequest))
+          case (name ~ false) =>
             logger.debug("No LDAP predicate matched")
             notAuthenticatedOrAuthorized
-          case _ => 
+          case _              =>
             logger.debug("LDAP Authenticate failed to find user")
             notAuthenticatedOrAuthorized
         }

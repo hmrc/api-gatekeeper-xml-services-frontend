@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models
 
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
-
 import java.{util => ju}
+
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
 
 case class OrganisationId(value: ju.UUID) extends AnyVal
 
@@ -34,4 +34,4 @@ case class ServiceName(value: String) extends AnyVal
 
 case class XmlApi(name: String, serviceName: ServiceName, context: String, description: String, categories: Option[Seq[ApiCategory]] = None)
 
-case class OrganisationUser(organisationId: OrganisationId, userId: UserId, email: String, firstName:String, lastName: String, xmlApis: List[XmlApi])
+case class OrganisationUser(organisationId: OrganisationId, userId: UserId, email: String, firstName: String, lastName: String, xmlApis: List[XmlApi])

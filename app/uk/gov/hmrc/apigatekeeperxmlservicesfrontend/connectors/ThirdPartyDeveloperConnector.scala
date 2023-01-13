@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,24 +32,24 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors
  * limitations under the License.
  */
 
-import play.api.Logging
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.ThirdPartyDeveloperConnector.Config
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.JsonFormatters._
-import uk.gov.hmrc.http.{HttpClient, _}
-
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
+import play.api.Logging
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.ThirdPartyDeveloperConnector.Config
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.JsonFormatters._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
+import uk.gov.hmrc.http.{HttpClient, _}
 
 @Singleton
-class ThirdPartyDeveloperConnector @Inject()(http: HttpClient, config: Config)(implicit val ec: ExecutionContext) extends Logging {
+class ThirdPartyDeveloperConnector @Inject() (http: HttpClient, config: Config)(implicit val ec: ExecutionContext) extends Logging {
 
   def getByEmails(emails: List[String])(implicit hc: HeaderCarrier): Future[Either[Throwable, List[UserResponse]]] = {
     http.POST[List[String], List[UserResponse]](s"${config.thirdPartyDeveloperUrl}/developers/get-by-emails", emails)
       .map(x => Right(x)).recover {
-        case NonFatal(e) => logger.error(e.getMessage)
+        case NonFatal(e) =>
+          logger.error(e.getMessage)
           Left(e)
       }
   }
