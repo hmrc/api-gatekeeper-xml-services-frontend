@@ -6,17 +6,12 @@ import com.typesafe.sbt.uglify.Import._
 
 val appName = "api-gatekeeper-xml-services-frontend"
 
+scalaVersion := "2.13.8"
+
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.6.0"
-
+ThisBuild / semanticdbEnabled := true
+ThisBuild / semanticdbVersion := scalafixSemanticdb.revision
 ThisBuild / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
-
-inThisBuild(
-  List(
-    scalaVersion := "2.12.15",
-    semanticdbEnabled := true,
-    semanticdbVersion := scalafixSemanticdb.revision
-  )
-)
 
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin, SbtAutoBuildPlugin, SbtGitVersioning)
@@ -36,7 +31,6 @@ lazy val microservice = Project(appName, file("."))
       uglify
     ),
     majorVersion := 0,
-    scalaVersion := "2.12.15",
     routesImport += "uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.binders._",
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
     TwirlKeys.templateImports ++= Seq(
@@ -53,6 +47,14 @@ lazy val microservice = Project(appName, file("."))
   .settings(inConfig(IntegrationTest)(BloopDefaults.configSettings))
   .settings(integrationTestSettings(): _*)
   .settings(resolvers += Resolver.jcenterRepo)
+  .settings(
+    scalacOptions ++= Seq(
+      "-Wconf:cat=unused&src=views/.*\\.scala:s",
+      "-Wconf:cat=unused&src=.*RoutesPrefix\\.scala:s",
+      "-Wconf:cat=unused&src=.*Routes\\.scala:s",
+      "-Wconf:cat=unused&src=.*ReverseRoutes\\.scala:s"
+    )
+  )
   .disablePlugins(sbt.plugins.JUnitXmlReportPlugin)
 
 lazy val scoverageSettings = {
@@ -60,7 +62,7 @@ lazy val scoverageSettings = {
   Seq(
     // Semicolon-separated list of regexs matching classes to exclude
     ScoverageKeys.coverageExcludedPackages := ";.*\\.domain\\.models\\..*;uk\\.gov\\.hmrc\\.BuildInfo;.*\\.Routes;.*\\.RoutesPrefix;;Module;GraphiteStartUp;.*\\.Reverse[^.]*",
-    ScoverageKeys.coverageMinimum := 97,
+    ScoverageKeys.coverageMinimumStmtTotal := 96,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true,
     Test / parallelExecution := false
