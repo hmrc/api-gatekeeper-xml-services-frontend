@@ -57,7 +57,7 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
       val page = organisationDetailsView.render(organisationWithCollaborators, organisationUsers, loggedInRequest, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
 
-      getBackLink(document) should not be None
+      hasBackLink(document) shouldBe true
       document.getElementById("org-name-heading").text() shouldBe "Name"
       document.getElementById("org-name-value").text() shouldBe org1.name
 
@@ -86,7 +86,7 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
       val page = organisationDetailsView.render(organisationWithCollaborators, organisationUsers, loggedInRequest, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
 
-      getBackLink(document) should not be None
+      hasBackLink(document) shouldBe true
       document.getElementById("org-name-heading").text() shouldBe "Name"
       document.getElementById("org-name-value").text() shouldBe org1.name
 
@@ -115,7 +115,7 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
       val page = organisationDetailsView.render(organisationWithCollaborators, List.empty, loggedInRequest, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
 
-      getBackLink(document) should not be None
+      hasBackLink(document) shouldBe true
       document.getElementById("org-name-heading").text() shouldBe "Name"
       document.getElementById("org-name-value").text() shouldBe org1.name
 

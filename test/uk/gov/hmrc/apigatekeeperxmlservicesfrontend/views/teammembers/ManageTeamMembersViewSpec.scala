@@ -40,10 +40,10 @@ class ManageTeamMembersViewSpec extends CommonViewSpec with ViewSpecHelpers {
 
       val page = manageTeamMembersView.render(organisationWithCollaborators, FakeRequest(), loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
-      getBackLink(document) should not be None
+      hasBackLink(document) shouldBe true
       validateManageTeamMembersPage(document, organisationWithCollaborators)
     }
 
-    
+
   }
 }

@@ -44,7 +44,7 @@ class OrganisationAddNewUserViewSpec extends CommonViewSpec with WithCSRFAddToke
       val page = organisationAddNewUserView
         .render(AddOrganisationWithNewUserForm.form, Some(orgName), Some(email), FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
-      getBackLink(document) should not be None
+      hasBackLink(document) shouldBe true
       validateFormErrors(document)
       validateOrganisationAddNewUserPage(document, orgName, email)
     }
@@ -58,7 +58,7 @@ class OrganisationAddNewUserViewSpec extends CommonViewSpec with WithCSRFAddToke
 
       val page = organisationAddNewUserView.render(form, Some(orgName), Some(email), FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
-      getBackLink(document) should not be None
+      hasBackLink(document) shouldBe true
       validateFormErrors(document, Some("Enter a first name"))
       validateFormErrors(document, Some("Enter a last name"))
       validateOrganisationAddNewUserPage(document, orgName, email)

@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper
 
-
 import org.jsoup.nodes.Document
 
 import java.util.Locale
@@ -36,19 +35,18 @@ import play.api.mvc.MessagesRequest
 import play.api.test.FakeRequest
 
 trait CommonViewSpec extends AsyncHmrcSpec with GuiceOneAppPerSuite {
-  val mcc = app.injector.instanceOf[MessagesControllerComponents]
-  val messagesApi = mcc.messagesApi
+  val mcc                                         = app.injector.instanceOf[MessagesControllerComponents]
+  val messagesApi                                 = mcc.messagesApi
   implicit val messagesProvider: MessagesProvider = MessagesImpl(Lang(Locale.ENGLISH), messagesApi)
-  implicit val appConfig: AppConfig = mock[AppConfig]
-
+  implicit val appConfig: AppConfig               = mock[AppConfig]
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
       .configure(("metrics.jvm", false))
       .build()
 
-  def getBackLink(document: Document) ={
-    Option(document.getElementById("backlink"))
+  def hasBackLink(document: Document): Boolean = {
+    !document.getElementsByAttributeValue("data-module", "hmrc-back-link").isEmpty
   }
 
   trait BaseSetup {
@@ -57,12 +55,22 @@ trait CommonViewSpec extends AsyncHmrcSpec with GuiceOneAppPerSuite {
   }
 
   trait LdapAuth {
-    self : BaseSetup =>
-      val loggedInRequest = new LoggedInRequest(name = Some(LdapAuthorisationServiceMockModule.LdapUserName), role = GatekeeperRoles.READ_ONLY, request = new MessagesRequest(FakeRequest("GET", "/"), mock[MessagesApi]))
+    self: BaseSetup =>
+
+    val loggedInRequest = new LoggedInRequest(
+      name = Some(LdapAuthorisationServiceMockModule.LdapUserName),
+      role = GatekeeperRoles.READ_ONLY,
+      request = new MessagesRequest(FakeRequest("GET", "/"), mock[MessagesApi])
+    )
   }
 
   trait StrideAuth {
-    self : BaseSetup =>
-      val loggedInRequest = new LoggedInRequest(name = Some(StrideAuthorisationServiceMockModule.StrideUserName), role = GatekeeperRoles.USER, request = new MessagesRequest(FakeRequest("GET", "/"), mock[MessagesApi]))
+    self: BaseSetup =>
+
+    val loggedInRequest = new LoggedInRequest(
+      name = Some(StrideAuthorisationServiceMockModule.StrideUserName),
+      role = GatekeeperRoles.USER,
+      request = new MessagesRequest(FakeRequest("GET", "/"), mock[MessagesApi])
+    )
   }
 }

@@ -41,7 +41,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
     val organisationSearchView = app.injector.instanceOf[OrganisationSearchView]
     val loggedInUser = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
     def loggedInRequest: LoggedInRequest[_]
-    
+
     def testRadioButton(document: Document, radioButtonId: String, isChecked: Boolean) = {
       withClue(s"radio button $radioButtonId test failed") {
         document.getElementById(radioButtonId)
@@ -51,7 +51,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
     }
 
     def testStandardComponents(document: Document) = {
-      getBackLink(document) shouldBe None
+      hasBackLink(document) shouldBe false
       document.title() shouldBe "Manage XML Organisations - HMRC API Gatekeeper"
       document.getElementById("page-heading").text() shouldBe "Search for XML organisations"
       document.getElementById("search-by-hint").text() shouldBe "Choose to search by vendor ID or organisation name."

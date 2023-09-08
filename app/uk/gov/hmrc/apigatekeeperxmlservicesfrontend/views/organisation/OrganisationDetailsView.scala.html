@@ -124,7 +124,7 @@
             @if(request.role.isUser) {
               <div class="govuk-button-group">
                   @if(emails.nonEmpty){
-                      <span id="emails-to-copy" class="govuk-visually-hidden" aria-hidden="true">@emails</span>
+                      <span id="emails-to-copy" class="govuk-visually-hidden" aria-hidden="true">@emails()</span>
                       <button id="copy-emails" class="govuk-button" data-module="govuk-button">
                           Copy email addresses to clipboard
                       </button>

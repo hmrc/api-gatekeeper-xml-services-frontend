@@ -40,7 +40,7 @@ class RemoveTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with
     "render the remove team member page correctly when no errors" in new Setup {
       val page = removeTeamMemberView.render(RemoveTeamMemberConfirmationForm.form, org1.organisationId, collaborator1.userId, collaborator1.email, FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
-      getBackLink(document) should not be None
+      hasBackLink(document) shouldBe true
       validateFormErrors(document)
 
       validateRemoveTeamMemberPage(document)
@@ -51,7 +51,7 @@ class RemoveTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with
         org1.organisationId, collaborator1.userId, collaborator1.email, FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
 
       val document: Document = Jsoup.parse(page.body)
-      getBackLink(document) should not be None
+      hasBackLink(document) shouldBe true
       validateFormErrors(document, Some("Invalid Email provided"))
 
       validateRemoveTeamMemberPage(document)

@@ -48,7 +48,7 @@ class OrganisationEditViewSpec extends CommonViewSpec with WithCSRFAddToken with
         mockAppConfig)
 
       val document: Document = Jsoup.parse(page.body)
-      getBackLink(document) should not be None
+      hasBackLink(document) shouldBe true
       validateFormErrors(document)
       validateUpdateOrganisationDetailsPage(document)
     }
@@ -64,7 +64,7 @@ class OrganisationEditViewSpec extends CommonViewSpec with WithCSRFAddToken with
         mockAppConfig)
 
       val document: Document = Jsoup.parse(page.body)
-      getBackLink(document) should not be None
+      hasBackLink(document) shouldBe true
       validateFormErrors(document, Some("Enter an organisation name"))
       validateUpdateOrganisationDetailsPage(document)
     }
