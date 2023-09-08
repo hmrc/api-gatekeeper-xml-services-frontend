@@ -124,7 +124,8 @@
             @if(request.role.isUser) {
               <div class="govuk-button-group">
                   @if(emails.nonEmpty){
-                      <button id="copy-emails" onclick="copyToClipboard('@emails');" class="govuk-button" data-module="govuk-button">
+                      <span id="emails-to-copy" class="govuk-visually-hidden" aria-hidden="true">@emails</span>
+                      <button id="copy-emails" class="govuk-button" data-module="govuk-button">
                           Copy email addresses to clipboard
                       </button>
                   }
@@ -135,7 +136,9 @@
             }
         </div>
 
-
+        @views.html.helper.script(args = Symbol("type") -> "module") {
+            initCopyTextOnClick("copy-emails", "emails-to-copy")
+        }
     </dl>
 
 
