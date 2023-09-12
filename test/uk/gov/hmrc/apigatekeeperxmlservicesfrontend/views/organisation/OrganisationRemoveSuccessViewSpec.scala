@@ -29,18 +29,18 @@ import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServic
 class OrganisationRemoveSuccessViewSpec extends CommonViewSpec with WithCSRFAddToken with ViewSpecHelpers {
 
   trait Setup extends OrganisationTestData {
-    val mockAppConfig = mock[AppConfig]
+    val mockAppConfig                 = mock[AppConfig]
     val organisationRemoveSuccessView = app.injector.instanceOf[OrganisationRemoveSuccessView]
-    val loggedInUser = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
+    val loggedInUser                  = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
   }
 
   "Organisation Remove Success View" should {
 
     "render the remove success organisation page" in new Setup {
 
-      val page = organisationRemoveSuccessView.render(org1, FakeRequest(), loggedInUser, messagesProvider.messages, mockAppConfig)
+      val page               = organisationRemoveSuccessView.render(org1, FakeRequest(), loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
-      getBackLink(document) shouldBe None
+      hasBackLink(document) shouldBe false
       validateRemoveOrganisationSuccessPage(document, org1.name)
     }
   }
