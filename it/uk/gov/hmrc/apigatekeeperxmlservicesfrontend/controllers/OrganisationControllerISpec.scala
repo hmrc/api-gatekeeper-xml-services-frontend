@@ -16,9 +16,13 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
+import java.util.UUID
+
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.scalatest.BeforeAndAfterEach
+import utils.MockCookies
+
 import play.api.http.HeaderNames
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NO_CONTENT, SEE_OTHER}
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -26,27 +30,25 @@ import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.Helpers.{CONTENT_TYPE, FORBIDDEN, NOT_FOUND, OK}
 import play.filters.csrf.CSRF.TokenProvider
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{StrideAuthorisationStub, ServerBaseISpec}
-import utils.MockCookies
-
-import java.util.UUID
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{ServerBaseISpec, StrideAuthorisationStub}
 
 class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with StrideAuthorisationStub {
 
   protected override def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
-        "microservice.services.auth.host" -> wireMockHost,
-        "microservice.services.auth.port" -> wireMockPort,
-        "metrics.enabled" -> true,
-        "auditing.enabled" -> false,
-        "auditing.consumer.baseUri.host" -> wireMockHost,
-        "auditing.consumer.baseUri.port" -> wireMockPort,
+        "microservice.services.auth.host"                      -> wireMockHost,
+        "microservice.services.auth.port"                      -> wireMockPort,
+        "metrics.enabled"                                      -> true,
+        "auditing.enabled"                                     -> false,
+        "auditing.consumer.baseUri.host"                       -> wireMockHost,
+        "auditing.consumer.baseUri.port"                       -> wireMockPort,
         "microservice.services.api-platform-xml-services.host" -> wireMockHost,
         "microservice.services.api-platform-xml-services.port" -> wireMockPort
       )
@@ -54,16 +56,16 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
   val url = s"http://localhost:$port/api-gatekeeper-xml-services"
 
   trait Setup extends XmlServicesStub {
-    val wsClient: WSClient = app.injector.instanceOf[WSClient]
-    val tokenProvider = app.injector.instanceOf[TokenProvider]
+    val wsClient: WSClient                   = app.injector.instanceOf[WSClient]
+    val tokenProvider                        = app.injector.instanceOf[TokenProvider]
     val validHeaders: List[(String, String)] = List(HeaderNames.AUTHORIZATION -> "Bearer 123")
-    val contentTypeHeader = HeaderNames.CONTENT_TYPE -> "application/x-www-form-urlencoded"
-    val bypassCsrfTokenHeader = "Csrf-Token" -> "nocheck"
+    val contentTypeHeader                    = HeaderNames.CONTENT_TYPE -> "application/x-www-form-urlencoded"
+    val bypassCsrfTokenHeader                = "Csrf-Token"             -> "nocheck"
 
     val objInTest: XmlServicesConnector = app.injector.instanceOf[XmlServicesConnector]
-    val vendorId: VendorId = VendorId(12)
-    val organisationId = OrganisationId(java.util.UUID.randomUUID())
-    val organisation = Organisation(organisationId, vendorId = vendorId, name = "Org name")
+    val vendorId: VendorId              = VendorId(12)
+    val organisationId                  = OrganisationId(java.util.UUID.randomUUID())
+    val organisation                    = Organisation(organisationId, vendorId = vendorId, name = "Org name")
 
     val collaborator = Collaborator("userId", "collaborator1@mail.com")
 
@@ -75,20 +77,24 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
     )
 
     val emailAddress = "a@b.com"
-    val firstName = "Joe"
-    val lastName = "Bloggs"
+    val firstName    = "Joe"
+    val lastName     = "Bloggs"
 
-    val xmlApi1 = XmlApi(name = "xml api 1",
+    val xmlApi1 = XmlApi(
+      name = "xml api 1",
       serviceName = ServiceName("vat-and-ec-sales-list"),
       context = "/government/collections/vat-and-ec-sales-list-online-support-for-software-developers",
       description = "description",
-      categories  = Some(Seq(ApiCategory.CUSTOMS)))
+      categories = Some(Seq(ApiCategory.CUSTOMS))
+    )
 
-    val xmlApi2 = XmlApi(name = "xml api 3",
+    val xmlApi2 = XmlApi(
+      name = "xml api 3",
       serviceName = ServiceName("customs-import"),
       context = "/government/collections/customs-import",
       description = "description",
-      categories  = Some(Seq(ApiCategory.CUSTOMS)))
+      categories = Some(Seq(ApiCategory.CUSTOMS))
+    )
 
     val organisationUsers = List(OrganisationUser(organisationId, UserId(UUID.randomUUID()), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)))
 
@@ -131,9 +137,9 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         content.getElementById("page-heading").text() mustBe "Search for XML organisations"
       }
 
-     "respond with 403 and render the Forbidden view" in new Setup {
+      "respond with 403 and render the Forbidden view" in new Setup {
         strideAuthorisationFails()
-        val result = callGetEndpoint(s"$url/organisations")
+        val result  = callGetEndpoint(s"$url/organisations")
         result.status mustBe FORBIDDEN
         val content = Jsoup.parse(result.body)
         content.getElementById("page-heading").text() mustBe "You do not have permission to access Gatekeeper"
@@ -149,7 +155,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
       "respond with 403 and render the Forbidden view when auth fails" in new Setup {
         strideAuthorisationFails()
-        val result = callGetEndpoint(s"$url/organisations/search?searchType=vendorId&searchText=hello")
+        val result  = callGetEndpoint(s"$url/organisations/search?searchType=vendorId&searchText=hello")
         result.status mustBe FORBIDDEN
         val content = Jsoup.parse(result.body)
         content.getElementById("page-heading").text() mustBe "You do not have permission to access Gatekeeper"
@@ -181,7 +187,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
         findOrganisationByParamsReturnsResponseWithBody(None, Some("hello"), OK, Json.toJson(List(organisation)).toString)
 
-        val result = callGetEndpoint(s"$url/organisations/search?searchType=organisation-name&searchText=hello")
+        val result  = callGetEndpoint(s"$url/organisations/search?searchType=organisation-name&searchText=hello")
         result.status mustBe OK
         val content = Jsoup.parse(result.body)
         content.getElementById("page-heading").text() mustBe "Search for XML organisations"
@@ -209,7 +215,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
         findOrganisationByParamsReturnsResponseWithBody(None, None, OK, Json.toJson(List(organisation)).toString)
 
-        val result = callGetEndpoint(s"$url/organisations/search?searchType=&searchText=")
+        val result  = callGetEndpoint(s"$url/organisations/search?searchType=&searchText=")
         result.status mustBe OK
         val content = Jsoup.parse(result.body)
         content.getElementById("page-heading").text() mustBe "Search for XML organisations"
@@ -222,7 +228,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
         findOrganisationByParamsReturnsResponseWithBody(None, None, OK, jsonToReturn)
 
-        val result = callGetEndpoint(s"$url/organisations/search?searchType=vendor-id&searchText=")
+        val result  = callGetEndpoint(s"$url/organisations/search?searchType=vendor-id&searchText=")
         result.status mustBe OK
         val content = Jsoup.parse(result.body)
         content.getElementById("page-heading").text() mustBe "Search for XML organisations"
@@ -231,7 +237,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
       "respond with 200 and render organisation search page when searchType is empty and searchText query parameters is populated" in new Setup {
         strideAuthorisationSucceeds()
-        val result = callGetEndpoint(s"$url/organisations/search?searchType=&searchText=hello")
+        val result  = callGetEndpoint(s"$url/organisations/search?searchType=&searchText=hello")
         result.status mustBe OK
         val content = Jsoup.parse(result.body)
         content.getElementById("page-heading").text() mustBe "Search for XML organisations"
@@ -240,7 +246,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
       "respond with 200 and render organisation search page when vendor-id searchType and searchText query parameters are populated" in new Setup {
         strideAuthorisationSucceeds()
-        val result = callGetEndpoint(s"$url/organisations/search?searchType=vendor-id&searchText=hello")
+        val result  = callGetEndpoint(s"$url/organisations/search?searchType=vendor-id&searchText=hello")
         result.status mustBe OK
         val content = Jsoup.parse(result.body)
         content.getElementById("page-heading").text() mustBe "Search for XML organisations"
@@ -392,7 +398,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         strideAuthorisationSucceeds()
         getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
         removeOrganisationStub(organisation.organisationId, NO_CONTENT)
-        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"confirm=Yes;")
+        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", validHeaders :+ bypassCsrfTokenHeader :+ contentTypeHeader, s"confirm=Yes;")
 
         result.headers.foreach(println)
         result.status mustBe OK
@@ -403,7 +409,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
         removeOrganisationStub(organisation.organisationId, NOT_FOUND)
 
-        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"confirm=Yes;")
+        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", validHeaders :+ bypassCsrfTokenHeader :+ contentTypeHeader, s"confirm=Yes;")
 
         result.status mustBe INTERNAL_SERVER_ERROR
       }
@@ -412,7 +418,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         strideAuthorisationSucceeds()
         getOrganisationByOrganisationIdReturnsResponseWithBody(organisationId, OK, Json.toJson(organisationWithTeamMembers).toString())
 
-        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"confirm=No;")
+        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", validHeaders :+ bypassCsrfTokenHeader :+ contentTypeHeader, s"confirm=No;")
 
         result.status mustBe SEE_OTHER
       }
@@ -421,7 +427,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         strideAuthorisationSucceeds()
         getOrganisationByOrganisationIdReturnsError(organisationId, NOT_FOUND)
 
-        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"confirm=Yes;")
+        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/remove", validHeaders :+ bypassCsrfTokenHeader :+ contentTypeHeader, s"confirm=Yes;")
 
         result.status mustBe INTERNAL_SERVER_ERROR
       }
@@ -434,6 +440,5 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         result.status mustBe FORBIDDEN
       }
     }
- }
+  }
 }
-

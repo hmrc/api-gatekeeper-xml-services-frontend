@@ -16,24 +16,25 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.config.FakeAppConfigImpl
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+
 import play.api.Application
+import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.MessagesControllerComponents
+
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks.config.FakeAppConfigImpl
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.AsyncHmrcSpec
-import play.api.inject.bind
 
 trait ControllerBaseSpec extends AsyncHmrcSpec with GuiceOneAppPerSuite {
 
-  implicit val appConfig: AppConfig = app.injector.instanceOf[AppConfig]
+  implicit val appConfig: AppConfig          = app.injector.instanceOf[AppConfig]
   lazy val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
-      .configure("metrics.jvm" -> false,
-      "metrics.enabled" -> false)
+      .configure("metrics.jvm" -> false, "metrics.enabled" -> false)
       .overrides(bind[AppConfig].to[FakeAppConfigImpl])
       .build()
 }

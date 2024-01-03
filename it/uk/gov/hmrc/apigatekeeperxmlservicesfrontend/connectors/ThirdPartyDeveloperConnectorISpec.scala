@@ -16,17 +16,19 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors
 
+import java.{util => ju}
+
 import org.scalatest.BeforeAndAfterEach
+
 import play.api.http.Status._
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, Upstream5xxResponse}
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.{UserId, UserResponse}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.ThirdPartyDeveloperStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, Upstream5xxResponse}
-
-import java.{util => ju}
 
 class ThirdPartyDeveloperConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach with ThirdPartyDeveloperStub {
 
@@ -41,19 +43,19 @@ class ThirdPartyDeveloperConnectorISpec extends ServerBaseISpec with BeforeAndAf
       .configure(
         "microservice.services.third-party-developer.host" -> wireMockHost,
         "microservice.services.third-party-developer.port" -> wireMockPort,
-        "metrics.enabled" -> true,
-        "auditing.enabled" -> false,
-        "auditing.consumer.baseUri.host" -> wireMockHost,
-        "auditing.consumer.baseUri.port" -> wireMockPort
+        "metrics.enabled"                                  -> true,
+        "auditing.enabled"                                 -> false,
+        "auditing.consumer.baseUri.host"                   -> wireMockHost,
+        "auditing.consumer.baseUri.port"                   -> wireMockPort
       )
 
   trait Setup {
     implicit val hc: HeaderCarrier = HeaderCarrier()
 
-    val email = "foo@bar.com"
+    val email          = "foo@bar.com"
     val userId: UserId = UserId(ju.UUID.randomUUID())
-    val firstName = "Joe"
-    val lastName = "Bloggs"
+    val firstName      = "Joe"
+    val lastName       = "Bloggs"
 
     val userResponse: UserResponse = UserResponse(
       email = email,
@@ -73,13 +75,13 @@ class ThirdPartyDeveloperConnectorISpec extends ServerBaseISpec with BeforeAndAf
     val validResponseString = Json.toJson(List(UserResponse("a@b.com", "firstname", "lastName", verified = true, UserId(ju.UUID.randomUUID)))).toString
 
     "return Right with users when users are returned" in new Setup {
-     stubGetByEmailsReturnsResponse(emails, validResponseString)
+      stubGetByEmailsReturnsResponse(emails, validResponseString)
 
       val result: Either[Throwable, List[UserResponse]] = await(underTest.getByEmails(emails))
 
       result match {
         case Right(_: List[UserResponse]) => succeed
-        case _                            => fail
+        case _                            => fail()
       }
     }
 
@@ -90,7 +92,7 @@ class ThirdPartyDeveloperConnectorISpec extends ServerBaseISpec with BeforeAndAf
 
       result match {
         case Right(_: List[UserResponse]) => succeed
-        case _                            => fail
+        case _                            => fail()
       }
     }
 
@@ -100,22 +102,21 @@ class ThirdPartyDeveloperConnectorISpec extends ServerBaseISpec with BeforeAndAf
 
       result match {
         case Left(_: NotFoundException) => succeed
-        case _                          => fail
+        case _                          => fail()
       }
     }
 
     "return Left when internal server error returned" in new Setup {
-       stubGetByEmailsReturnsNoResponse(emails, INTERNAL_SERVER_ERROR)
+      stubGetByEmailsReturnsNoResponse(emails, INTERNAL_SERVER_ERROR)
 
       val result: Either[Throwable, List[UserResponse]] = await(underTest.getByEmails(emails))
 
       result match {
         case Left(_: Upstream5xxResponse) => succeed
-        case _                            => fail
+        case _                            => fail()
       }
     }
 
   }
-
 
 }

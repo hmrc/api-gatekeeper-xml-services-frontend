@@ -18,7 +18,9 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.teammembers
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+
 import play.api.test.FakeRequest
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.TeamMembersController.AddTeamMemberForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
@@ -30,20 +32,16 @@ import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServic
 class AddTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with ViewSpecHelpers {
 
   trait Setup extends OrganisationTestData {
-    val mockAppConfig = mock[AppConfig]
+    val mockAppConfig     = mock[AppConfig]
     val addTeamMemberView = app.injector.instanceOf[AddTeamMemberView]
-    val loggedInUser = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
+    val loggedInUser      = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
   }
 
   "Add Team Member View" should {
 
     "render the add team member page correctly when no errors" in new Setup {
 
-      val page = addTeamMemberView.render(AddTeamMemberForm.form,
-        org1.organisationId,
-        FakeRequest().withCSRFToken,
-        loggedInUser,
-        messagesProvider.messages, mockAppConfig)
+      val page = addTeamMemberView.render(AddTeamMemberForm.form, org1.organisationId, FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
 
       val document: Document = Jsoup.parse(page.body)
       hasBackLink(document) shouldBe true
@@ -53,12 +51,14 @@ class AddTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with Vi
 
     "render the add team member page correctly when errors exist" in new Setup {
 
-      val page = addTeamMemberView.render(AddTeamMemberForm.form.withError("emailAddress", "emailAddress.error.required.field"),
+      val page = addTeamMemberView.render(
+        AddTeamMemberForm.form.withError("emailAddress", "emailAddress.error.required.field"),
         org1.organisationId,
         FakeRequest().withCSRFToken,
         loggedInUser,
         messagesProvider.messages,
-        mockAppConfig)
+        mockAppConfig
+      )
 
       val document: Document = Jsoup.parse(page.body)
       hasBackLink(document) shouldBe true

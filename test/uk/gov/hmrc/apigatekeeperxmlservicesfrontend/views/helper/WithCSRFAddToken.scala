@@ -17,6 +17,7 @@
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper
 
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+
 import play.api.test.{CSRFTokenHelper, FakeRequest}
 import play.filters.csrf.CSRFAddToken
 
@@ -29,4 +30,3 @@ trait WithCSRFAddToken {
     def withCSRFToken: FakeRequest[T] = CSRFTokenHelper.addCSRFToken(request).asInstanceOf[FakeRequest[T]]
   }
 }
-

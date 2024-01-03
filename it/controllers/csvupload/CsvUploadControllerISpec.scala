@@ -18,30 +18,29 @@ package controllers.csvupload
 
 import org.jsoup.Jsoup
 import org.scalatest.BeforeAndAfterEach
+import utils.MockCookies
+
 import play.api.http.HeaderNames
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.Helpers.{FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SEE_OTHER}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{OrganisationName, OrganisationWithNameAndVendorId, ServiceName, VendorId}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{StrideAuthorisationStub, ServerBaseISpec}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.ParsedUser
-import play.api.libs.json.Json
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.XmlApi
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.ApiCategory
-import utils.MockCookies
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{ServerBaseISpec, StrideAuthorisationStub}
 
 class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with StrideAuthorisationStub {
 
   protected override def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
-        "microservice.services.auth.port" -> wireMockPort,
-        "metrics.enabled" -> true,
-        "auditing.enabled" -> false,
-        "auditing.consumer.baseUri.host" -> wireMockHost,
-        "auditing.consumer.baseUri.port" -> wireMockPort,
+        "microservice.services.auth.port"                      -> wireMockPort,
+        "metrics.enabled"                                      -> true,
+        "auditing.enabled"                                     -> false,
+        "auditing.consumer.baseUri.host"                       -> wireMockHost,
+        "auditing.consumer.baseUri.port"                       -> wireMockPort,
         "microservice.services.api-platform-xml-services.host" -> wireMockHost,
         "microservice.services.api-platform-xml-services.port" -> wireMockPort
       )
@@ -50,8 +49,8 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
   trait Setup extends XmlServicesStub {
     val validHeaders: List[(String, String)] = List(HeaderNames.AUTHORIZATION -> "Bearer 123")
-    val contentTypeHeader = HeaderNames.CONTENT_TYPE -> "application/x-www-form-urlencoded"
-    val bypassCsrfTokenHeader = "Csrf-Token" -> "nocheck"
+    val contentTypeHeader                    = HeaderNames.CONTENT_TYPE -> "application/x-www-form-urlencoded"
+    val bypassCsrfTokenHeader                = "Csrf-Token"             -> "nocheck"
 
     val wsClient: WSClient = app.injector.instanceOf[WSClient]
 
@@ -72,24 +71,25 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
     val serviceName1 = ServiceName("vat-and-ec-sales-list")
     val serviceName2 = ServiceName("stamp-taxes-online")
+
     val xmlApi1 = XmlApi(
       name = "xml api",
       serviceName = serviceName1,
       context = "context",
       description = "description",
-      categories  = Some(Seq(ApiCategory.CUSTOMS))
+      categories = Some(Seq(ApiCategory.CUSTOMS))
     )
     val xmlApi2 = xmlApi1.copy(serviceName = serviceName2)
     val xmlApis = Seq(xmlApi1, xmlApi2)
 
-    val services = List(serviceName1, serviceName2)
-    val email = "a@b.com"
-    val firstName = "Joe"
-    val lastName = "Bloggs"
-    val servicesString = "vat-and-ec-sales-list|stamp-taxes-online"
-    val vendorIds = "20001|20002"
+    val services        = List(serviceName1, serviceName2)
+    val email           = "a@b.com"
+    val firstName       = "Joe"
+    val lastName        = "Bloggs"
+    val servicesString  = "vat-and-ec-sales-list|stamp-taxes-online"
+    val vendorIds       = "20001|20002"
     val vendorIdsParsed = List(VendorId(20001), VendorId(20002))
-    val duplicateNames = "bob Hope|BOB Hopee"
+    val duplicateNames  = "bob Hope|BOB Hopee"
 
     val validUserCsvPayload = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS,DUPLICATENAMES
         a@b.com,Joe,Bloggs,$servicesString,$vendorIds,$duplicateNames"""
@@ -130,7 +130,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
     "GET /csvupload/organisation-page" should {
       "respond with 200 and render organisation page" in new Setup {
         strideAuthorisationSucceeds()
-        val result = callGetEndpoint(s"$url/csvupload/organisation-page")
+        val result  = callGetEndpoint(s"$url/csvupload/organisation-page")
         result.status mustBe OK
         val content = Jsoup.parse(result.body)
         content.getElementById("page-heading").text() mustBe "Upload organisations as CSV"
@@ -138,7 +138,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
       "respond with 403 and render the Forbidden view" in new Setup {
         strideAuthorisationFails()
-        val result = callGetEndpoint(s"$url/csvupload/organisation-page")
+        val result  = callGetEndpoint(s"$url/csvupload/organisation-page")
         result.status mustBe FORBIDDEN
         val content = Jsoup.parse(result.body)
         content.getElementById("page-heading").text() mustBe "You do not have permission to access Gatekeeper"
@@ -158,7 +158,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
         val result = callPostEndpoint(
           url = s"$url/csvupload/organisation-action",
-          validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader,
+          validHeaders :+ bypassCsrfTokenHeader :+ contentTypeHeader,
           s"csv-data-input=${validCsvPayloadWithTwoRows};"
         )
         result.status mustBe SEE_OTHER
@@ -170,7 +170,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
         val result = callPostEndpoint(
           url = s"$url/csvupload/organisation-action",
-          validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader,
+          validHeaders :+ bypassCsrfTokenHeader :+ contentTypeHeader,
           s"csv-data-input=${validCsvPayloadWithTwoRows};"
         )
         result.status mustBe INTERNAL_SERVER_ERROR
@@ -181,7 +181,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
         val result = callPostEndpoint(
           url = s"$url/csvupload/organisation-action",
-          validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader,
+          validHeaders :+ bypassCsrfTokenHeader :+ contentTypeHeader,
           s"csv-data-input=${invalidCsvPayload};"
         )
 
@@ -192,7 +192,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
     "GET /csvupload/users-page" should {
       "respond with 200 and render organisation page" in new Setup {
         strideAuthorisationSucceeds()
-        val result = callGetEndpoint(s"$url/csvupload/users-page")
+        val result  = callGetEndpoint(s"$url/csvupload/users-page")
         result.status mustBe OK
         val content = Jsoup.parse(result.body)
         content.getElementById("page-heading").text() mustBe "Upload users as CSV"
@@ -200,7 +200,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
       "respond with 403 and render the Forbidden view" in new Setup {
         strideAuthorisationFails()
-        val result = callGetEndpoint(s"$url/csvupload/users-page")
+        val result  = callGetEndpoint(s"$url/csvupload/users-page")
         result.status mustBe FORBIDDEN
         val content = Jsoup.parse(result.body)
         content.getElementById("page-heading").text() mustBe "You do not have permission to access Gatekeeper"
@@ -220,7 +220,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
         val result = callPostEndpoint(
           url = s"$url/csvupload/users-action",
-          validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader,
+          validHeaders :+ bypassCsrfTokenHeader :+ contentTypeHeader,
           s"csv-data-input=${validUserCsvPayload};"
         )
         result.status mustBe SEE_OTHER
@@ -232,7 +232,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
         val result = callPostEndpoint(
           url = s"$url/csvupload/users-action",
-          validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader,
+          validHeaders :+ bypassCsrfTokenHeader :+ contentTypeHeader,
           s"csv-data-input=${validUserCsvPayload};"
         )
         result.status mustBe INTERNAL_SERVER_ERROR
@@ -243,7 +243,7 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
 
         val result = callPostEndpoint(
           url = s"$url/csvupload/users-action",
-          validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader,
+          validHeaders :+ bypassCsrfTokenHeader :+ contentTypeHeader,
           s"csv-data-input=${invalidCsvPayload};"
         )
 

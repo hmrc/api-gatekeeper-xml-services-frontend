@@ -18,11 +18,11 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
+
 import play.api.http.Status._
 import play.api.libs.json.Json
 
 trait ThirdPartyDeveloperStub {
-
 
   def stubGetByEmailsReturnsResponse(emails: List[String], responseAsString: String): StubMapping = {
     val requestAsString = Json.toJson(emails).toString()

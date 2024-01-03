@@ -16,20 +16,22 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors
 
+import java.util.UUID
+import java.{util => ju}
+
 import org.scalatest.BeforeAndAfterEach
+
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import play.api.test.Helpers._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
+import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse, UpstreamErrorResponse}
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
-import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse, UpstreamErrorResponse}
-
-import java.util.UUID
-import java.{util => ju}
 
 class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach {
 
@@ -40,11 +42,11 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
   protected override def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
-        "microservice.services.auth.port" -> wireMockPort,
-        "metrics.enabled" -> true,
-        "auditing.enabled" -> false,
-        "auditing.consumer.baseUri.host" -> wireMockHost,
-        "auditing.consumer.baseUri.port" -> wireMockPort,
+        "microservice.services.auth.port"                      -> wireMockPort,
+        "metrics.enabled"                                      -> true,
+        "auditing.enabled"                                     -> false,
+        "auditing.consumer.baseUri.host"                       -> wireMockHost,
+        "auditing.consumer.baseUri.port"                       -> wireMockPort,
         "microservice.services.api-platform-xml-services.host" -> wireMockHost,
         "microservice.services.api-platform-xml-services.port" -> wireMockPort
       )
@@ -55,14 +57,15 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
   trait Setup extends XmlServicesStub {
     val objInTest: XmlServicesConnector = app.injector.instanceOf[XmlServicesConnector]
-    val vendorId: VendorId = VendorId(12)
-    val emailAddress = "email@email.com"
-    val organisation = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = vendorId, name = "Org name")
-    val organisation2 = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = VendorId(13), name = "Org name2")
+    val vendorId: VendorId              = VendorId(12)
+    val emailAddress                    = "email@email.com"
+    val organisation                    = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = vendorId, name = "Org name")
+    val organisation2                   = Organisation(organisationId = OrganisationId(ju.UUID.randomUUID()), vendorId = VendorId(13), name = "Org name2")
 
     val collaboratorList = List(Collaborator("userId", "collaborator1@mail.com"))
 
     val organisationId = OrganisationId(ju.UUID.randomUUID())
+
     val organisationWithTeamMembers = Organisation(
       organisationId = OrganisationId(ju.UUID.randomUUID()),
       vendorId = VendorId(14),
@@ -75,13 +78,13 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       OrganisationWithNameAndVendorId(OrganisationName("Test Organsation Two"), VendorId(102))
     )
 
-    val services = List(ServiceName("service1"), ServiceName("service2"))
-    val email = "a@b.com"
-    val firstName = "Joe"
-    val lastName = "Bloggs"
+    val services       = List(ServiceName("service1"), ServiceName("service2"))
+    val email          = "a@b.com"
+    val firstName      = "Joe"
+    val lastName       = "Bloggs"
     val servicesString = "service1;service2;"
-    val vendorIds = "20001|20002"
-    val vendorIdsList = List(VendorId(20001), VendorId(20002))
+    val vendorIds      = "20001|20002"
+    val vendorIdsList  = List(VendorId(20001), VendorId(20002))
 
     val parsedUser = ParsedUser(email, firstName, lastName, services, vendorIdsList)
 
@@ -90,17 +93,21 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       ParsedUser("b@b.com", firstName + 1, lastName + 1, services, vendorIdsList)
     )
 
-    val xmlApi1 = XmlApi(name = "xml api 1",
+    val xmlApi1 = XmlApi(
+      name = "xml api 1",
       serviceName = ServiceName("vat-and-ec-sales-list"),
       context = "/government/collections/vat-and-ec-sales-list-online-support-for-software-developers",
       description = "description",
-      categories  = Some(Seq(ApiCategory.CUSTOMS)))
-    val xmlApi2 = XmlApi(name = "xml api 3",
+      categories = Some(Seq(ApiCategory.CUSTOMS))
+    )
+
+    val xmlApi2 = XmlApi(
+      name = "xml api 3",
       serviceName = ServiceName("customs-import"),
       context = "/government/collections/customs-import",
       description = "description",
-      categories  = Some(Seq(ApiCategory.CUSTOMS)))
-
+      categories = Some(Seq(ApiCategory.CUSTOMS))
+    )
 
     val organisationUsers = List(OrganisationUser(organisationId, UserId(UUID.randomUUID()), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)))
 
@@ -114,7 +121,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case Left(e: Upstream4xxResponse) => e.statusCode mustBe BAD_REQUEST
-        case _                            => fail
+        case _                            => fail()
       }
 
     }
@@ -125,7 +132,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case Right(org) => org mustBe List(organisation)
-        case _          => fail
+        case _          => fail()
       }
     }
 
@@ -135,7 +142,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case Right(org) => org mustBe List(organisation)
-        case _          => fail
+        case _          => fail()
       }
     }
 
@@ -145,14 +152,14 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case Right(org) => org must contain allOf (organisation, organisation2)
-        case _          => fail
+        case _          => fail()
       }
     }
   }
 
   "getOrganisationByOrganisationId" should {
     "return right with some organisation when back end call successful" in new Setup {
-      val orgId = organisation.organisationId
+      val orgId  = organisation.organisationId
       getOrganisationByOrganisationIdReturnsResponseWithBody(orgId, 200, Json.toJson(organisation).toString())
       val result = await(objInTest.getOrganisationByOrganisationId(orgId))
       result match {
@@ -162,7 +169,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     }
 
     "return Right None with when back end returns 404" in new Setup {
-      val orgId = organisation.organisationId
+      val orgId  = organisation.organisationId
       getOrganisationByOrganisationIdReturnsError(orgId, 404)
       val result = await(objInTest.getOrganisationByOrganisationId(orgId))
       result match {
@@ -172,7 +179,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     }
 
     "return Left with when back end returns 404" in new Setup {
-      val orgId = organisation.organisationId
+      val orgId  = organisation.organisationId
       getOrganisationByOrganisationIdReturnsError(orgId, 500)
       val result = await(objInTest.getOrganisationByOrganisationId(orgId))
       result match {
@@ -282,7 +289,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case AddCollaboratorFailure(UpstreamErrorResponse(message, NOT_FOUND, _, _)) => message mustBe expectedErrorMessage
-        case _                                                                       => fail
+        case _                                                                       => fail()
       }
     }
 
@@ -315,7 +322,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case RemoveCollaboratorFailure(e) => e.getMessage
-        case _                            => fail
+        case _                            => fail()
       }
 
     }
@@ -332,7 +339,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case RemoveCollaboratorFailure(e) => e.getMessage
-        case _                            => fail
+        case _                            => fail()
       }
     }
 
@@ -353,7 +360,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
         result match {
           case Left(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed
-          case _                                                           => fail
+          case _                                                           => fail()
         }
       }
     }
@@ -376,24 +383,26 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
         result match {
           case Left(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed
-          case _                                                           => fail
+          case _                                                           => fail()
         }
       }
     }
 
     "getAllApis" should {
 
-      val xmlApi = XmlApi(name = "xml api 1",
-      serviceName = ServiceName("vat-and-ec-sales-list"),
-      context = "/government/collections/vat-and-ec-sales-list-online-support-for-software-developers",
-      description = "description",
-      categories  = Some(Seq(ApiCategory.CUSTOMS)))
+      val xmlApi = XmlApi(
+        name = "xml api 1",
+        serviceName = ServiceName("vat-and-ec-sales-list"),
+        context = "/government/collections/vat-and-ec-sales-list-online-support-for-software-developers",
+        description = "description",
+        categories = Some(Seq(ApiCategory.CUSTOMS))
+      )
 
       "return Right when getAllApis call is successful" in new Setup {
 
         getAllApisResponseWithBody(OK, Json.toJson(Seq(xmlApi)).toString)
 
-        val result = await(objInTest.getAllApis())
+        val result = await(objInTest.getAllApis)
 
         result mustBe Right((Seq(xmlApi)))
       }
@@ -402,11 +411,11 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
         getAllApisReturnsError(INTERNAL_SERVER_ERROR)
 
-        val result = await(objInTest.getAllApis())
+        val result = await(objInTest.getAllApis)
 
         result match {
           case Left(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed
-          case _                                                           => fail
+          case _                                                           => fail()
         }
       }
     }
@@ -414,13 +423,13 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     "getOrganisationUsersByOrganisationId" should {
       "return Right with list of users when connector receives 200 and list of users " in new Setup {
 
-        val organisationUser = OrganisationUser(organisationId, UserId(UUID.randomUUID()) , email, firstName, lastName, List(xmlApi1, xmlApi2))
+        val organisationUser = OrganisationUser(organisationId, UserId(UUID.randomUUID()), email, firstName, lastName, List(xmlApi1, xmlApi2))
         getOrganisationUsersByOrganisationIdReturnsResponse(organisationId, OK, List(organisationUser))
-        val result = await(objInTest.getOrganisationUsersByOrganisationId(organisationId))
+        val result           = await(objInTest.getOrganisationUsersByOrganisationId(organisationId))
 
         result match {
-          case Right(users : List[OrganisationUser]) => users mustBe List(organisationUser)
-          case _ => fail
+          case Right(users: List[OrganisationUser]) => users mustBe List(organisationUser)
+          case _                                    => fail()
         }
       }
     }
@@ -431,8 +440,8 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       val result = await(objInTest.getOrganisationUsersByOrganisationId(organisationId))
 
       result match {
-        case Left(_ : UpstreamErrorResponse) => succeed
-        case _ => fail
+        case Left(_: UpstreamErrorResponse) => succeed
+        case _                              => fail()
       }
     }
 

@@ -16,20 +16,23 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.services
 
-import org.scalatest.BeforeAndAfterEach
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import scala.concurrent.ExecutionContext.Implicits.global
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.AsyncHmrcSpec
 import scala.concurrent.Future
+
+import org.scalatest.BeforeAndAfterEach
+
+import uk.gov.hmrc.http.HeaderCarrier
+
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.AsyncHmrcSpec
 
 class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
 
   trait Setup {
-    implicit val hc = HeaderCarrier()
-    val mockXmlServiceConnector = mock[XmlServicesConnector]
-    val csvService = new CsvService(mockXmlServiceConnector)
+    implicit val hc: HeaderCarrier = HeaderCarrier()
+    val mockXmlServiceConnector    = mock[XmlServicesConnector]
+    val csvService                 = new CsvService(mockXmlServiceConnector)
 
   }
 
@@ -37,12 +40,12 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
 
     "return a list of organisations with only one organisation" in new Setup {
       val organisationName = "Organistaion One"
-      val vendorId = 1
-      val csvTestData = s"""VENDORID,NAME
+      val vendorId         = 1
+      val csvTestData      = s"""VENDORID,NAME
     $vendorId,$organisationName"""
 
       val result: Seq[OrganisationWithNameAndVendorId] = csvService.mapToOrganisationFromCsv(csvTestData)
-      val actualOrganisation = result.head
+      val actualOrganisation                           = result.head
 
       actualOrganisation.name.value shouldBe organisationName
       actualOrganisation.vendorId.value shouldBe vendorId
@@ -131,23 +134,18 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
   }
 
   "mapToUsersFromCsv" should {
-    val email = "a@b.com"
-    val firstName = "Joe"
-    val lastName = "Bloggs"
+    val email          = "a@b.com"
+    val firstName      = "Joe"
+    val lastName       = "Bloggs"
     val servicesString = "vat-and-ec-sales-list|stamp-taxes-online"
-    val vendorIds = "20001|20002"
-    val vendorIdsList = List(VendorId(20001), VendorId(20002))
-    val serviceName1 = ServiceName("vat-and-ec-sales-list")
-    val serviceName2 = ServiceName("stamp-taxes-online")
+    val vendorIds      = "20001|20002"
+    val vendorIdsList  = List(VendorId(20001), VendorId(20002))
+    val serviceName1   = ServiceName("vat-and-ec-sales-list")
+    val serviceName2   = ServiceName("stamp-taxes-online")
 
-    val xmlApi1 = XmlApi(name = "xml api",
-      serviceName = serviceName1,
-      context = "context",
-      description = "description",
-      categories  = Some(Seq(ApiCategory.CUSTOMS)))
+    val xmlApi1 = XmlApi(name = "xml api", serviceName = serviceName1, context = "context", description = "description", categories = Some(Seq(ApiCategory.CUSTOMS)))
     val xmlApi2 = xmlApi1.copy(serviceName = serviceName2)
     val xmlApis = Seq(xmlApi1, xmlApi2)
-    
 
     "return a list of users" in new Setup {
       when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Right(xmlApis)))
@@ -156,7 +154,7 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
     $email, $firstName, $lastName, $servicesString, $vendorIds,"""
 
       val result: Seq[ParsedUser] = await(csvService.mapToUsersFromCsv(csvTestData))
-      val actualUser = result.head
+      val actualUser              = result.head
 
       actualUser.email shouldBe email
       actualUser.firstName shouldBe firstName
@@ -172,7 +170,7 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
     $email, $firstName, $lastName,, $vendorIds,"""
 
       val result: Seq[ParsedUser] = await(csvService.mapToUsersFromCsv(csvTestData))
-      val actualUser = result.head
+      val actualUser              = result.head
 
       actualUser.email shouldBe email
       actualUser.firstName shouldBe firstName
@@ -188,7 +186,7 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
     $email, $firstName, $lastName, , $vendorIds, somevalue """
 
       val result: Seq[ParsedUser] = await(csvService.mapToUsersFromCsv(csvTestData))
-      val actualUser = result.head
+      val actualUser              = result.head
 
       actualUser.email shouldBe email
       actualUser.firstName shouldBe firstName
@@ -206,7 +204,6 @@ class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
       val exception = intercept[RuntimeException] { await(csvService.mapToUsersFromCsv(csvTestData)) }
       exception.getMessage() shouldBe "No XML APIs found"
     }
-
 
     "throw an exception when xml connector returns error" in new Setup {
       when(mockXmlServiceConnector.getAllApis).thenReturn(Future.successful(Left(new RuntimeException("error"))))

@@ -17,10 +17,12 @@
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
+
 import play.api.libs.json.Json
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{AddCollaboratorRequest, RemoveCollaboratorRequest}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 
 trait XmlServicesStub {
 
@@ -30,19 +32,19 @@ trait XmlServicesStub {
 
   val csvuploadUrl = s"$baseUrl/csvupload"
 
-  def  updateOrganistionDetailsUrl(organisationId: OrganisationId) ={
+  def updateOrganistionDetailsUrl(organisationId: OrganisationId) = {
     s"$organisationUrl/${organisationId.value.toString}"
   }
 
-  def  removeTeamMemberUrl(organisationId: OrganisationId) ={
+  def removeTeamMemberUrl(organisationId: OrganisationId) = {
     s"$organisationUrl/${organisationId.value.toString}/remove-collaborator"
   }
 
-  def  addTeamMemberUrl(organisationId: OrganisationId) ={
+  def addTeamMemberUrl(organisationId: OrganisationId) = {
     s"$organisationUrl/${organisationId.value.toString}/add-collaborator"
   }
 
-  def getOrganisationUsersByOrganisationIdUrl(organisationId: OrganisationId) ={
+  def getOrganisationUsersByOrganisationIdUrl(organisationId: OrganisationId) = {
     s"$organisationUrl/${organisationId.value.toString}/get-users"
   }
 
@@ -69,7 +71,7 @@ trait XmlServicesStub {
     Json.toJson(BulkUploadOrganisationsRequest(organisationsWithNameAndVendorIds)).toString
   }
 
-  def bulAddUsersRequestAsString(users: Seq[ParsedUser]): String ={
+  def bulAddUsersRequestAsString(users: Seq[ParsedUser]): String = {
     Json.toJson((BulkAddUsersRequest(users))).toString()
   }
 
@@ -140,7 +142,7 @@ trait XmlServicesStub {
       ))
   }
 
-  def addOrganisationReturnsResponse(organisationName: String, email: String, firstName:String, lastName: String, status: Int, response: Organisation) = {
+  def addOrganisationReturnsResponse(organisationName: String, email: String, firstName: String, lastName: String, status: Int, response: Organisation) = {
 
     stubFor(post(urlEqualTo(organisationUrl))
       .withRequestBody(equalToJson(createOrganisationRequestAsString(organisationName, email, firstName, lastName)))
@@ -151,7 +153,7 @@ trait XmlServicesStub {
       ))
   }
 
-  def addOrganisationReturnsError(organisationName: String, email: String, firstName: String, lastName: String,  status: Int) = {
+  def addOrganisationReturnsError(organisationName: String, email: String, firstName: String, lastName: String, status: Int) = {
 
     stubFor(post(urlEqualTo(organisationUrl))
       .withRequestBody(equalToJson(createOrganisationRequestAsString(organisationName, email, firstName, lastName)))
@@ -161,7 +163,7 @@ trait XmlServicesStub {
       ))
   }
 
-  def updateOrganisationDetailsReturnsResponse(organisationName: String, organisationId: OrganisationId,  status: Int, response: Organisation) = {
+  def updateOrganisationDetailsReturnsResponse(organisationName: String, organisationId: OrganisationId, status: Int, response: Organisation) = {
 
     stubFor(post(urlEqualTo(updateOrganistionDetailsUrl(organisationId)))
       .withRequestBody(equalToJson(updateOrganisationDetailsRequestAsString(organisationName)))
@@ -181,17 +183,16 @@ trait XmlServicesStub {
       ))
   }
 
-    def removeOrganisationStub(organisationId: OrganisationId,  status: Int) = {
+  def removeOrganisationStub(organisationId: OrganisationId, status: Int) = {
 
     stubFor(delete(urlEqualTo(updateOrganistionDetailsUrl(organisationId)))
       .willReturn(
         aResponse()
           .withStatus(status)
-         
       ))
   }
 
-  def addTeamMemberReturnsResponse(organisationId: OrganisationId, email: String, firstName: String, lastName:String,  status: Int, response: Organisation) = {
+  def addTeamMemberReturnsResponse(organisationId: OrganisationId, email: String, firstName: String, lastName: String, status: Int, response: Organisation) = {
 
     stubFor(post(urlEqualTo(addTeamMemberUrl(organisationId)))
       .withRequestBody(equalToJson(addCollaboratorRequestAsString(email, firstName, lastName)))
@@ -202,7 +203,7 @@ trait XmlServicesStub {
       ))
   }
 
-  def addTeamMemberReturnsError(organisationId: OrganisationId, email: String,  firstName: String, lastName:String, status: Int) = {
+  def addTeamMemberReturnsError(organisationId: OrganisationId, email: String, firstName: String, lastName: String, status: Int) = {
 
     stubFor(post(urlEqualTo(addTeamMemberUrl(organisationId)))
       .withRequestBody(equalToJson(addCollaboratorRequestAsString(email, firstName, lastName)))
@@ -243,7 +244,7 @@ trait XmlServicesStub {
       ))
   }
 
-    def bulkAddUsersReturnsResponse(users: Seq[ParsedUser], status: Int) = {
+  def bulkAddUsersReturnsResponse(users: Seq[ParsedUser], status: Int) = {
 
     stubFor(post(urlEqualTo(s"$csvuploadUrl/bulkusers"))
       .withRequestBody(equalToJson(bulAddUsersRequestAsString(users)))
@@ -254,7 +255,7 @@ trait XmlServicesStub {
   }
 
   def getOrganisationUsersByOrganisationIdReturnsResponse(organisationId: OrganisationId, status: Int, users: List[OrganisationUser]): Unit = {
-    stubFor(get(urlEqualTo( getOrganisationUsersByOrganisationIdUrl(organisationId)))
+    stubFor(get(urlEqualTo(getOrganisationUsersByOrganisationIdUrl(organisationId)))
       .willReturn(
         aResponse()
           .withStatus(status)
@@ -264,7 +265,7 @@ trait XmlServicesStub {
   }
 
   def getOrganisationUsersByOrganisationIdReturnsError(organisationId: OrganisationId, status: Int): Unit = {
-    stubFor(get(urlEqualTo( getOrganisationUsersByOrganisationIdUrl(organisationId)))
+    stubFor(get(urlEqualTo(getOrganisationUsersByOrganisationIdUrl(organisationId)))
       .willReturn(
         aResponse()
           .withStatus(status)

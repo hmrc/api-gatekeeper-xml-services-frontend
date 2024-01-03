@@ -17,6 +17,7 @@
 package utils
 
 import org.openqa.selenium.{Cookie => SeleniumCookie}
+
 import play.api.Application
 import play.api.libs.ws.WSCookie
 import play.api.mvc.{Cookie, Session, SessionCookieBaker}
@@ -30,14 +31,14 @@ object MockCookies {
 
   val mockSession = Session(Map(
     SessionKeys.lastRequestTimestamp -> System.currentTimeMillis().toString,
-    SessionKeys.authToken -> "mock-bearer-token",
-    SessionKeys.sessionId -> "mock-sessionid"
+    SessionKeys.authToken            -> "mock-bearer-token",
+    SessionKeys.sessionId            -> "mock-sessionid"
   ))
 
   def makeSessionCookie(session: Session, app: Application): Cookie = {
-    val cookieCrypto = app.injector.instanceOf[SessionCookieCrypto]
-    val cookieBaker = app.injector.instanceOf[SessionCookieBaker]
-    val sessionCookie = cookieBaker.encodeAsCookie(session)
+    val cookieCrypto   = app.injector.instanceOf[SessionCookieCrypto]
+    val cookieBaker    = app.injector.instanceOf[SessionCookieBaker]
+    val sessionCookie  = cookieBaker.encodeAsCookie(session)
     val encryptedValue = cookieCrypto.crypto.encrypt(PlainText(sessionCookie.value))
     sessionCookie.copy(value = encryptedValue.value)
   }
@@ -49,13 +50,13 @@ object MockCookies {
   def createWsCookie(cookieName: String, session: Session, application: Application) = {
     val cookie = makeSessionCookie(session, application)
     new WSCookie() {
-      override def name: String = cookieName
-      override def value: String = cookie.value
+      override def name: String           = cookieName
+      override def value: String          = cookie.value
       override def domain: Option[String] = cookie.domain
-      override def path: Option[String] = Some(cookie.path)
-      override def maxAge: Option[Long] = cookie.maxAge.map(_.toLong)
-      override def secure: Boolean = cookie.secure
-      override def httpOnly: Boolean = cookie.httpOnly
+      override def path: Option[String]   = Some(cookie.path)
+      override def maxAge: Option[Long]   = cookie.maxAge.map(_.toLong)
+      override def secure: Boolean        = cookie.secure
+      override def httpOnly: Boolean      = cookie.httpOnly
     }
   }
 

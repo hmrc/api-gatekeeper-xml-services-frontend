@@ -16,34 +16,35 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.teammembers
 
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
+
 import play.api.test.FakeRequest
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.ManageTeamMembersView
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServiceMockModule
 
 class ManageTeamMembersViewSpec extends CommonViewSpec with ViewSpecHelpers {
 
   trait Setup extends OrganisationTestData {
-    val mockAppConfig = mock[AppConfig]
+    val mockAppConfig         = mock[AppConfig]
     val manageTeamMembersView = app.injector.instanceOf[ManageTeamMembersView]
-     val loggedInUser = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
+    val loggedInUser          = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
   }
 
   "Manage Team Members View" should {
 
     "render the team members correctly when " in new Setup {
 
-      val page = manageTeamMembersView.render(organisationWithCollaborators, FakeRequest(), loggedInUser, messagesProvider.messages, mockAppConfig)
+      val page               = manageTeamMembersView.render(organisationWithCollaborators, FakeRequest(), loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       hasBackLink(document) shouldBe true
       validateManageTeamMembersPage(document, organisationWithCollaborators)
     }
-
 
   }
 }

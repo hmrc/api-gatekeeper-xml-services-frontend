@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
+import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
+
 import uk.gov.hmrc.http.HeaderCarrier
-import org.mockito.MockitoSugar
-import org.mockito.ArgumentMatchersSugar
 
 trait ControllerSetupBase extends MockitoSugar with ArgumentMatchersSugar {
-  implicit val hc = HeaderCarrier()
+  implicit val hc: HeaderCarrier = HeaderCarrier()
 }

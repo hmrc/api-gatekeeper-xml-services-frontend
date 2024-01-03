@@ -16,42 +16,39 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.csvupload
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
 import org.jsoup.Jsoup
+
 import play.api.http.Status
 import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.http.UpstreamErrorResponse
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.{ControllerBaseSpec, ControllerSetupBase}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationName
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationWithNameAndVendorId
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.VendorId
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{OrganisationName, OrganisationWithNameAndVendorId, ParsedUser, ServiceName, VendorId}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.services.CsvService
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ErrorTemplate
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.csvupload.{OrganisationCsvUploadView, UsersCsvUploadView}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.ViewSpecHelpers
-import uk.gov.hmrc.http.UpstreamErrorResponse
-import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServiceMockModule
-import uk.gov.hmrc.apiplatform.modules.gkauth.services.LdapAuthorisationServiceMockModule
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.ParsedUser
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.ServiceName
 import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.GatekeeperRoles
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.{LdapAuthorisationServiceMockModule, StrideAuthorisationServiceMockModule}
 
-class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken with ViewSpecHelpers with StrideAuthorisationServiceMockModule with LdapAuthorisationServiceMockModule {
+class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken with ViewSpecHelpers with StrideAuthorisationServiceMockModule
+    with LdapAuthorisationServiceMockModule {
 
   trait Setup extends ControllerSetupBase with OrganisationTestData {
-    val organisationPageRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/organisation-page")
+    val organisationPageRequest: FakeRequest[AnyContentAsEmpty.type]   = FakeRequest("GET", "/organisation-page")
     val organisationActionRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/organisations-action")
-    private lazy val errorTemplate = app.injector.instanceOf[ErrorTemplate]
-    private lazy val organisationCsvUploadView = app.injector.instanceOf[OrganisationCsvUploadView]
-    private lazy val usersCsvUploadView = app.injector.instanceOf[UsersCsvUploadView]
+    private lazy val errorTemplate                                     = app.injector.instanceOf[ErrorTemplate]
+    private lazy val organisationCsvUploadView                         = app.injector.instanceOf[OrganisationCsvUploadView]
+    private lazy val usersCsvUploadView                                = app.injector.instanceOf[UsersCsvUploadView]
 
-    val mockCsvService: CsvService = mock[CsvService]
+    val mockCsvService: CsvService                    = mock[CsvService]
     val mockXmlServiceConnector: XmlServicesConnector = mock[XmlServicesConnector]
 
     val controller = new CsvUploadController(
@@ -76,17 +73,17 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
       OrganisationWithNameAndVendorId(OrganisationName("Test Organsation Two"), VendorId(102))
     )
 
-    val email = "a@b.com"
+    val email              = "a@b.com"
     override val firstName = "Joe"
-    override val lastName = "Bloggs"
-    val servicesString = "service1|service2"
-    val vendorIds = List(VendorId(20001), VendorId(20002))
+    override val lastName  = "Bloggs"
+    val servicesString     = "service1|service2"
+    val vendorIds          = List(VendorId(20001), VendorId(20002))
 
     val csvUsersTestData = s"""EMAIL,FIRSTNAME,LASTNAME,SERVICES,VENDORIDS
     $email, $firstName, $lastName, $servicesString, $vendorIds"""
 
     val parsedServices = List(ServiceName("service1"), ServiceName("service2"))
-    val parsedUser = ParsedUser(email, firstName, lastName, parsedServices, vendorIds)
+    val parsedUser     = ParsedUser(email, firstName, lastName, parsedServices, vendorIds)
 
     def validatePageIsRendered(result: Future[Result]) = {
       status(result) shouldBe Status.OK
@@ -120,7 +117,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
     "display organisation page with error messages when invalid form provided" in new Setup {
       val request: FakeRequest[AnyContentAsFormUrlEncoded] = createUploadUsersRequest("")
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
-      val result: Future[Result] = controller.uploadOrganisationsCsvAction()(request)
+      val result: Future[Result]                           = controller.uploadOrganisationsCsvAction()(request)
       status(result) shouldBe BAD_REQUEST
 
       verifyZeroInteractions(mockCsvService)
@@ -140,7 +137,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
     "display internal server error when failure result returned from CsvUploadService" in new Setup {
       val request: FakeRequest[AnyContentAsFormUrlEncoded] = createUploadUsersRequest(validCsvPayloadWithTwoRows)
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
-      val exceptionMessage = "Parse Exception"
+      val exceptionMessage                                 = "Parse Exception"
       when(mockCsvService.mapToOrganisationFromCsv(*)).thenThrow(new RuntimeException(exceptionMessage))
 
       val result: Future[Result] = controller.uploadOrganisationsCsvAction()(request)
@@ -231,7 +228,7 @@ class CsvUploadControllerSpec extends ControllerBaseSpec with WithCSRFAddToken w
 
     "Redirect to the error page when service throws an exception" in new Setup {
       val request: FakeRequest[AnyContentAsFormUrlEncoded] = createUploadUsersRequest(csvUsersTestData)
-      val exceptionMessage = "parse error"
+      val exceptionMessage                                 = "parse error"
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
       when(mockCsvService.mapToUsersFromCsv(*)(*)).thenThrow(new RuntimeException(exceptionMessage))
 

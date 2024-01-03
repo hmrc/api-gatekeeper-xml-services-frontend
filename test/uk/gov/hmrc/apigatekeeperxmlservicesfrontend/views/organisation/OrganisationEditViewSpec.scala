@@ -18,7 +18,9 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.organisation
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+
 import play.api.test.FakeRequest
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.UpdateOrganisationDetailsForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
@@ -30,9 +32,9 @@ import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServic
 class OrganisationEditViewSpec extends CommonViewSpec with WithCSRFAddToken with ViewSpecHelpers {
 
   trait Setup extends OrganisationTestData {
-    val mockAppConfig = mock[AppConfig]
+    val mockAppConfig          = mock[AppConfig]
     val organisationUpdateView = app.injector.instanceOf[OrganisationUpdateView]
-     val loggedInUser = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
+    val loggedInUser           = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
   }
 
   "Organisation Edit View" should {
@@ -45,7 +47,8 @@ class OrganisationEditViewSpec extends CommonViewSpec with WithCSRFAddToken with
         FakeRequest().withCSRFToken,
         loggedInUser,
         messagesProvider.messages,
-        mockAppConfig)
+        mockAppConfig
+      )
 
       val document: Document = Jsoup.parse(page.body)
       hasBackLink(document) shouldBe true
@@ -61,7 +64,8 @@ class OrganisationEditViewSpec extends CommonViewSpec with WithCSRFAddToken with
         FakeRequest().withCSRFToken,
         loggedInUser,
         messagesProvider.messages,
-        mockAppConfig)
+        mockAppConfig
+      )
 
       val document: Document = Jsoup.parse(page.body)
       hasBackLink(document) shouldBe true

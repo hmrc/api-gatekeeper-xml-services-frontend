@@ -18,6 +18,7 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils
 
 import org.jsoup.nodes.Document
 import org.scalatest.matchers.should.Matchers
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
 import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServiceMockModule
 
@@ -137,7 +138,7 @@ trait ViewSpecHelpers extends Matchers {
 
   }
 
-  //CSV PAGES
+  // CSV PAGES
   def validateUsersCSVUploadPage(document: Document) = {
     document.getElementById("page-heading").text() shouldBe "Upload users as CSV"
     document.getElementById("csv-data-input-label").text() shouldBe "Provide CSV input here please"

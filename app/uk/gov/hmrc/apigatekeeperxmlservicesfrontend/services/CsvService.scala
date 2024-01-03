@@ -19,16 +19,17 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.services
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 import javax.inject.{Inject, Singleton}
-import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.jdk.CollectionConverters._
 
 import org.apache.commons.csv.CSVRecord
 import org.apache.commons.io.IOUtils
 
 import play.api.Logging
+import uk.gov.hmrc.http.HeaderCarrier
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
-import uk.gov.hmrc.http.HeaderCarrier
 
 @Singleton
 class CsvService @Inject() (xmlServicesConnector: XmlServicesConnector)(implicit val ec: ExecutionContext) extends Logging {
@@ -66,7 +67,7 @@ class CsvService @Inject() (xmlServicesConnector: XmlServicesConnector)(implicit
 
     val records = extractCsvRecords(csvData, expectedHeaders, validateUsersHeaders)
 
-    handleGetAllApis.map(allServices => records.map(x => parseUser(x, allServices)))
+    handleGetAllApis().map(allServices => records.map(x => parseUser(x, allServices)))
   }
 
   def mapToOrganisationFromCsv(csvData: String): Seq[OrganisationWithNameAndVendorId] = {

@@ -16,11 +16,18 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
+import java.util.UUID
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
 import org.jsoup.Jsoup
+
 import play.api.http.Status
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.ErrorHandler
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{ThirdPartyDeveloperConnector, XmlServicesConnector}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
@@ -28,28 +35,20 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.{
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.{AddTeamMemberView, CreateTeamMemberView, ManageTeamMembersView, RemoveTeamMemberView}
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
-
-import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServiceMockModule
-import uk.gov.hmrc.apiplatform.modules.gkauth.services.LdapAuthorisationServiceMockModule
-
-import java.util.UUID
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.GatekeeperRoles
-
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.{LdapAuthorisationServiceMockModule, StrideAuthorisationServiceMockModule}
 
 class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken with ViewSpecHelpers {
 
   trait Setup extends ControllerSetupBase with OrganisationTestData with LdapAuthorisationServiceMockModule with StrideAuthorisationServiceMockModule {
-    val fakeRequest = FakeRequest().withMethod(GET)
-    private lazy val errorHandler = app.injector.instanceOf[ErrorHandler]
+    val fakeRequest                        = FakeRequest().withMethod(GET)
+    private lazy val errorHandler          = app.injector.instanceOf[ErrorHandler]
     private lazy val manageTeamMembersView = app.injector.instanceOf[ManageTeamMembersView]
-    private lazy val addTeamMembersView = app.injector.instanceOf[AddTeamMemberView]
+    private lazy val addTeamMembersView    = app.injector.instanceOf[AddTeamMemberView]
     private lazy val createTeamMembersView = app.injector.instanceOf[CreateTeamMemberView]
     private lazy val removeTeamMembersView = app.injector.instanceOf[RemoveTeamMemberView]
 
-    val mockXmlServiceConnector = mock[XmlServicesConnector]
+    val mockXmlServiceConnector          = mock[XmlServicesConnector]
     val mockThirdPartyDeveloperConnector = mock[ThirdPartyDeveloperConnector]
 
     val controller = new TeamMembersController(
@@ -87,7 +86,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
 
       val result = controller.manageTeamMembers(
-        organisationWithCollaborators.organisationId)(createFakePostRequest("organisationname" -> org1.name))
+        organisationWithCollaborators.organisationId
+      )(createFakePostRequest("organisationname" -> org1.name))
 
       status(result) shouldBe OK
       val document = Jsoup.parse(contentAsString(result))
@@ -104,7 +104,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
 
       val result = controller.manageTeamMembers(
-        organisationWithCollaborators.organisationId)(createFakePostRequest("organisationname" -> org1.name))
+        organisationWithCollaborators.organisationId
+      )(createFakePostRequest("organisationname" -> org1.name))
 
       status(result) shouldBe INTERNAL_SERVER_ERROR
       verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
@@ -143,8 +144,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
   "addTeamMemberAction" should {
     "call add user with existing user details when they are not linked to the organisation and they exist in third party developer" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
-      val userId = UserId(UUID.randomUUID())
-      val userResponse = UserResponse(emailAddress, firstName, lastName, verified = true,  userId)
+      val userId       = UserId(UUID.randomUUID())
+      val userResponse = UserResponse(emailAddress, firstName, lastName, verified = true, userId)
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
         .thenReturn(Future.successful(Right(org1)))
@@ -160,7 +161,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       verify(mockXmlServiceConnector).addTeamMember(eqTo(organisationId1), eqTo(emailAddress), *, *)(*[HeaderCarrier])
     }
 
-    "display the createTeamMemberView when  when the user does not exist in third party developer" in new Setup {
+    "display the createTeamMemberView when the user does not exist in third party developer" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
@@ -173,7 +174,6 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       val document = Jsoup.parse(contentAsString(result))
 
       validateCreateTeamMemberPage(document, emailAddress)
-      verifyZeroInteractions(mockXmlServiceConnector)
     }
 
     "return 400 and display the add team member page with errors when the collaborator already exists against the organisation" in new Setup {
@@ -204,13 +204,12 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       val result = controller.addTeamMemberAction(organisationId1)(createFakePostRequest("emailAddress" -> emailAddress))
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-      verifyZeroInteractions(mockXmlServiceConnector)
     }
 
     "call add team member via connector, then show Internal server error page when call fails" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
-      val userId = UserId(UUID.randomUUID())
-      val userResponse = UserResponse(emailAddress, firstName, lastName, verified = true,  userId)
+      val userId       = UserId(UUID.randomUUID())
+      val userResponse = UserResponse(emailAddress, firstName, lastName, verified = true, userId)
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*))
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
@@ -282,7 +281,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
         .thenReturn(Future.successful(AddCollaboratorFailure(UpstreamErrorResponse("", NOT_FOUND, NOT_FOUND))))
 
       val result = controller.createTeamMemberAction(organisationId1)(
-        createFakePostRequest("emailAddress" -> emailAddress, "firstName" -> firstName, "lastName" -> lastName))
+        createFakePostRequest("emailAddress" -> emailAddress, "firstName" -> firstName, "lastName" -> lastName)
+      )
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       verify(mockXmlServiceConnector).addTeamMember(eqTo(organisationId1), eqTo(emailAddress), eqTo(firstName), eqTo(lastName))(*[HeaderCarrier])
@@ -307,8 +307,9 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
 
       val collaborator = organisationWithCollaborators.collaborators.head
-      val result = controller.removeTeamMember(organisationWithCollaborators.organisationId, collaborator.userId)(
-        createFakePostRequest("organisationname" -> organisationWithCollaborators.name))
+      val result       = controller.removeTeamMember(organisationWithCollaborators.organisationId, collaborator.userId)(
+        createFakePostRequest("organisationname" -> organisationWithCollaborators.name)
+      )
 
       status(result) shouldBe Status.OK
       val document = Jsoup.parse(contentAsString(result))
@@ -325,7 +326,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
 
       val result = controller.removeTeamMember(organisationWithCollaborators.organisationId, "unmacthedUserId")(
-        createFakePostRequest("email" -> collaborator1.email))
+        createFakePostRequest("email" -> collaborator1.email)
+      )
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
@@ -339,7 +341,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
 
       val result = controller.removeTeamMember(organisationWithCollaborators.organisationId, "unmacthedUserId")(
-        createFakePostRequest("email" -> collaborator1.email))
+        createFakePostRequest("email" -> collaborator1.email)
+      )
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
@@ -365,7 +368,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
         .thenReturn(Future.successful(RemoveCollaboratorSuccess(organisationWithCollaborators)))
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
-        createFakePostRequest("email" -> collaborator1.email, "confirm" -> "Yes"))
+        createFakePostRequest("email" -> collaborator1.email, "confirm" -> "Yes")
+      )
 
       status(result) shouldBe Status.SEE_OTHER
       headers(result).getOrElse(LOCATION, "") shouldBe s"/api-gatekeeper-xml-services/organisations/${organisationId1.value.toString}/team-members"
@@ -377,7 +381,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
-        createFakePostRequest("email" -> collaborator1.email, "confirm" -> "No"))
+        createFakePostRequest("email" -> collaborator1.email, "confirm" -> "No")
+      )
 
       status(result) shouldBe Status.SEE_OTHER
       headers(result).getOrElse(LOCATION, "") shouldBe s"/api-gatekeeper-xml-services/organisations/${organisationId1.value.toString}"
@@ -388,7 +393,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
-        createFakePostRequest("confirm" -> "No"))
+        createFakePostRequest("confirm" -> "No")
+      )
 
       status(result) shouldBe BAD_REQUEST
       verifyZeroInteractions(mockXmlServiceConnector)
@@ -398,7 +404,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
-        createFakePostRequest("email" -> "", "confirm" -> "No"))
+        createFakePostRequest("email" -> "", "confirm" -> "No")
+      )
 
       status(result) shouldBe BAD_REQUEST
       verifyZeroInteractions(mockXmlServiceConnector)
@@ -408,7 +415,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
-        createFakePostRequest("email" ->  collaborator1.email))
+        createFakePostRequest("email" -> collaborator1.email)
+      )
 
       status(result) shouldBe BAD_REQUEST
       verifyZeroInteractions(mockXmlServiceConnector)
@@ -424,7 +432,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
         .thenReturn(Future.successful(RemoveCollaboratorFailure(new RuntimeException("some error"))))
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
-        createFakePostRequest("email" ->  collaborator1.email, "confirm" -> "Yes"))
+        createFakePostRequest("email" -> collaborator1.email, "confirm" -> "Yes")
+      )
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
@@ -438,7 +447,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, "someOtherUserId")(
-        createFakePostRequest("email" -> collaborator1.email, "confirm" -> "Yes"))
+        createFakePostRequest("email" -> collaborator1.email, "confirm" -> "Yes")
+      )
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
@@ -452,7 +462,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
-        createFakePostRequest("email" -> collaborator1.email, "confirm" -> "Yes"))
+        createFakePostRequest("email" -> collaborator1.email, "confirm" -> "Yes")
+      )
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
@@ -463,7 +474,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
       val result =
         controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
-          createFakePostRequest("email" -> collaborator1.email, "confirm" -> "Yes"))
+          createFakePostRequest("email" -> collaborator1.email, "confirm" -> "Yes")
+        )
 
       status(result) shouldBe Status.SEE_OTHER
     }

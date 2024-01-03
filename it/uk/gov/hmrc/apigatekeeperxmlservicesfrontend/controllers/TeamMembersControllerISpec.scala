@@ -16,35 +16,37 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
+import java.util.UUID
+
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.scalatest.BeforeAndAfterEach
+import utils.MockCookies
+
 import play.api.http.HeaderNames
 import play.api.http.Status.SEE_OTHER
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.Helpers.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, OK}
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Collaborator, Organisation, OrganisationId, VendorId}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{StrideAuthorisationStub, ServerBaseISpec}
-import utils.MockCookies
-
-import java.util.UUID
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{ServerBaseISpec, StrideAuthorisationStub}
 
 class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with StrideAuthorisationStub {
 
   protected override def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
-        "microservice.services.auth.host" -> wireMockHost,
-        "microservice.services.auth.port" -> wireMockPort,
-        "metrics.enabled" -> true,
-        "auditing.enabled" -> false,
-        "auditing.consumer.baseUri.host" -> wireMockHost,
-        "auditing.consumer.baseUri.port" -> wireMockPort,
+        "microservice.services.auth.host"                      -> wireMockHost,
+        "microservice.services.auth.port"                      -> wireMockPort,
+        "metrics.enabled"                                      -> true,
+        "auditing.enabled"                                     -> false,
+        "auditing.consumer.baseUri.host"                       -> wireMockHost,
+        "auditing.consumer.baseUri.port"                       -> wireMockPort,
         "microservice.services.api-platform-xml-services.host" -> wireMockHost,
         "microservice.services.api-platform-xml-services.port" -> wireMockPort
       )
@@ -52,17 +54,18 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
   val url = s"http://localhost:$port/api-gatekeeper-xml-services"
 
   trait Setup extends XmlServicesStub {
-    val wsClient: WSClient = app.injector.instanceOf[WSClient]
+    val wsClient: WSClient                   = app.injector.instanceOf[WSClient]
     val validHeaders: List[(String, String)] = List(HeaderNames.AUTHORIZATION -> "Bearer 123")
-    val contentTypeHeader = HeaderNames.CONTENT_TYPE -> "application/x-www-form-urlencoded"
-    val bypassCsrfTokenHeader = "Csrf-Token" -> "nocheck"
+    val contentTypeHeader                    = HeaderNames.CONTENT_TYPE -> "application/x-www-form-urlencoded"
+    val bypassCsrfTokenHeader                = "Csrf-Token"             -> "nocheck"
 
     val objInTest: XmlServicesConnector = app.injector.instanceOf[XmlServicesConnector]
-    val vendorId: VendorId = VendorId(12)
-    val organisationId = OrganisationId(java.util.UUID.randomUUID())
-    val organisation = Organisation(organisationId , vendorId = vendorId, name = "Org name")
+    val vendorId: VendorId              = VendorId(12)
+    val organisationId                  = OrganisationId(java.util.UUID.randomUUID())
+    val organisation                    = Organisation(organisationId, vendorId = vendorId, name = "Org name")
 
     val collaborator = Collaborator("userId", "collaborator1@mail.com")
+
     val organisationWithTeamMembers = Organisation(
       organisationId = organisationId,
       vendorId = VendorId(14),
@@ -114,7 +117,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
 
       "respond with 200 and render manage team members page" in new Setup {
         strideAuthorisationSucceeds()
-        val orgId = organisationWithTeamMembers.organisationId
+        val orgId  = organisationWithTeamMembers.organisationId
         getOrganisationByOrganisationIdReturnsResponseWithBody(orgId, OK, Json.toJson(organisationWithTeamMembers).toString())
         val result = callGetEndpoint(s"$url/organisations/${orgId.value.toString}/team-members")
         result.status mustBe OK
@@ -127,7 +130,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
 
       "respond with 500 and render error template" in new Setup {
         strideAuthorisationSucceeds()
-        val orgId = organisationWithTeamMembers.organisationId
+        val orgId  = organisationWithTeamMembers.organisationId
         getOrganisationByOrganisationIdReturnsError(orgId, INTERNAL_SERVER_ERROR)
         val result = callGetEndpoint(s"$url/organisations/${orgId.value.toString}/team-members")
         result.status mustBe INTERNAL_SERVER_ERROR
@@ -158,7 +161,6 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
 
       }
 
-
       "respond with 400 if invalid OrganisationId" in new Setup {
         strideAuthorisationSucceeds()
 
@@ -174,7 +176,6 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
 
         val result = callGetEndpoint(s"$url/organisations/${orgId.value.toString}/team-members/${organisationWithTeamMembers.collaborators.head.userId}/remove")
 
-
         result.status mustBe FORBIDDEN
 
       }
@@ -189,8 +190,11 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
 
         removeTeamMemberReturnsResponse(organisationId, collaborator.email, "bob", OK, organisationWithTeamMembers.copy(collaborators = List.empty))
 
-        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/team-members/${collaborator.userId}/remove",
-          validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"email=${collaborator.email};confirm=Yes;")
+        val result = callPostEndpoint(
+          s"$url/organisations/${organisationId.value.toString}/team-members/${collaborator.userId}/remove",
+          validHeaders :+ bypassCsrfTokenHeader :+ contentTypeHeader,
+          s"email=${collaborator.email};confirm=Yes;"
+        )
 
         result.status mustBe SEE_OTHER
 
@@ -203,19 +207,24 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
 
         removeTeamMemberReturnsError(organisationId, organisationWithTeamMembers.collaborators.head.email, "bob", INTERNAL_SERVER_ERROR)
 
-        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/team-members/${collaborator.userId}/remove",
-          validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"email=${collaborator.email};confirm=Yes;")
+        val result = callPostEndpoint(
+          s"$url/organisations/${organisationId.value.toString}/team-members/${collaborator.userId}/remove",
+          validHeaders :+ bypassCsrfTokenHeader :+ contentTypeHeader,
+          s"email=${collaborator.email};confirm=Yes;"
+        )
 
         result.status mustBe INTERNAL_SERVER_ERROR
 
       }
 
-
       "respond with 400 if invalid OrganisationId" in new Setup {
         strideAuthorisationSucceeds()
 
-        val result = callPostEndpoint(s"$url/organisations/someInvalidOrg/team-members/${organisationWithTeamMembers.collaborators.head.userId}/remove",
-          validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"email=${collaborator.email};confirm=Yes;")
+        val result = callPostEndpoint(
+          s"$url/organisations/someInvalidOrg/team-members/${organisationWithTeamMembers.collaborators.head.userId}/remove",
+          validHeaders :+ bypassCsrfTokenHeader :+ contentTypeHeader,
+          s"email=${collaborator.email};confirm=Yes;"
+        )
 
         result.status mustBe BAD_REQUEST
 
@@ -224,8 +233,11 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
       "respond with 403 if auth fails" in new Setup {
         strideAuthorisationFails()
 
-        val result = callPostEndpoint(s"$url/organisations/${organisationId.value.toString}/team-members/${collaborator.userId}/remove",
-          validHeaders:+ bypassCsrfTokenHeader :+ contentTypeHeader, s"email=${collaborator.email};confirm=Yes;")
+        val result = callPostEndpoint(
+          s"$url/organisations/${organisationId.value.toString}/team-members/${collaborator.userId}/remove",
+          validHeaders :+ bypassCsrfTokenHeader :+ contentTypeHeader,
+          s"email=${collaborator.email};confirm=Yes;"
+        )
 
         result.status mustBe FORBIDDEN
 

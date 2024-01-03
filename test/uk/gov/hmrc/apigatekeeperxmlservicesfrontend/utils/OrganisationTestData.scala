@@ -16,45 +16,55 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils
 
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{ApiCategory, Collaborator, Organisation, OrganisationId, OrganisationUser, ServiceName, VendorId, XmlApi}
-
 import java.util.UUID
 
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
 
 trait OrganisationTestData {
-    val vendorId = 9001L
-    val organisationId1 = OrganisationId(UUID.randomUUID())
-    val organisationId2 = OrganisationId(UUID.randomUUID())
-    val organisationId3 = OrganisationId(UUID.randomUUID())
-    val org1 = Organisation(organisationId1, VendorId(1),  "Org 1")
-    val org2 = Organisation(organisationId2, VendorId(2), "Org 2")
-    val org3 = Organisation(organisationId3, VendorId(3), "Org 3")
+  val vendorId        = 9001L
+  val organisationId1 = OrganisationId(UUID.randomUUID())
+  val organisationId2 = OrganisationId(UUID.randomUUID())
+  val organisationId3 = OrganisationId(UUID.randomUUID())
+  val org1            = Organisation(organisationId1, VendorId(1), "Org 1")
+  val org2            = Organisation(organisationId2, VendorId(2), "Org 2")
+  val org3            = Organisation(organisationId3, VendorId(3), "Org 3")
 
-    val emailAddress = "a@b.com"
-    val firstName = "bob"
-    val lastName = "hope"
-    val collaborator1 = Collaborator("userId1", "email1@email.com")
-    val collaborator2 =  Collaborator("userId2", "email2@email.com")
-    val organisationWithCollaborators = org1.copy(collaborators = List(collaborator1, collaborator2))
-    val xmlApi1 = XmlApi(name = "xml api 1",
-        serviceName = ServiceName("vat-and-ec-sales-list"),
-        context = "/government/collections/vat-and-ec-sales-list-online-support-for-software-developers",
-        description = "description",
-        categories  = Some(Seq(ApiCategory.CUSTOMS)))
-    val xmlApi2 = XmlApi(name = "xml api 2",
-        serviceName = ServiceName("customs-import"),
-        context = "/government/collections/customs-import",
-        description = "description",
-        categories  = Some(Seq(ApiCategory.CUSTOMS)))
-    val xmlApi3 = XmlApi(name = "xml api 3",
-        serviceName = ServiceName("paye-online"),
-        context = "/government/collections/paye-online",
-        description = "description",
-        categories  = Some(Seq(ApiCategory.PAYE)))
+  val emailAddress                  = "a@b.com"
+  val firstName                     = "bob"
+  val lastName                      = "hope"
+  val collaborator1                 = Collaborator("userId1", "email1@email.com")
+  val collaborator2                 = Collaborator("userId2", "email2@email.com")
+  val organisationWithCollaborators = org1.copy(collaborators = List(collaborator1, collaborator2))
 
-    val organisationUsers = List(OrganisationUser(organisationId1, UserId(UUID.randomUUID()), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)),
-        OrganisationUser(organisationId1, UserId(UUID.randomUUID()), emailAddress+2, firstName+2, lastName+2, List(xmlApi1, xmlApi3)))
+  val xmlApi1 = XmlApi(
+    name = "xml api 1",
+    serviceName = ServiceName("vat-and-ec-sales-list"),
+    context = "/government/collections/vat-and-ec-sales-list-online-support-for-software-developers",
+    description = "description",
+    categories = Some(Seq(ApiCategory.CUSTOMS))
+  )
 
-    val organisations = List(org1, org2, org3)
+  val xmlApi2 = XmlApi(
+    name = "xml api 2",
+    serviceName = ServiceName("customs-import"),
+    context = "/government/collections/customs-import",
+    description = "description",
+    categories = Some(Seq(ApiCategory.CUSTOMS))
+  )
+
+  val xmlApi3 = XmlApi(
+    name = "xml api 3",
+    serviceName = ServiceName("paye-online"),
+    context = "/government/collections/paye-online",
+    description = "description",
+    categories = Some(Seq(ApiCategory.PAYE))
+  )
+
+  val organisationUsers = List(
+    OrganisationUser(organisationId1, UserId(UUID.randomUUID()), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)),
+    OrganisationUser(organisationId1, UserId(UUID.randomUUID()), emailAddress + 2, firstName + 2, lastName + 2, List(xmlApi1, xmlApi3))
+  )
+
+  val organisations = List(org1, org2, org3)
 }

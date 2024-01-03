@@ -18,7 +18,9 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.organisation
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+
 import play.api.test.FakeRequest
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.AddOrganisationWithNewUserForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
@@ -30,18 +32,18 @@ import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServic
 class OrganisationAddNewUserViewSpec extends CommonViewSpec with WithCSRFAddToken with ViewSpecHelpers {
 
   trait Setup extends OrganisationTestData {
-    val mockAppConfig = mock[AppConfig]
+    val mockAppConfig              = mock[AppConfig]
     val organisationAddNewUserView = app.injector.instanceOf[OrganisationAddNewUserView]
-     val loggedInUser = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
+    val loggedInUser               = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
   }
 
   "Organisation Add new User View" should {
 
     "render the add new user page correctly when no errors" in new Setup {
       val orgName = "orgName"
-      val email = "email"
+      val email   = "email"
 
-      val page = organisationAddNewUserView
+      val page               = organisationAddNewUserView
         .render(AddOrganisationWithNewUserForm.form, Some(orgName), Some(email), FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       hasBackLink(document) shouldBe true
@@ -51,12 +53,12 @@ class OrganisationAddNewUserViewSpec extends CommonViewSpec with WithCSRFAddToke
 
     "render the organisation add page correctly when errors exist" in new Setup {
       val orgName = "orgName"
-      val email = "email"
-      val form = AddOrganisationWithNewUserForm.form
+      val email   = "email"
+      val form    = AddOrganisationWithNewUserForm.form
         .withError("firstName", "firstname.error.required")
         .withError("lastName", "lastname.error.required")
 
-      val page = organisationAddNewUserView.render(form, Some(orgName), Some(email), FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
+      val page               = organisationAddNewUserView.render(form, Some(orgName), Some(email), FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       hasBackLink(document) shouldBe true
       validateFormErrors(document, Some("Enter a first name"))
