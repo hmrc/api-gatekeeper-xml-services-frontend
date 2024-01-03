@@ -43,13 +43,13 @@ trait LdapAuthorisationServiceMockModule {
       }
       def succeeds[A] = {
         wrap[A](
-          (msg) => successful(Right(new LoggedInRequest(Some(LdapAuthorisationServiceMockModule.LdapUserName), GatekeeperRoles.READ_ONLY, msg)))
+          msg => successful(Right(new LoggedInRequest(Some(LdapAuthorisationServiceMockModule.LdapUserName), GatekeeperRoles.READ_ONLY, msg)))
         )
       }
 
       def notAuthorised[A] = {
         wrap[A](
-          (msg) => successful(Left(msg))
+          msg => successful(Left(msg))
         )
       }
     }

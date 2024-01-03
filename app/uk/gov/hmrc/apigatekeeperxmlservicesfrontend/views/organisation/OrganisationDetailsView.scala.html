@@ -26,7 +26,7 @@
 
 @(organisation: Organisation, users: List[OrganisationUser])(implicit request: LoggedInRequest[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
 
-@emails() = @{
+@emails = @{
     if(users.nonEmpty) {
         users.map(_.email).mkString("", ";", ";")
     } else ""
@@ -81,11 +81,10 @@
                 XML email preferences
             </dt>
             <dd id="xml-preferences-value" class="govuk-summary-list__value">
-                    @HtmlFormat.raw(combinedXMLPreferencesList)
+                    @HtmlFormat.raw(combinedXMLPreferencesList())
             </dd>
             <dd class="govuk-summary-list__actions">
             </dd>
-        </div>
         </div>
 
         <div class="govuk-grid-column-full">
@@ -124,7 +123,7 @@
             @if(request.role.isUser) {
               <div class="govuk-button-group">
                   @if(emails.nonEmpty){
-                      <span id="emails-to-copy" class="govuk-visually-hidden" aria-hidden="true">@emails()</span>
+                      <span id="emails-to-copy" class="govuk-visually-hidden" aria-hidden="true">@emails</span>
                       <button id="copy-emails" class="govuk-button" data-module="govuk-button">
                           Copy email addresses to clipboard
                       </button>

@@ -127,7 +127,7 @@ class TeamMembersController @Inject() (
         }
       }
 
-      addTeamMemberForm.bindFromRequest.fold(
+      addTeamMemberForm.bindFromRequest().fold(
         formWithErrors => successful(BadRequest(addTeamMemberView(formWithErrors, organisationId))),
         teamMemberAddData => {
           getCollaboratorByEmailAddressAndOrganisationId(organisationId, teamMemberAddData.emailAddress).flatMap {
@@ -145,7 +145,7 @@ class TeamMembersController @Inject() (
 
   def createTeamMemberAction(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
-      createAndAddTeamMemberForm.bindFromRequest.fold(
+      createAndAddTeamMemberForm.bindFromRequest().fold(
         formWithErrors => {
           logger.info(s"createTeamMemberAction invalid form provided for ${organisationId.value}")
           successful(BadRequest(createTeamMemberView(formWithErrors, organisationId, "")))
@@ -214,7 +214,7 @@ class TeamMembersController @Inject() (
       def handleInvalidForm(formWithErrors: Form[RemoveTeamMemberConfirmationForm]) =
         successful(BadRequest(removeTeamMemberView(formWithErrors, organisationId, userId, formWithErrors("email").value.getOrElse(""))))
 
-      RemoveTeamMemberConfirmationForm.form.bindFromRequest.fold(handleInvalidForm, handleValidForm)
+      RemoveTeamMemberConfirmationForm.form.bindFromRequest().fold(handleInvalidForm, handleValidForm)
   }
 
   private def getCollaboratorByUserIdAndOrganisationId(organisationId: OrganisationId,

@@ -160,7 +160,7 @@ class OrganisationController @Inject() (
 
   def organisationsAddAction(): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
-      addOrganisationForm.bindFromRequest.fold(
+      addOrganisationForm.bindFromRequest().fold(
         formWithErrors => successful(BadRequest(organisationAddView(formWithErrors))),
         formData => {
           thirdPartyDeveloperConnector.getByEmails(List(formData.emailAddress)).flatMap {
@@ -178,7 +178,7 @@ class OrganisationController @Inject() (
 
   def organisationsAddWithNewUserAction(): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
-      addOrganisationWithNewUserForm.bindFromRequest.fold(
+      addOrganisationWithNewUserForm.bindFromRequest().fold(
         formWithErrors => successful(BadRequest(organisationAddNewUserView(formWithErrors, None, None))),
         formData => addOrganisation(formData.organisationName, formData.emailAddress, formData.firstName, formData.lastName)
       )
@@ -225,7 +225,7 @@ class OrganisationController @Inject() (
   def updateOrganisationsDetailsAction(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
 
     def handleFormAction(organisation: Organisation)(implicit request: LoggedInRequest[_]): Future[Result] = {
-      updateOrganisationDetailsForm.bindFromRequest.fold(
+      updateOrganisationDetailsForm.bindFromRequest().fold(
         formWithErrors => successful(BadRequest(organisationUpdateView(formWithErrors, organisation))),
         formData =>
           xmlServicesConnector.updateOrganisationDetails(organisationId, formData.organisationName).map {
@@ -277,7 +277,7 @@ class OrganisationController @Inject() (
 
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
         .flatMap {
-          case Right(org: Organisation) => removeOrganisationConfirmationForm.bindFromRequest.fold(handleInvalidForm(_, org), handleValidForm(_, org))
+          case Right(org: Organisation) => removeOrganisationConfirmationForm.bindFromRequest().fold(handleInvalidForm(_, org), handleValidForm(_, org))
           case Left(_)                  => Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
         }
 

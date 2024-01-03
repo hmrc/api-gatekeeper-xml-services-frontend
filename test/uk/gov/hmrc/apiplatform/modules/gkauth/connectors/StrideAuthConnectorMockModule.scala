@@ -23,6 +23,9 @@ import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core.retrieve.Name
 import uk.gov.hmrc.auth.core.retrieve.{ ~ }
 import scala.concurrent.Future
+
+import org.mockito.Strictness.Lenient
+
 import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.auth.core.Enrolments
 import uk.gov.hmrc.apiplatform.modules.gkauth.config.StrideAuthRoles
@@ -79,6 +82,6 @@ trait StrideAuthConnectorMockModule {
   }
 
   object StrideAuthConnectorMock extends BaseStrideAuthConnectorMock {
-    val aMock = mock[StrideAuthConnector](withSettings.lenient())
+    val aMock = mock[StrideAuthConnector](withSettings.strictness(Lenient))
   }
 }

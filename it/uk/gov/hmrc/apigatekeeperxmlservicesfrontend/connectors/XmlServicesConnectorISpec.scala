@@ -393,7 +393,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
         getAllApisResponseWithBody(OK, Json.toJson(Seq(xmlApi)).toString)
 
-        val result = await(objInTest.getAllApis())
+        val result = await(objInTest.getAllApis)
 
         result mustBe Right((Seq(xmlApi)))
       }
@@ -402,7 +402,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
         getAllApisReturnsError(INTERNAL_SERVER_ERROR)
 
-        val result = await(objInTest.getAllApis())
+        val result = await(objInTest.getAllApis)
 
         result match {
           case Left(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed

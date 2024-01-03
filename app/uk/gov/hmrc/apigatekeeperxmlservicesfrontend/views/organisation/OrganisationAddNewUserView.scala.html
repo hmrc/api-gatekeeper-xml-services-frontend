@@ -33,7 +33,7 @@
         @errorSummary(form)
 
         @helper.form(action =
-            uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsAddWithNewUserAction) {
+            uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsAddWithNewUserAction()) {
             @helper.CSRF.formField
             <div id="form-group" class="govuk-form-group @if(form.hasErrors) {govuk-form-group--error}">
                 <fieldset class="govuk-fieldset">
@@ -62,13 +62,13 @@
                             @if(organisationName.isDefined) {
                                 value="@organisationName.getOrElse("")"
                             } else {
-                                value="@form.data.get("organisationName")"} />
+                                value="@form.data.get("organisationName")"} >
 
                         <input id="email-hidden" name="emailAddress" type="hidden"
                             @if(email.isDefined) {
                                 value="@email.getOrElse("")"
                             } else {
-                                value="@form.data.get("emailAddress")"} />
+                                value="@form.data.get("emailAddress")"} >
 
                     </div>
 

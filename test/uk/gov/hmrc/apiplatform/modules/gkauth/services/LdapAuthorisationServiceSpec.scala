@@ -71,9 +71,9 @@ class LdapAuthorisationServiceSpec extends AsyncHmrcSpec with StubControllerComp
   "return a logged in request when the user has ldap session and is authorised for GK" in new Setup with SessionPresent with Authorised {
     val result = await(underTest.refineLdap(msgRequest))
 
-    result shouldBe 'Right
+    result shouldBe Right
 
-    inside(result.right.value) { case lir : LoggedInRequest[_] => 
+    inside(result.value) { case lir : LoggedInRequest[_] =>
       lir.name shouldBe Some("Bob")
       lir.role shouldBe GatekeeperRoles.READ_ONLY
     }
@@ -82,7 +82,7 @@ class LdapAuthorisationServiceSpec extends AsyncHmrcSpec with StubControllerComp
   "return the original request when the user has ldap session but is NOT authorised for GK" in new Setup with SessionPresent with Unauthorised{
     val result = await(underTest.refineLdap(msgRequest))
 
-    result shouldBe 'Left
+    result shouldBe Left
 
     result.left.value shouldBe msgRequest
   }
@@ -90,7 +90,7 @@ class LdapAuthorisationServiceSpec extends AsyncHmrcSpec with StubControllerComp
   "return the original request when the user has no session" in new Setup with NoSessionPresent {
     val result = await(underTest.refineLdap(msgRequest))
 
-    result shouldBe 'Left
+    result shouldBe Left
 
     result.left.value shouldBe msgRequest
   }

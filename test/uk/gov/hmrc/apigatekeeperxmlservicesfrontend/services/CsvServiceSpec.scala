@@ -27,7 +27,7 @@ import scala.concurrent.Future
 class CsvServiceSpec extends AsyncHmrcSpec with BeforeAndAfterEach {
 
   trait Setup {
-    implicit val hc = HeaderCarrier()
+    implicit val hc: HeaderCarrier = HeaderCarrier()
     val mockXmlServiceConnector = mock[XmlServicesConnector]
     val csvService = new CsvService(mockXmlServiceConnector)
 

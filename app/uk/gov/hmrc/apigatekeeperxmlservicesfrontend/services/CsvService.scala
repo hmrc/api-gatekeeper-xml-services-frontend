@@ -66,7 +66,7 @@ class CsvService @Inject() (xmlServicesConnector: XmlServicesConnector)(implicit
 
     val records = extractCsvRecords(csvData, expectedHeaders, validateUsersHeaders)
 
-    handleGetAllApis.map(allServices => records.map(x => parseUser(x, allServices)))
+    handleGetAllApis().map(allServices => records.map(x => parseUser(x, allServices)))
   }
 
   def mapToOrganisationFromCsv(csvData: String): Seq[OrganisationWithNameAndVendorId] = {

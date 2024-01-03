@@ -5,9 +5,9 @@ GET         /                                                   uk.gov.hmrc.apig
 GET         /search                                             uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.organisationsSearchAction(searchType: String, searchText: Option[String])
 
 GET         /add                                                uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.organisationsAddPage
-POST        /add                                                uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.organisationsAddAction
+POST        /add                                                uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.organisationsAddAction()
 
-POST        /add/new-user                                       uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.organisationsAddWithNewUserAction
+POST        /add/new-user                                       uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.organisationsAddWithNewUserAction()
 
 GET         /:organisationId                                    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.viewOrganisationPage(organisationId: uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId)
 

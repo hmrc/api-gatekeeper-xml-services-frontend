@@ -74,7 +74,7 @@ class CsvUploadController @Inject() (
 
   def uploadUsersCsvAction(): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
-      csvDataForm.bindFromRequest.fold(
+      csvDataForm.bindFromRequest().fold(
         formWithErrors => {
           Future.successful(BadRequest(usersCsvUploadView(formWithErrors)))
         },
@@ -84,7 +84,7 @@ class CsvUploadController @Inject() (
               logger.info(s"Number of Users successfully parsed: ${users.size}")
 
               xmlServicesConnector.bulkAddUsers(users).map {
-                case Right(_)                       => Redirect(routes.CsvUploadController.usersPage)
+                case Right(_)                       => Redirect(routes.CsvUploadController.usersPage())
                 case Left(e: UpstreamErrorResponse) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", e.getMessage))
               }
             }
@@ -100,7 +100,7 @@ class CsvUploadController @Inject() (
 
   def uploadOrganisationsCsvAction(): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
-      csvDataForm.bindFromRequest.fold(
+      csvDataForm.bindFromRequest().fold(
         formWithErrors => {
           Future.successful(BadRequest(organisationCsvUploadView(formWithErrors)))
         },
@@ -112,7 +112,7 @@ class CsvUploadController @Inject() (
             logger.info(s"About to persist Organisations, check api-platform-xml-services logs for progress")
 
             xmlServicesConnector.bulkAddOrganisations(organisations).map {
-              case Right(_)                       => Redirect(routes.CsvUploadController.organisationPage)
+              case Right(_)                       => Redirect(routes.CsvUploadController.organisationPage())
               case Left(e: UpstreamErrorResponse) => InternalServerError(errorTemplate("Internal Server Error", "Internal Server Error", e.getMessage))
             }
 

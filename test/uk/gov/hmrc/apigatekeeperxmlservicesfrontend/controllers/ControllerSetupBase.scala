@@ -21,5 +21,5 @@ import org.mockito.MockitoSugar
 import org.mockito.ArgumentMatchersSugar
 
 trait ControllerSetupBase extends MockitoSugar with ArgumentMatchersSugar {
-  implicit val hc = HeaderCarrier()
+  implicit val hc: HeaderCarrier = HeaderCarrier()
 }
