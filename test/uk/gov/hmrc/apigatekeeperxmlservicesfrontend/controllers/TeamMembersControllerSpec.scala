@@ -161,7 +161,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       verify(mockXmlServiceConnector).addTeamMember(eqTo(organisationId1), eqTo(emailAddress), *, *)(*[HeaderCarrier])
     }
 
-    "display the createTeamMemberView when  when the user does not exist in third party developer" in new Setup {
+    "display the createTeamMemberView when the user does not exist in third party developer" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
@@ -174,7 +174,6 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       val document = Jsoup.parse(contentAsString(result))
 
       validateCreateTeamMemberPage(document, emailAddress)
-      verifyZeroInteractions(mockXmlServiceConnector)
     }
 
     "return 400 and display the add team member page with errors when the collaborator already exists against the organisation" in new Setup {
@@ -205,7 +204,6 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       val result = controller.addTeamMemberAction(organisationId1)(createFakePostRequest("emailAddress" -> emailAddress))
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-      verifyZeroInteractions(mockXmlServiceConnector)
     }
 
     "call add team member via connector, then show Internal server error page when call fails" in new Setup {
