@@ -121,7 +121,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case Left(e: Upstream4xxResponse) => e.statusCode mustBe BAD_REQUEST
-        case _                            => fail
+        case _                            => fail()
       }
 
     }
@@ -132,7 +132,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case Right(org) => org mustBe List(organisation)
-        case _          => fail
+        case _          => fail()
       }
     }
 
@@ -142,7 +142,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case Right(org) => org mustBe List(organisation)
-        case _          => fail
+        case _          => fail()
       }
     }
 
@@ -152,7 +152,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case Right(org) => org must contain allOf (organisation, organisation2)
-        case _          => fail
+        case _          => fail()
       }
     }
   }
@@ -289,7 +289,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case AddCollaboratorFailure(UpstreamErrorResponse(message, NOT_FOUND, _, _)) => message mustBe expectedErrorMessage
-        case _                                                                       => fail
+        case _                                                                       => fail()
       }
     }
 
@@ -322,7 +322,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case RemoveCollaboratorFailure(e) => e.getMessage
-        case _                            => fail
+        case _                            => fail()
       }
 
     }
@@ -339,7 +339,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case RemoveCollaboratorFailure(e) => e.getMessage
-        case _                            => fail
+        case _                            => fail()
       }
     }
 
@@ -360,7 +360,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
         result match {
           case Left(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed
-          case _                                                           => fail
+          case _                                                           => fail()
         }
       }
     }
@@ -383,7 +383,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
         result match {
           case Left(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed
-          case _                                                           => fail
+          case _                                                           => fail()
         }
       }
     }
@@ -415,7 +415,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
         result match {
           case Left(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed
-          case _                                                           => fail
+          case _                                                           => fail()
         }
       }
     }
@@ -429,7 +429,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
         result match {
           case Right(users: List[OrganisationUser]) => users mustBe List(organisationUser)
-          case _                                    => fail
+          case _                                    => fail()
         }
       }
     }
@@ -441,7 +441,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
       result match {
         case Left(_: UpstreamErrorResponse) => succeed
-        case _                              => fail
+        case _                              => fail()
       }
     }
 

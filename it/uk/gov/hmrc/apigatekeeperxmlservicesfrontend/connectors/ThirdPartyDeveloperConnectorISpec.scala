@@ -81,7 +81,7 @@ class ThirdPartyDeveloperConnectorISpec extends ServerBaseISpec with BeforeAndAf
 
       result match {
         case Right(_: List[UserResponse]) => succeed
-        case _                            => fail
+        case _                            => fail()
       }
     }
 
@@ -92,7 +92,7 @@ class ThirdPartyDeveloperConnectorISpec extends ServerBaseISpec with BeforeAndAf
 
       result match {
         case Right(_: List[UserResponse]) => succeed
-        case _                            => fail
+        case _                            => fail()
       }
     }
 
@@ -102,7 +102,7 @@ class ThirdPartyDeveloperConnectorISpec extends ServerBaseISpec with BeforeAndAf
 
       result match {
         case Left(_: NotFoundException) => succeed
-        case _                          => fail
+        case _                          => fail()
       }
     }
 
@@ -113,7 +113,7 @@ class ThirdPartyDeveloperConnectorISpec extends ServerBaseISpec with BeforeAndAf
 
       result match {
         case Left(_: Upstream5xxResponse) => succeed
-        case _                            => fail
+        case _                            => fail()
       }
     }
 

@@ -19,8 +19,8 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.services
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 import javax.inject.{Inject, Singleton}
-import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.jdk.CollectionConverters._
 
 import org.apache.commons.csv.CSVRecord
 import org.apache.commons.io.IOUtils
