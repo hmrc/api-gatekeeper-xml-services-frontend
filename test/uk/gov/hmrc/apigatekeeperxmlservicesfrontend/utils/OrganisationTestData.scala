@@ -37,7 +37,7 @@ trait OrganisationTestData {
   val collaborator2                 = Collaborator("userId2", "email2@email.com")
   val organisationWithCollaborators = org1.copy(collaborators = List(collaborator1, collaborator2))
 
-  val xmlApi1                       = XmlApi(
+  val xmlApi1 = XmlApi(
     name = "xml api 1",
     serviceName = ServiceName("vat-and-ec-sales-list"),
     context = "/government/collections/vat-and-ec-sales-list-online-support-for-software-developers",
@@ -45,7 +45,7 @@ trait OrganisationTestData {
     categories = Some(Seq(ApiCategory.CUSTOMS))
   )
 
-  val xmlApi2                       = XmlApi(
+  val xmlApi2 = XmlApi(
     name = "xml api 2",
     serviceName = ServiceName("customs-import"),
     context = "/government/collections/customs-import",
@@ -53,7 +53,7 @@ trait OrganisationTestData {
     categories = Some(Seq(ApiCategory.CUSTOMS))
   )
 
-  val xmlApi3                       = XmlApi(
+  val xmlApi3 = XmlApi(
     name = "xml api 3",
     serviceName = ServiceName("paye-online"),
     context = "/government/collections/paye-online",

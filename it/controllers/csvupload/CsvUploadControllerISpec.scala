@@ -72,15 +72,15 @@ class CsvUploadControllerISpec extends ServerBaseISpec with BeforeAndAfterEach w
     val serviceName1 = ServiceName("vat-and-ec-sales-list")
     val serviceName2 = ServiceName("stamp-taxes-online")
 
-    val xmlApi1      = XmlApi(
+    val xmlApi1 = XmlApi(
       name = "xml api",
       serviceName = serviceName1,
       context = "context",
       description = "description",
       categories = Some(Seq(ApiCategory.CUSTOMS))
     )
-    val xmlApi2      = xmlApi1.copy(serviceName = serviceName2)
-    val xmlApis      = Seq(xmlApi1, xmlApi2)
+    val xmlApi2 = xmlApi1.copy(serviceName = serviceName2)
+    val xmlApis = Seq(xmlApi1, xmlApi2)
 
     val services        = List(serviceName1, serviceName2)
     val email           = "a@b.com"

@@ -64,7 +64,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
     val organisationId                  = OrganisationId(java.util.UUID.randomUUID())
     val organisation                    = Organisation(organisationId, vendorId = vendorId, name = "Org name")
 
-    val collaborator                = Collaborator("userId", "collaborator1@mail.com")
+    val collaborator = Collaborator("userId", "collaborator1@mail.com")
 
     val organisationWithTeamMembers = Organisation(
       organisationId = organisationId,

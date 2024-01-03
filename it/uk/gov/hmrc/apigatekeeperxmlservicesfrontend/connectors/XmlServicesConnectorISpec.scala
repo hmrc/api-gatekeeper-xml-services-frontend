@@ -64,7 +64,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
 
     val collaboratorList = List(Collaborator("userId", "collaborator1@mail.com"))
 
-    val organisationId              = OrganisationId(ju.UUID.randomUUID())
+    val organisationId = OrganisationId(ju.UUID.randomUUID())
 
     val organisationWithTeamMembers = Organisation(
       organisationId = OrganisationId(ju.UUID.randomUUID()),
