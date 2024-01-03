@@ -18,7 +18,9 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.teammembers
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+
 import play.api.test.FakeRequest
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.TeamMembersController.CreateAndAddTeamMemberForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
@@ -30,9 +32,9 @@ import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServic
 class CreateTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with ViewSpecHelpers {
 
   trait Setup extends OrganisationTestData {
-    val mockAppConfig = mock[AppConfig]
+    val mockAppConfig        = mock[AppConfig]
     val createTeamMemberView = app.injector.instanceOf[CreateTeamMemberView]
-     val loggedInUser = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
+    val loggedInUser         = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
   }
 
   "Create Team Member View" should {

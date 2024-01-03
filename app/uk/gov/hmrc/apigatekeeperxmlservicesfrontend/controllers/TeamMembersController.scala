@@ -24,6 +24,9 @@ import play.api.Logging
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, text}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.{AppConfig, ErrorHandler}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{ThirdPartyDeveloperConnector, XmlServicesConnector}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.FormUtils.emailValidator
@@ -34,8 +37,6 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers._
 import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.actions.GatekeeperStrideAuthorisationActions
 import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
 import uk.gov.hmrc.apiplatform.modules.gkauth.services.{LdapAuthorisationService, StrideAuthorisationService}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 object TeamMembersController {
 
@@ -217,9 +218,11 @@ class TeamMembersController @Inject() (
       RemoveTeamMemberConfirmationForm.form.bindFromRequest().fold(handleInvalidForm, handleValidForm)
   }
 
-  private def getCollaboratorByUserIdAndOrganisationId(organisationId: OrganisationId,
-                                                       userId: String)(
-    implicit hc: HeaderCarrier): Future[Option[Collaborator]] = {
+  private def getCollaboratorByUserIdAndOrganisationId(
+      organisationId: OrganisationId,
+      userId: String
+    )(implicit hc: HeaderCarrier
+    ): Future[Option[Collaborator]] = {
 
     xmlServicesConnector.getOrganisationByOrganisationId(organisationId).map {
       case Right(organisation: Organisation) =>
@@ -230,9 +233,11 @@ class TeamMembersController @Inject() (
     }
   }
 
-  private def getCollaboratorByEmailAddressAndOrganisationId(organisationId: OrganisationId,
-                                                             emailAddress: String)(
-    implicit hc: HeaderCarrier): Future[Option[Collaborator]] = {
+  private def getCollaboratorByEmailAddressAndOrganisationId(
+      organisationId: OrganisationId,
+      emailAddress: String
+    )(implicit hc: HeaderCarrier
+    ): Future[Option[Collaborator]] = {
 
     xmlServicesConnector.getOrganisationByOrganisationId(organisationId).map {
       case Right(organisation: Organisation) =>

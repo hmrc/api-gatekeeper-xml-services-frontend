@@ -16,40 +16,42 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.include
 
+import scala.collection.JavaConverters._
+
 import org.jsoup.Jsoup
+
 import play.api.test.FakeRequest
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.SiteHeader
-
-import scala.collection.JavaConverters._
 import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServiceMockModule
 
 class SiteHeaderSpec extends CommonViewSpec {
 
   trait Setup {
     val mockAppConfig = mock[AppConfig]
-    val siteHeader = app.injector.instanceOf[SiteHeader]
-     val loggedInUser = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
+    val siteHeader    = app.injector.instanceOf[SiteHeader]
+    val loggedInUser  = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
 
     val apiGatekeeperUrl = "/api-gatekeeper"
 
     val expectedMenuItems = Map(
-      "Applications" -> s"$apiGatekeeperUrl/applications",
-      "Developers" -> s"$apiGatekeeperUrl/developers",
-      "Terms of use" -> s"$apiGatekeeperUrl/terms-of-use",
-      "Email" -> s"$apiGatekeeperUrl/emails",
+      "Applications"  -> s"$apiGatekeeperUrl/applications",
+      "Developers"    -> s"$apiGatekeeperUrl/developers",
+      "Terms of use"  -> s"$apiGatekeeperUrl/terms-of-use",
+      "Email"         -> s"$apiGatekeeperUrl/emails",
       "API Approvals" -> s"$apiGatekeeperUrl/pending",
-      "XML" -> "/api-gatekeeper-xml-services/organisations"
+      "XML"           -> "/api-gatekeeper-xml-services/organisations"
     )
   }
 
   "SiteHeader" should {
 
     "render correctly" in new Setup {
-      val component = siteHeader.render(apiGatekeeperUrl, FakeRequest(), loggedInUser, messagesProvider.messages)
-      val document = Jsoup.parse(component.body)
+      val component  = siteHeader.render(apiGatekeeperUrl, FakeRequest(), loggedInUser, messagesProvider.messages)
+      val document   = Jsoup.parse(component.body)
       val navigation = document.getElementById("navigation")
 
       val actualMenuItems = navigation.select("a")

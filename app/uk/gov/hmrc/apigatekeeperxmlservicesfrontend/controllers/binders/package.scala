@@ -20,6 +20,7 @@ import java.util.UUID
 import scala.util.Try
 
 import play.api.mvc.PathBindable
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
 
 package object binders {

@@ -26,9 +26,10 @@ import org.apache.commons.csv.CSVRecord
 import org.apache.commons.io.IOUtils
 
 import play.api.Logging
+import uk.gov.hmrc.http.HeaderCarrier
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
-import uk.gov.hmrc.http.HeaderCarrier
 
 @Singleton
 class CsvService @Inject() (xmlServicesConnector: XmlServicesConnector)(implicit val ec: ExecutionContext) extends Logging {

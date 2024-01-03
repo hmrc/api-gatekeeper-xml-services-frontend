@@ -18,7 +18,9 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.organisation
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+
 import play.api.test.FakeRequest
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.RemoveOrganisationConfirmationForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
@@ -30,16 +32,16 @@ import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServic
 class OrganisationRemoveViewSpec extends CommonViewSpec with WithCSRFAddToken with ViewSpecHelpers {
 
   trait Setup extends OrganisationTestData {
-    val mockAppConfig = mock[AppConfig]
+    val mockAppConfig          = mock[AppConfig]
     val organisationRemoveView = app.injector.instanceOf[OrganisationRemoveView]
-    val loggedInUser = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
+    val loggedInUser           = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
   }
 
   "Organisation Remove View" should {
 
     "render the remove organisation page correctly when no errors" in new Setup {
 
-      val page = organisationRemoveView.render(RemoveOrganisationConfirmationForm.form, org1, FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
+      val page               = organisationRemoveView.render(RemoveOrganisationConfirmationForm.form, org1, FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       hasBackLink(document) shouldBe true
       validateFormErrors(document)
@@ -49,8 +51,14 @@ class OrganisationRemoveViewSpec extends CommonViewSpec with WithCSRFAddToken wi
 
     "render the remove organisation page correctly when errors exist" in new Setup {
 
-      val page = organisationRemoveView.render(RemoveOrganisationConfirmationForm.form.withError("confirm", "organisation.error.confirmation.no.choice.field"),
-        org1, FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
+      val page = organisationRemoveView.render(
+        RemoveOrganisationConfirmationForm.form.withError("confirm", "organisation.error.confirmation.no.choice.field"),
+        org1,
+        FakeRequest().withCSRFToken,
+        loggedInUser,
+        messagesProvider.messages,
+        mockAppConfig
+      )
 
       val document: Document = Jsoup.parse(page.body)
       hasBackLink(document) shouldBe true

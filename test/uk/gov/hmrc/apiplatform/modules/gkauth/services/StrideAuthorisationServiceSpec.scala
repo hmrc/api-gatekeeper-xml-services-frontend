@@ -16,33 +16,31 @@
 
 package uk.gov.hmrc.apiplatform.modules.gkauth.services
 
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.AsyncHmrcSpec
-
 import scala.concurrent.ExecutionContext.Implicits.global
-import uk.gov.hmrc.apiplatform.modules.gkauth.config.StrideAuthRoles
-import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.GatekeeperRoles
-import play.api.test.{FakeRequest, StubMessagesFactory}
-import play.api.mvc.MessagesRequest
-import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
-import uk.gov.hmrc.apiplatform.modules.gkauth.config.StrideAuthConfig
-import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.actions.ForbiddenHandler
-import play.api.mvc.Result
-import play.api.mvc.Results._
-import play.api.http.Status._
-import play.api.http.HeaderNames.LOCATION
+
+import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import org.scalatest.prop.TableDrivenPropertyChecks
+
+import play.api.http.HeaderNames.LOCATION
+import play.api.http.Status._
+import play.api.mvc.Results._
+import play.api.mvc.{MessagesRequest, Result}
+import play.api.test.{FakeRequest, StubMessagesFactory}
+
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.AsyncHmrcSpec
+import uk.gov.hmrc.apiplatform.modules.gkauth.config.{StrideAuthConfig, StrideAuthRoles}
 import uk.gov.hmrc.apiplatform.modules.gkauth.connectors.StrideAuthConnectorMockModule
-import org.mockito.MockitoSugar
-import org.mockito.ArgumentMatchersSugar
+import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.actions.ForbiddenHandler
+import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.{GatekeeperRoles, LoggedInRequest}
 
 class StrideAuthorisationServiceSpec extends AsyncHmrcSpec with StubMessagesFactory with TableDrivenPropertyChecks {
   val fakeRequest = FakeRequest()
-  val msgRequest = new MessagesRequest(fakeRequest, stubMessagesApi())
-  
+  val msgRequest  = new MessagesRequest(fakeRequest, stubMessagesApi())
+
   trait Setup extends MockitoSugar with ArgumentMatchersSugar with StrideAuthConnectorMockModule {
-    val strideAuthRoles = StrideAuthRoles(adminRole = "test-admin", superUserRole = "test-superUser", userRole = "test-user")
+    val strideAuthRoles  = StrideAuthRoles(adminRole = "test-admin", superUserRole = "test-superUser", userRole = "test-user")
     val strideAuthConfig = StrideAuthConfig(strideLoginUrl = "http:///www.example.com", successUrlBase = "", origin = "", roles = strideAuthRoles)
-    
+
     val underTest = new StrideAuthorisationService(
       strideAuthConnector = StrideAuthConnectorMock.aMock,
       forbiddenHandler = new ForbiddenHandler { def handle(msgResult: MessagesRequest[_]): Result = Forbidden("No thanks") },
@@ -53,18 +51,18 @@ class StrideAuthorisationServiceSpec extends AsyncHmrcSpec with StubMessagesFact
   "createStrideRefiner" should {
     "return the appropriate results" in new Setup {
       import GatekeeperRoles._
-      
-      val cases = Table( 
-        ( "requiredRole", "user has role",  "expected outcome"),
-        ( ADMIN,          ADMIN,            Right(ADMIN)),
-        ( SUPERUSER,      ADMIN,            Right(ADMIN)),
-        ( USER,           ADMIN,            Right(ADMIN)),
-        ( ADMIN,          SUPERUSER,        Left(FORBIDDEN)),
-        ( SUPERUSER,      SUPERUSER,        Right(SUPERUSER)),
-        ( USER,           SUPERUSER,        Right(SUPERUSER)),
-        ( ADMIN,          USER,             Left(FORBIDDEN)),
-        ( SUPERUSER,      USER,             Left(FORBIDDEN)),
-        ( USER,           USER,             Right(USER))
+
+      val cases = Table(
+        ("requiredRole", "user has role", "expected outcome"),
+        (ADMIN, ADMIN, Right(ADMIN)),
+        (SUPERUSER, ADMIN, Right(ADMIN)),
+        (USER, ADMIN, Right(ADMIN)),
+        (ADMIN, SUPERUSER, Left(FORBIDDEN)),
+        (SUPERUSER, SUPERUSER, Right(SUPERUSER)),
+        (USER, SUPERUSER, Right(SUPERUSER)),
+        (ADMIN, USER, Left(FORBIDDEN)),
+        (SUPERUSER, USER, Left(FORBIDDEN)),
+        (USER, USER, Right(USER))
       )
 
       forAll(cases) { case (requiredRole, userIsOfRole, expected) =>
@@ -72,7 +70,7 @@ class StrideAuthorisationServiceSpec extends AsyncHmrcSpec with StubMessagesFact
 
         val result: Either[Result, LoggedInRequest[_]] = await(underTest.refineStride(requiredRole)(msgRequest))
         expected match {
-          case Right(role) => result.value.role shouldBe role
+          case Right(role)      => result.value.role shouldBe role
           case Left(statusCode) => result.left.value.header.status shouldBe statusCode
         }
       }

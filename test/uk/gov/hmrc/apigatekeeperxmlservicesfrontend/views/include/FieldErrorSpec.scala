@@ -17,11 +17,12 @@
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.include
 
 import org.jsoup.Jsoup
+
+import play.api.data.FormError
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
-
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.FieldError
-import play.api.data.FormError
 
 class FieldErrorSpec extends CommonViewSpec {
 
@@ -34,7 +35,7 @@ class FieldErrorSpec extends CommonViewSpec {
 
     "render correctly when fieldname is in form errors, sigle error" in new Setup {
       val formErrors = Seq(FormError("organisationname", "organisationname.error.required", Seq("one", "two")))
-      val view = FieldError.render(formErrors, "organisationname", messagesProvider.messages)
+      val view       = FieldError.render(formErrors, "organisationname", messagesProvider.messages)
 
       val document = Jsoup.parse(view.body)
       Option(document.getElementById("data-field-error-organisationname")).isDefined shouldBe true
@@ -43,8 +44,8 @@ class FieldErrorSpec extends CommonViewSpec {
     }
 
     "render correctly when fieldname is in form errors, multiple errors" in new Setup {
-      val formErrors = Seq(FormError("organisationname", "organisationname.error.required"),FormError("someotherfieldname", "someotherfieldname.error.required"))
-      val view = FieldError.render(formErrors, "organisationname", messagesProvider.messages)
+      val formErrors = Seq(FormError("organisationname", "organisationname.error.required"), FormError("someotherfieldname", "someotherfieldname.error.required"))
+      val view       = FieldError.render(formErrors, "organisationname", messagesProvider.messages)
 
       val document = Jsoup.parse(view.body)
       Option(document.getElementById("data-field-error-organisationname")).isDefined shouldBe true
@@ -54,7 +55,7 @@ class FieldErrorSpec extends CommonViewSpec {
 
     "render correctly when fieldname is not in form errors" in new Setup {
       val formErrors = Seq(FormError("organisationname", "organisationname.error.required"))
-      val view = FieldError.render(formErrors, "notamatchingfieldname", messagesProvider.messages)
+      val view       = FieldError.render(formErrors, "notamatchingfieldname", messagesProvider.messages)
 
       val document = Jsoup.parse(view.body)
       Option(document.getElementById("data-field-error-organisationname")).isDefined shouldBe false

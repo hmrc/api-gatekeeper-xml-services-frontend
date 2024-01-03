@@ -18,8 +18,10 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+
 import play.api.test.FakeRequest
 import play.twirl.api.Html
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ErrorTemplate
 
@@ -32,10 +34,10 @@ class ErrorTemplateSpec extends CommonViewSpec {
   "ErrorTemplate" should {
 
     "render error template correctly" in new Setup {
-       val page : Html =    errorTemplate.render("Error Page", "Error Page","Error message", FakeRequest(), messagesProvider.messages)
-       val document: Document = Jsoup.parse(page.body)
-       document.getElementById("page-heading").text() shouldBe "Error Page"
-       document.getElementById("page-body").text() shouldBe "Error message"
+      val page: Html         = errorTemplate.render("Error Page", "Error Page", "Error message", FakeRequest(), messagesProvider.messages)
+      val document: Document = Jsoup.parse(page.body)
+      document.getElementById("page-heading").text() shouldBe "Error Page"
+      document.getElementById("page-body").text() shouldBe "Error message"
     }
   }
 }

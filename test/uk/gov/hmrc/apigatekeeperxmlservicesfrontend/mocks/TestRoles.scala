@@ -19,7 +19,7 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.mocks
 import java.util.UUID
 
 trait TestRoles {
-  val userRole = s"userRole${UUID.randomUUID}"
-  val adminRole = s"adminRole${UUID.randomUUID}"
+  val userRole      = s"userRole${UUID.randomUUID}"
+  val adminRole     = s"adminRole${UUID.randomUUID}"
   val superUserRole = s"superUserRole${UUID.randomUUID}"
 }

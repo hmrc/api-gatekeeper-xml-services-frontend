@@ -17,10 +17,11 @@
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support
 
 import com.github.tomakehurst.wiremock.client.WireMock._
+
 import play.api.http.Status
 
 trait StrideAuthorisationStub {
-  val authUrl = "/auth/authorise"
+  val authUrl                = "/auth/authorise"
   private val authUrlMatcher = urlEqualTo(authUrl)
 
   def strideAuthorisationSucceeds(): Unit = {
@@ -31,9 +32,10 @@ trait StrideAuthorisationStub {
             .withStatus(Status.OK)
             .withBody(
               s"""{
-                |  "authorisedEnrolments": [ { "key": "admin-role", "identifiers": [], "state": "", "delegatedAuthRule": "" } ],
-                |  "optionalName": {"name": "bob", "lastName": "hope"}
-                |}""".stripMargin)
+                 |  "authorisedEnrolments": [ { "key": "admin-role", "identifiers": [], "state": "", "delegatedAuthRule": "" } ],
+                 |  "optionalName": {"name": "bob", "lastName": "hope"}
+                 |}""".stripMargin
+            )
         )
     )
   }

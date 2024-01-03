@@ -18,8 +18,9 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config
 
 import com.google.inject.{Inject, Provider, Singleton}
 
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 
 @Singleton
 class XmlServicesConnectorProvider @Inject() (config: ServicesConfig) extends Provider[XmlServicesConnector.Config] {

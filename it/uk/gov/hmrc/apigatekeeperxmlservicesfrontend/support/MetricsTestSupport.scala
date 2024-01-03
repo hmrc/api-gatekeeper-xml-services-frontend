@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support
 
+import scala.collection.JavaConverters
 
 import com.kenshoo.play.metrics.Metrics
 import org.scalatest.Suite
-import play.api.Application
 
-import scala.collection.JavaConverters
+import play.api.Application
 
 trait MetricsTestSupport {
   self: Suite =>
@@ -30,11 +30,12 @@ trait MetricsTestSupport {
 
   def givenCleanMetricRegistry(): Unit = {
     val registry = app.injector.instanceOf[Metrics].defaultRegistry
-    for (metric <- JavaConverters
-      .asScalaIterator[String](registry.getMetrics.keySet().iterator())) {
+    for (
+      metric <- JavaConverters
+                  .asScalaIterator[String](registry.getMetrics.keySet().iterator())
+    ) {
       registry.remove(metric)
     }
   }
-
 
 }

@@ -16,30 +16,30 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.organisation
 
+import scala.collection.JavaConverters._
+
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+
+import play.api.i18n.MessagesApi
+import play.api.mvc.MessagesRequest
 import play.api.test.FakeRequest
 import play.twirl.api.Html
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{LoggedInUser, Organisation}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationSearchView
-
-import scala.collection.JavaConverters._
+import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.{GatekeeperRoles, LoggedInRequest}
 import uk.gov.hmrc.apiplatform.modules.gkauth.services.{LdapAuthorisationServiceMockModule, StrideAuthorisationServiceMockModule}
-import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.GatekeeperRoles
-import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
-import play.api.i18n.MessagesApi
-import play.api.mvc.MessagesRequest
 
 class OrganisationSearchViewSpec extends CommonViewSpec {
 
-
   trait Setup extends OrganisationTestData {
-    val mockAppConfig = mock[AppConfig]
+    val mockAppConfig          = mock[AppConfig]
     val organisationSearchView = app.injector.instanceOf[OrganisationSearchView]
-    val loggedInUser = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
+    val loggedInUser           = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
     def loggedInRequest: LoggedInRequest[_]
 
     def testRadioButton(document: Document, radioButtonId: String, isChecked: Boolean) = {
@@ -60,18 +60,28 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
   }
 
   trait LdapAuth {
-    self : Setup =>
-      val loggedInRequest = new LoggedInRequest(name = Some(LdapAuthorisationServiceMockModule.LdapUserName), role = GatekeeperRoles.READ_ONLY, request = new MessagesRequest(FakeRequest("GET", "/"), mock[MessagesApi]))
+    self: Setup =>
+
+    val loggedInRequest = new LoggedInRequest(
+      name = Some(LdapAuthorisationServiceMockModule.LdapUserName),
+      role = GatekeeperRoles.READ_ONLY,
+      request = new MessagesRequest(FakeRequest("GET", "/"), mock[MessagesApi])
+    )
   }
 
   trait StrideAuth {
-    self : Setup =>
-      val loggedInRequest = new LoggedInRequest(name = Some(StrideAuthorisationServiceMockModule.StrideUserName), role = GatekeeperRoles.USER, request = new MessagesRequest(FakeRequest("GET", "/"), mock[MessagesApi]))
+    self: Setup =>
+
+    val loggedInRequest = new LoggedInRequest(
+      name = Some(StrideAuthorisationServiceMockModule.StrideUserName),
+      role = GatekeeperRoles.USER,
+      request = new MessagesRequest(FakeRequest("GET", "/"), mock[MessagesApi])
+    )
   }
 
   "Organisation Search View" should {
 
-    def validateAddOrganisationButton(isPresent: Boolean, document: Document) =  {
+    def validateAddOrganisationButton(isPresent: Boolean, document: Document) = {
       Option(document.getElementById("add-organisation-link")).isDefined shouldBe isPresent
     }
 
@@ -90,7 +100,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
     }
 
     "render page correctly on initial load when organisations list is empty" in new Setup with StrideAuth {
-      val page: Html = organisationSearchView.render(List.empty, showTable = false, isVendorIdSearch = true, loggedInRequest, loggedInUser, messagesProvider.messages, mockAppConfig)
+      val page: Html         = organisationSearchView.render(List.empty, showTable = false, isVendorIdSearch = true, loggedInRequest, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       testStandardComponents(document)
       testRadioButton(document, "vendor-id-input", true)
@@ -107,7 +117,8 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
     }
 
     "render page correctly when organisations list is populated" in new Setup with StrideAuth {
-      val page: Html = organisationSearchView.render(organisations, showTable = true, isVendorIdSearch = true, loggedInRequest, loggedInUser, messagesProvider.messages, mockAppConfig)
+      val page: Html         =
+        organisationSearchView.render(organisations, showTable = true, isVendorIdSearch = true, loggedInRequest, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       testStandardComponents(document)
 
@@ -119,12 +130,11 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
       validateOrganisationRow(1, org2, document)
       validateOrganisationRow(2, org3, document)
 
-
       validateAddOrganisationButtonPresent(document)
     }
 
     "render page correctly when organisations list is empty" in new Setup with StrideAuth {
-      val page: Html = organisationSearchView.render(List.empty, showTable = true, isVendorIdSearch = false, loggedInRequest, loggedInUser, messagesProvider.messages, mockAppConfig)
+      val page: Html         = organisationSearchView.render(List.empty, showTable = true, isVendorIdSearch = false, loggedInRequest, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       testStandardComponents(document)
       testRadioButton(document, "vendor-id-input", false)
@@ -140,9 +150,8 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
       validateAddOrganisationButtonPresent(document)
     }
 
-
     "render page without add organisation button for LDAP" in new Setup with LdapAuth {
-      val page: Html = organisationSearchView.render(List.empty, showTable = true, isVendorIdSearch = false, loggedInRequest, loggedInUser, messagesProvider.messages, mockAppConfig)
+      val page: Html         = organisationSearchView.render(List.empty, showTable = true, isVendorIdSearch = false, loggedInRequest, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       testStandardComponents(document)
 

@@ -18,8 +18,10 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+
 import play.api.test.FakeRequest
 import play.twirl.api.Html
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.ForbiddenView
 
@@ -30,12 +32,12 @@ class ForbiddenViewSpec extends CommonViewSpec {
   }
 
   "ForbiddenView" should {
- 
+
     "render Forbidden View correctly" in new Setup {
-       val page : Html =    forbiddenView.render(FakeRequest(), messagesProvider.messages)
-       val document: Document = Jsoup.parse(page.body)
-       document.getElementById("page-heading").text() shouldBe "You do not have permission to access Gatekeeper"
-       document.getElementById("page-heading-2").text() shouldBe "Contact your administrator for access"
+      val page: Html         = forbiddenView.render(FakeRequest(), messagesProvider.messages)
+      val document: Document = Jsoup.parse(page.body)
+      document.getElementById("page-heading").text() shouldBe "You do not have permission to access Gatekeeper"
+      document.getElementById("page-heading-2").text() shouldBe "Contact your administrator for access"
     }
   }
 

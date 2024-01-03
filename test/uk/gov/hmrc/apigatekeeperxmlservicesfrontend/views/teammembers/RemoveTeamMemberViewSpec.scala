@@ -18,7 +18,9 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.teammembers
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+
 import play.api.test.FakeRequest
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.TeamMembersController.RemoveTeamMemberConfirmationForm
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
@@ -30,15 +32,24 @@ import uk.gov.hmrc.apiplatform.modules.gkauth.services.StrideAuthorisationServic
 class RemoveTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with ViewSpecHelpers {
 
   trait Setup extends OrganisationTestData {
-    val mockAppConfig = mock[AppConfig]
+    val mockAppConfig        = mock[AppConfig]
     val removeTeamMemberView = app.injector.instanceOf[RemoveTeamMemberView]
-    val loggedInUser = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
+    val loggedInUser         = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
   }
 
   "Remove Team Member View" should {
 
     "render the remove team member page correctly when no errors" in new Setup {
-      val page = removeTeamMemberView.render(RemoveTeamMemberConfirmationForm.form, org1.organisationId, collaborator1.userId, collaborator1.email, FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
+      val page               = removeTeamMemberView.render(
+        RemoveTeamMemberConfirmationForm.form,
+        org1.organisationId,
+        collaborator1.userId,
+        collaborator1.email,
+        FakeRequest().withCSRFToken,
+        loggedInUser,
+        messagesProvider.messages,
+        mockAppConfig
+      )
       val document: Document = Jsoup.parse(page.body)
       hasBackLink(document) shouldBe true
       validateFormErrors(document)
@@ -47,8 +58,16 @@ class RemoveTeamMemberViewSpec extends CommonViewSpec with WithCSRFAddToken with
     }
 
     "render the remove team member page correctly when errors exist" in new Setup {
-      val page = removeTeamMemberView.render(RemoveTeamMemberConfirmationForm.form.withError("email", "team.member.remove.email.error.required"),
-        org1.organisationId, collaborator1.userId, collaborator1.email, FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
+      val page = removeTeamMemberView.render(
+        RemoveTeamMemberConfirmationForm.form.withError("email", "team.member.remove.email.error.required"),
+        org1.organisationId,
+        collaborator1.userId,
+        collaborator1.email,
+        FakeRequest().withCSRFToken,
+        loggedInUser,
+        messagesProvider.messages,
+        mockAppConfig
+      )
 
       val document: Document = Jsoup.parse(page.body)
       hasBackLink(document) shouldBe true
