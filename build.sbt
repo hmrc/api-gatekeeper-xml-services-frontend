@@ -13,7 +13,7 @@ ThisBuild / semanticdbVersion := scalafixSemanticdb.revision
 ThisBuild / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
 
 lazy val microservice = Project(appName, file("."))
-  .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin, SbtAutoBuildPlugin, SbtGitVersioning)
+  .enablePlugins(PlayScala, SbtDistributablesPlugin)
   .settings(
     Concat.groups := Seq(
       "javascripts/apis-app.js" -> group(
