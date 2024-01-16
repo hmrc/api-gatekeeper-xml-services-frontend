@@ -343,51 +343,6 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       }
     }
 
-    "bulkFindAndCreateOrUpdate" should {
-
-      "return Right when bulkFindAndCreateOrUpdate call is successful" in new Setup {
-        bulkFindAndCreateOrUpdateReturnsResponse(organisationsWithNameAndVendorIds, OK)
-
-        val result = await(objInTest.bulkAddOrganisations(organisationsWithNameAndVendorIds))
-
-        result mustBe Right(())
-      }
-
-      "return Left when bulkFindAndCreateOrUpdate call fails" in new Setup {
-        bulkFindAndCreateOrUpdateReturnsResponse(organisationsWithNameAndVendorIds, INTERNAL_SERVER_ERROR)
-
-        val result = await(objInTest.bulkAddOrganisations(organisationsWithNameAndVendorIds))
-
-        result match {
-          case Left(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed
-          case _                                                           => fail()
-        }
-      }
-    }
-
-    "bulkAddUsers" should {
-
-      "return Right when bulkAddUsers call is successful" in new Setup {
-
-        bulkAddUsersReturnsResponse(users, OK)
-
-        val result = await(objInTest.bulkAddUsers(users))
-
-        result mustBe Right(())
-      }
-
-      "return Left when bulkAddUsers call fails" in new Setup {
-        bulkAddUsersReturnsResponse(users, INTERNAL_SERVER_ERROR)
-
-        val result = await(objInTest.bulkAddUsers(users))
-
-        result match {
-          case Left(UpstreamErrorResponse(_, INTERNAL_SERVER_ERROR, _, _)) => succeed
-          case _                                                           => fail()
-        }
-      }
-    }
-
     "getAllApis" should {
 
       val xmlApi = XmlApi(
