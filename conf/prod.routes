@@ -1,5 +1,4 @@
 # Add all the application routes to the app.routes file
-->         /api-gatekeeper-xml-services/csvupload       csvupload.Routes
 ->         /api-gatekeeper-xml-services/organisations   organisations.Routes
 ->         /api-gatekeeper-xml-services                 app.Routes
 ->         /                                            health.Routes

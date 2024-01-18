@@ -1,8 +1,0 @@
-# microservice specific routes
-
-GET     /organisation-page      uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.csvupload.CsvUploadController.organisationPage()
-POST    /organisation-action    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.csvupload.CsvUploadController.uploadOrganisationsCsvAction()
-
-GET     /users-page      uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.csvupload.CsvUploadController.usersPage()
-POST    /users-action    uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.csvupload.CsvUploadController.uploadUsersCsvAction()
-

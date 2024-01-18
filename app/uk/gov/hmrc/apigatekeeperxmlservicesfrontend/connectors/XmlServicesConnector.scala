@@ -117,20 +117,6 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
 
   }
 
-  def bulkAddOrganisations(organisations: Seq[OrganisationWithNameAndVendorId])(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, Unit]] = {
-    http.POST[BulkUploadOrganisationsRequest, Either[UpstreamErrorResponse, Unit]](
-      url = s"$baseUrl/csvupload/bulkorganisations",
-      BulkUploadOrganisationsRequest(organisations)
-    )
-  }
-
-  def bulkAddUsers(users: Seq[ParsedUser])(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, Unit]] = {
-    http.POST[BulkAddUsersRequest, Either[UpstreamErrorResponse, Unit]](
-      url = s"$baseUrl/csvupload/bulkusers",
-      BulkAddUsersRequest(users)
-    )
-  }
-
   def removeTeamMember(organisationId: OrganisationId, email: String, gateKeeperUserId: String)(implicit hc: HeaderCarrier): Future[RemoveCollaboratorResult] = {
 
     http.POST[RemoveCollaboratorRequest, Either[UpstreamErrorResponse, Organisation]](
