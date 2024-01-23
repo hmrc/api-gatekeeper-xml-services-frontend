@@ -5,8 +5,8 @@ import sbt._
 
 object AppDependencies {
 
-  lazy val enumeratumVersion = "1.6.2"
   lazy val bootstrapVersion  = "7.22.0"
+  val apiDomainVersion       = "0.11.0"
 
   val compile = Seq(
     "uk.gov.hmrc"       %% "bootstrap-frontend-play-28"   % bootstrapVersion,
@@ -16,7 +16,7 @@ object AppDependencies {
     "org.typelevel"     %% "cats-core"                    % "2.4.2",
     "org.apache.commons" % "commons-csv"                  % "1.8",
     "commons-io"         % "commons-io"                   % "2.11.0",
-    "com.beachape"      %% "enumeratum-play-json"         % enumeratumVersion
+    "uk.gov.hmrc"       %% "api-platform-api-domain"      % apiDomainVersion
   )
 
   val test = Seq(
