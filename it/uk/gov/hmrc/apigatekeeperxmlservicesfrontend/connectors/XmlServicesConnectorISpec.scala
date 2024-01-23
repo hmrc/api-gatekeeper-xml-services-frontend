@@ -25,7 +25,8 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import play.api.test.Helpers._
-import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.apiplatform.modules.apis.domain.models.ApiCategory
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
@@ -120,8 +121,8 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       val result = await(objInTest.findOrganisationsByParams(Some(vendorId), None))
 
       result match {
-        case Left(e: Upstream4xxResponse) => e.statusCode mustBe BAD_REQUEST
-        case _                            => fail()
+        case Left(UpstreamErrorResponse(_, BAD_REQUEST, _, _)) => succeed
+        case _                                                 => fail()
       }
 
     }
@@ -151,7 +152,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       val result = await(objInTest.findOrganisationsByParams(None, None))
 
       result match {
-        case Right(org) => org must contain allOf (organisation, organisation2)
+        case Right(org) => org must contain.allOf(organisation, organisation2)
         case _          => fail()
       }
     }
