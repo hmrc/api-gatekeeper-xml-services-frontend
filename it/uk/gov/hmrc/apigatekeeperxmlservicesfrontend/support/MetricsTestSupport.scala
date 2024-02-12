@@ -18,10 +18,10 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support
 
 import scala.jdk.CollectionConverters._
 
-import com.kenshoo.play.metrics.Metrics
 import org.scalatest.Suite
 
 import play.api.Application
+import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 
 trait MetricsTestSupport {
   self: Suite =>
