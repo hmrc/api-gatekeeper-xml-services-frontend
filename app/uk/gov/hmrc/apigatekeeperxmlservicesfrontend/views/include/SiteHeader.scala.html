@@ -22,10 +22,11 @@
 @this(hmrcHeader: HmrcHeader)
 
 
-@(apiGatekeeperUrl: String)(implicit request: Request[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages)
+@(apiGatekeeperUrl: String, apiGatekeeperApisUrl: String)(implicit request: Request[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages)
 
 @navigation = @{
     Seq(
+        NavigationItem(content = Text("APIs"), href = Some(apiGatekeeperApisUrl)),
         NavigationItem(content = Text("Applications"), href = Some(s"$apiGatekeeperUrl/applications")),
         NavigationItem(content = Text("Developers"), href = Some(s"$apiGatekeeperUrl/developers")),
         NavigationItem(content = Text("Terms of use"), href = Some(s"$apiGatekeeperUrl/terms-of-use")),

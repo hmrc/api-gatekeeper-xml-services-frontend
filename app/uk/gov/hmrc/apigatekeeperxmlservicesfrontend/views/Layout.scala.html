@@ -64,7 +64,7 @@
 @govukLayout(
     pageTitle = pageTitle,
     headBlock = Some(hmrcHead()),
-    headerBlock = Some(siteHeader(appConfig.apiGatekeeperUrl)),
+    headerBlock = Some(siteHeader(appConfig.apiGatekeeperUrl, appConfig.apiGatekeeperApisUrl)),
     scriptsBlock = Some(scriptElem),
     beforeContentBlock = Some(beforeContent),
     footerBlock = Some(hmrcFooter(new Footer(meta = None, language = En))),
