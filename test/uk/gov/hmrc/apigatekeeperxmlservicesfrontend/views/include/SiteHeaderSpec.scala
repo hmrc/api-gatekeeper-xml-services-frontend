@@ -35,9 +35,11 @@ class SiteHeaderSpec extends CommonViewSpec {
     val siteHeader    = app.injector.instanceOf[SiteHeader]
     val loggedInUser  = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
 
-    val apiGatekeeperUrl = "/api-gatekeeper"
+    val apiGatekeeperUrl     = "/api-gatekeeper"
+    val apiGatekeeperApisUrl = "/api-gatekeeper-apis"
 
     val expectedMenuItems = Map(
+      "APIs"          -> apiGatekeeperApisUrl,
       "Applications"  -> s"$apiGatekeeperUrl/applications",
       "Developers"    -> s"$apiGatekeeperUrl/developers",
       "Terms of use"  -> s"$apiGatekeeperUrl/terms-of-use",
@@ -50,7 +52,7 @@ class SiteHeaderSpec extends CommonViewSpec {
   "SiteHeader" should {
 
     "render correctly" in new Setup {
-      val component  = siteHeader.render(apiGatekeeperUrl, FakeRequest(), loggedInUser, messagesProvider.messages)
+      val component  = siteHeader.render(apiGatekeeperUrl, apiGatekeeperApisUrl, FakeRequest(), loggedInUser, messagesProvider.messages)
       val document   = Jsoup.parse(component.body)
       val navigation = document.getElementById("navigation")
 
