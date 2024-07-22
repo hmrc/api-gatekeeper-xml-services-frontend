@@ -18,7 +18,7 @@
 
 @this(layout: Layout, applicationConfig: AppConfig)
 
-@()(implicit request : Request[_], messagesProvider: MessagesProvider)
+@()(implicit request : RequestHeader, messagesProvider: MessagesProvider)
 
 @layout(pageTitle = Some("Forbidden")) {
   <h1 id="page-heading" class="govuk-heading-xl">You do not have permission to access Gatekeeper</h1>

@@ -1,17 +1,15 @@
-import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
-import bloop.integrations.sbt.BloopDefaults
-import net.ground5hark.sbt.concat.Import.*
-import com.typesafe.sbt.uglify.Import.*
 import uk.gov.hmrc.DefaultBuildSettings
 
 val appName = "api-gatekeeper-xml-services-frontend"
 
+Global / bloopAggregateSourceDependencies := true
+Global / bloopExportJarClassifiers := Some(Set("sources"))
+
 ThisBuild / scalaVersion := "2.13.12"
+ThisBuild / majorVersion := 0
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
 ThisBuild / semanticdbEnabled := true
 ThisBuild / semanticdbVersion := scalafixSemanticdb.revision
-ThisBuild / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
-ThisBuild / majorVersion := 0
 
 
 lazy val microservice = Project(appName, file("."))
@@ -43,13 +41,12 @@ lazy val microservice = Project(appName, file("."))
     )
   )
   .settings(ScoverageSettings())
-  .settings(resolvers += Resolver.jcenterRepo)
   .settings(
     scalacOptions ++= Seq(
       "-Wconf:cat=unused&src=views/.*\\.scala:s",
-      "-Wconf:cat=unused&src=.*RoutesPrefix\\.scala:s",
-      "-Wconf:cat=unused&src=.*Routes\\.scala:s",
-      "-Wconf:cat=unused&src=.*ReverseRoutes\\.scala:s"
+      // https://www.scala-lang.org/2021/01/12/configuring-and-suppressing-warnings.html
+      // suppress warnings in generated routes files
+      "-Wconf:src=routes/.*:s"
     )
   )
 
@@ -61,12 +58,8 @@ lazy val it = (project in file("it"))
   .settings(
     name := "integration-tests",
     Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-eT"),
-    headerSettings(Test) ++ automateHeaderSettings(Test)
   )
 
-
-Global / bloopAggregateSourceDependencies := true
-Global / bloopExportJarClassifiers := Some(Set("sources"))
 
 
 commands ++= Seq(

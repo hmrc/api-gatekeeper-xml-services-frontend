@@ -24,7 +24,7 @@
 
 
 @(form: Form[AddTeamMemberForm], organisationId: OrganisationId)(implicit request:
-Request[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages,
+RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages,
 appConfig: AppConfig)
 
 @layout(pageTitle = Some("Add Team Member - HMRC API Gatekeeper")) {

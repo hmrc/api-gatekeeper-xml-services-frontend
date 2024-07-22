@@ -22,7 +22,7 @@
 @this(layout: Layout)
 
 
-@(form: Form[AddOrganisationWithNewUserForm], organisationName: Option[String], email: Option[String])(implicit request: Request[_],
+@(form: Form[AddOrganisationWithNewUserForm], organisationName: Option[String], email: Option[String])(implicit request: RequestHeader,
         loggedInUser: LoggedInUser = LoggedInUser(None),
         messages: Messages,
         appConfig: AppConfig)

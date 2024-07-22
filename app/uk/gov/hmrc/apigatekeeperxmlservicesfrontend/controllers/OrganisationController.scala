@@ -138,19 +138,19 @@ class OrganisationController @Inject() (
         else toVendorIdOrNone(txtVal).nonEmpty
       }
 
-      def handleResults(result: Either[Throwable, List[Organisation]], isVendorIdSearch: Boolean) = {
+      def handleResults(result: Either[Throwable, List[Organisation]], isVendorIdSearch: Boolean): Future[Result] = {
         result match {
-          case Right(orgs: List[Organisation])                 => Ok(organisationSearchView(orgs, isVendorIdSearch = isVendorIdSearch))
-          case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) => Ok(organisationSearchView(List.empty, isVendorIdSearch = isVendorIdSearch))
-          case Left(_)                                         => InternalServerError(errorHandler.internalServerErrorTemplate)
+          case Right(orgs: List[Organisation])                 => successful(Ok(organisationSearchView(orgs, isVendorIdSearch = isVendorIdSearch)))
+          case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) => successful(Ok(organisationSearchView(List.empty, isVendorIdSearch = isVendorIdSearch)))
+          case Left(_)                                         => errorHandler.internalServerErrorTemplate.map(InternalServerError(_))
         }
       }
 
       searchType match {
         case x: String if isValidVendorId(searchText) && (x == vendorIdParameterName) =>
-          xmlServicesConnector.findOrganisationsByParams(toVendorIdOrNone(searchText), None).map(handleResults(_, isVendorIdSearch = true))
+          xmlServicesConnector.findOrganisationsByParams(toVendorIdOrNone(searchText), None).flatMap(handleResults(_, isVendorIdSearch = true))
         case x: String if x == organisationNameParamName                              =>
-          xmlServicesConnector.findOrganisationsByParams(None, searchText).map(handleResults(_, isVendorIdSearch = false))
+          xmlServicesConnector.findOrganisationsByParams(None, searchText).flatMap(handleResults(_, isVendorIdSearch = false))
         case _                                                                        => successful(Ok(organisationSearchView(List.empty)))
       }
   }
@@ -170,7 +170,7 @@ class OrganisationController @Inject() (
             case Right(users: List[UserResponse]) =>
               addOrganisation(formData.organisationName, formData.emailAddress, users.head.firstName, users.head.lastName)
             case Left(_)                          =>
-              successful(InternalServerError(errorHandler.internalServerErrorTemplate))
+              errorHandler.internalServerErrorTemplate.map(InternalServerError(_))
 
           }
         }
@@ -195,10 +195,10 @@ class OrganisationController @Inject() (
     ): Future[Result] = {
     xmlServicesConnector
       .addOrganisation(organisationName, emailAddress, firstName, lastName)
-      .map {
+      .flatMap {
         case CreateOrganisationSuccess(x: Organisation) =>
-          Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(x.organisationId))
-        case _                                          => InternalServerError(errorHandler.internalServerErrorTemplate)
+          successful(Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(x.organisationId)))
+        case _                                          => errorHandler.internalServerErrorTemplate.map(InternalServerError(_))
       }
   }
 
@@ -207,19 +207,19 @@ class OrganisationController @Inject() (
       (for {
         getOrganisationResult <- xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
         getUsersResult        <- xmlServicesConnector.getOrganisationUsersByOrganisationId(organisationId)
-      } yield (getOrganisationResult, getUsersResult)).map {
-        case (Right(org: Organisation), Right(users: List[OrganisationUser])) => Ok(organisationDetailsView(org, users))
+      } yield (getOrganisationResult, getUsersResult)).flatMap {
+        case (Right(org: Organisation), Right(users: List[OrganisationUser])) => successful(Ok(organisationDetailsView(org, users)))
 
-        case _ => InternalServerError(errorHandler.internalServerErrorTemplate)
+        case _ => errorHandler.internalServerErrorTemplate.map(InternalServerError(_))
       }
   }
 
   def updateOrganisationsDetailsPage(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
-        .map {
-          case Right(organisation: Organisation) => Ok(organisationUpdateView(updateOrganisationDetailsForm, organisation))
-          case Left(_)                           => InternalServerError(errorHandler.internalServerErrorTemplate)
+        .flatMap {
+          case Right(organisation: Organisation) => successful(Ok(organisationUpdateView(updateOrganisationDetailsForm, organisation)))
+          case Left(_)                           => errorHandler.internalServerErrorTemplate.map(InternalServerError(_))
         }
   }
 
@@ -229,11 +229,11 @@ class OrganisationController @Inject() (
       updateOrganisationDetailsForm.bindFromRequest().fold(
         formWithErrors => successful(BadRequest(organisationUpdateView(formWithErrors, organisation))),
         formData =>
-          xmlServicesConnector.updateOrganisationDetails(organisationId, formData.organisationName).map {
+          xmlServicesConnector.updateOrganisationDetails(organisationId, formData.organisationName).flatMap {
             case UpdateOrganisationDetailsSuccess(_) =>
-              Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(organisationId))
+              successful(Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(organisationId)))
             case _                                   =>
-              InternalServerError(errorHandler.internalServerErrorTemplate)
+              errorHandler.internalServerErrorTemplate.map(InternalServerError(_))
           }
       )
     }
@@ -242,7 +242,7 @@ class OrganisationController @Inject() (
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
         .flatMap {
           case Right(organisation: Organisation) => handleFormAction(organisation)
-          case Left(_)                           => Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
+          case Left(_)                           => errorHandler.internalServerErrorTemplate.map(InternalServerError(_))
         }
 
   }
@@ -250,18 +250,18 @@ class OrganisationController @Inject() (
   def removeOrganisationPage(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
-        .map {
-          case Right(org: Organisation) => Ok(organisationRemoveView(removeOrganisationConfirmationForm, org))
-          case Left(_)                  => InternalServerError(errorHandler.internalServerErrorTemplate)
+        .flatMap {
+          case Right(org: Organisation) => successful(Ok(organisationRemoveView(removeOrganisationConfirmationForm, org)))
+          case Left(_)                  => errorHandler.internalServerErrorTemplate.map(InternalServerError(_))
         }
   }
 
   def removeOrganisationAction(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
-      def handleRemoveOrganisation(organisation: Organisation) = {
-        xmlServicesConnector.removeOrganisation(organisation.organisationId).map {
-          case true  => Ok(organisationRemoveSuccessView(organisation))
-          case false => InternalServerError(errorHandler.internalServerErrorTemplate)
+      def handleRemoveOrganisation(organisation: Organisation): Future[Result] = {
+        xmlServicesConnector.removeOrganisation(organisation.organisationId).flatMap {
+          case true  => successful(Ok(organisationRemoveSuccessView(organisation)))
+          case false => errorHandler.internalServerErrorTemplate.map(InternalServerError(_))
         }
 
       }
@@ -279,7 +279,7 @@ class OrganisationController @Inject() (
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
         .flatMap {
           case Right(org: Organisation) => removeOrganisationConfirmationForm.bindFromRequest().fold(handleInvalidForm(_, org), handleValidForm(_, org))
-          case Left(_)                  => Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
+          case Left(_)                  => errorHandler.internalServerErrorTemplate.map(InternalServerError(_))
         }
 
   }

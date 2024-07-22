@@ -25,7 +25,7 @@
 @this(layout: Layout)
 
 
-@(form: Form[UpdateOrganisationDetailsForm], organisation: Organisation)(implicit request: Request[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
+@(form: Form[UpdateOrganisationDetailsForm], organisation: Organisation)(implicit request: RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
 
 @layout(pageTitle = Some("Manage XML Organisations - HMRC API Gatekeeper")) {
 <div class="govuk-form-group">

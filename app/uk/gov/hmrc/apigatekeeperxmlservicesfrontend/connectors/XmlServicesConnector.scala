@@ -22,15 +22,17 @@ import scala.util.control.NonFatal
 
 import play.api.Logging
 import play.api.http.Status.NO_CONTENT
+import play.api.libs.json.Json
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 
 @Singleton
-class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(implicit ec: ExecutionContext) extends Logging {
+class XmlServicesConnector @Inject() (val http: HttpClientV2, val config: Config)(implicit ec: ExecutionContext) extends Logging {
 
   val baseUrl: String = s"${config.serviceBaseUrl}/api-platform-xml-services"
 
@@ -40,33 +42,38 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
     )(implicit hc: HeaderCarrier
     ): Future[Either[Throwable, List[Organisation]]] = {
 
-    val vendorIdParams = vendorId.map(v => Seq("vendorId" -> v.value.toString)).getOrElse(Seq.empty)
-    val orgNameParams  = organisationName.map(o => Seq("organisationName" -> o)).getOrElse(Seq.empty)
-    val sortByParams   = (vendorId, organisationName) match {
-      case (Some(_), None) => Seq("sortBy" -> "VENDOR_ID")
-      case (None, Some(_)) => Seq("sortBy" -> "ORGANISATION_NAME")
-      case _               => Seq.empty
+    val vendorIdParam = vendorId.map(v => s"vendorId=${v.value}").getOrElse("")
+    val orgNameParam  = organisationName.map(o => s"organisationName=$o").getOrElse("")
+    val sortByParam   = (vendorId, organisationName) match {
+      case (Some(_), None) => "sortBy=VENDOR_ID"
+      case (None, Some(_)) => "sortBy=ORGANISATION_NAME"
+      case _               => ""
     }
 
-    val params = vendorIdParams ++ orgNameParams ++ sortByParams
+    val queryParameters = List(vendorIdParam, orgNameParam, sortByParam).filter(_.nonEmpty) match {
+      case params if params.nonEmpty => s"?${params.mkString("&")}"
+      case _                         => ""
+    }
 
-    handleResult(http.GET[List[Organisation]](url = s"$baseUrl/organisations", queryParams = params))
+    val url = s"$baseUrl/organisations$queryParameters"
+
+    handleResult(http.get(url"$url").execute[List[Organisation]])
   }
 
   def getOrganisationByOrganisationId(organisationId: OrganisationId)(implicit hc: HeaderCarrier): Future[Either[Throwable, Organisation]] = {
-    handleResult(http.GET[Organisation](url = s"$baseUrl/organisations/${organisationId.value}"))
+    handleResult(http.get(url"$baseUrl/organisations/${organisationId.value}").execute[Organisation])
   }
 
   def addOrganisation(organisationName: String, email: String, firstName: String, lastName: String)(implicit hc: HeaderCarrier): Future[CreateOrganisationResult] = {
     val createOrganisationRequest: CreateOrganisationRequest = CreateOrganisationRequest(organisationName, email, firstName, lastName)
 
-    http.POST[CreateOrganisationRequest, Either[UpstreamErrorResponse, Organisation]](
-      url = s"$baseUrl/organisations",
-      body = createOrganisationRequest
-    ).map {
-      case Right(x: Organisation) => CreateOrganisationSuccess(x)
-      case Left(err)              => CreateOrganisationFailure(err)
-    }
+    http.post(url"$baseUrl/organisations")
+      .withBody(Json.toJson(createOrganisationRequest))
+      .execute[Either[UpstreamErrorResponse, Organisation]]
+      .map {
+        case Right(x: Organisation) => CreateOrganisationSuccess(x)
+        case Left(err)              => CreateOrganisationFailure(err)
+      }
 
   }
 
@@ -77,20 +84,19 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
     ): Future[UpdateOrganisationDetailsResult] = {
     val updateOrganisationDetailsRequest: UpdateOrganisationDetailsRequest = UpdateOrganisationDetailsRequest(organisationName)
 
-    http.POST[UpdateOrganisationDetailsRequest, Either[UpstreamErrorResponse, Organisation]](
-      url = s"$baseUrl/organisations/${organisationId.value}",
-      body = updateOrganisationDetailsRequest
-    ).map {
-      case Right(x: Organisation) => UpdateOrganisationDetailsSuccess(x)
-      case Left(err)              => UpdateOrganisationDetailsFailure(err)
-    }
+    http.post(url"$baseUrl/organisations/${organisationId.value}")
+      .withBody(Json.toJson(updateOrganisationDetailsRequest))
+      .execute[Either[UpstreamErrorResponse, Organisation]]
+      .map {
+        case Right(x: Organisation) => UpdateOrganisationDetailsSuccess(x)
+        case Left(err)              => UpdateOrganisationDetailsFailure(err)
+      }
 
   }
 
   def removeOrganisation(organisationId: OrganisationId)(implicit hc: HeaderCarrier): Future[Boolean] = {
-    http.DELETE[HttpResponse](
-      url = s"$baseUrl/organisations/${organisationId.value}"
-    )
+    http.delete(url"$baseUrl/organisations/${organisationId.value}")
+      .execute[HttpResponse]
       .map(_.status == NO_CONTENT)
       .recover {
         case NonFatal(e) =>
@@ -107,37 +113,37 @@ class XmlServicesConnector @Inject() (val http: HttpClient, val config: Config)(
     )(implicit hc: HeaderCarrier
     ): Future[AddCollaboratorResult] = {
 
-    http.POST[AddCollaboratorRequest, Either[UpstreamErrorResponse, Organisation]](
-      url = s"$baseUrl/organisations/${organisationId.value}/add-collaborator",
-      AddCollaboratorRequest(email, firstname, lastname)
-    ).map {
-      case Right(x: Organisation) => AddCollaboratorSuccess(x)
-      case Left(err)              => AddCollaboratorFailure(err)
-    }
+    http.post(url"$baseUrl/organisations/${organisationId.value}/add-collaborator")
+      .withBody(Json.toJson(AddCollaboratorRequest(email, firstname, lastname)))
+      .execute[Either[UpstreamErrorResponse, Organisation]]
+      .map {
+        case Right(x: Organisation) => AddCollaboratorSuccess(x)
+        case Left(err)              => AddCollaboratorFailure(err)
+      }
 
   }
 
   def removeTeamMember(organisationId: OrganisationId, email: String, gateKeeperUserId: String)(implicit hc: HeaderCarrier): Future[RemoveCollaboratorResult] = {
 
-    http.POST[RemoveCollaboratorRequest, Either[UpstreamErrorResponse, Organisation]](
-      url = s"$baseUrl/organisations/${organisationId.value}/remove-collaborator",
-      RemoveCollaboratorRequest(email, gateKeeperUserId)
-    ).map {
-      case Right(x: Organisation) => RemoveCollaboratorSuccess(x)
-      case Left(err)              => RemoveCollaboratorFailure(err)
-    }
+    http.post(url"$baseUrl/organisations/${organisationId.value}/remove-collaborator")
+      .withBody(Json.toJson(RemoveCollaboratorRequest(email, gateKeeperUserId)))
+      .execute[Either[UpstreamErrorResponse, Organisation]]
+      .map {
+        case Right(x: Organisation) => RemoveCollaboratorSuccess(x)
+        case Left(err)              => RemoveCollaboratorFailure(err)
+      }
 
   }
 
   def getAllApis(implicit hc: HeaderCarrier): Future[Either[Throwable, Seq[XmlApi]]] = {
-    handleResult(http.GET[Seq[XmlApi]](url = s"$baseUrl/xml/apis"))
+    handleResult(http.get(url"$baseUrl/xml/apis").execute[Seq[XmlApi]])
   }
 
   def getOrganisationUsersByOrganisationId(
       organisationId: OrganisationId
     )(implicit hc: HeaderCarrier
     ): Future[Either[Throwable, List[OrganisationUser]]] = {
-    handleResult(http.GET[List[OrganisationUser]](url = s"$baseUrl/organisations/${organisationId.value}/get-users"))
+    handleResult(http.get(url"$baseUrl/organisations/${organisationId.value}/get-users").execute[List[OrganisationUser]])
   }
 
   private def handleResult[A](result: Future[A]): Future[Either[Throwable, A]] = {
