@@ -42,22 +42,17 @@ class XmlServicesConnector @Inject() (val http: HttpClientV2, val config: Config
     )(implicit hc: HeaderCarrier
     ): Future[Either[Throwable, List[Organisation]]] = {
 
-    val vendorIdParam = vendorId.map(v => s"vendorId=${v.value}").getOrElse("")
-    val orgNameParam  = organisationName.map(o => s"organisationName=$o").getOrElse("")
-    val sortByParam   = (vendorId, organisationName) match {
-      case (Some(_), None) => "sortBy=VENDOR_ID"
-      case (None, Some(_)) => "sortBy=ORGANISATION_NAME"
-      case _               => ""
+    val vendorIdParams = vendorId.map(v => Seq("vendorId" -> v.value.toString)).getOrElse(Seq.empty)
+    val orgNameParams  = organisationName.map(o => Seq("organisationName" -> o)).getOrElse(Seq.empty)
+    val sortByParams   = (vendorId, organisationName) match {
+      case (Some(_), None) => Seq("sortBy" -> "VENDOR_ID")
+      case (None, Some(_)) => Seq("sortBy" -> "ORGANISATION_NAME")
+      case _               => Seq.empty
     }
 
-    val queryParameters = List(vendorIdParam, orgNameParam, sortByParam).filter(_.nonEmpty) match {
-      case params if params.nonEmpty => s"?${params.mkString("&")}"
-      case _                         => ""
-    }
+    val params = vendorIdParams ++ orgNameParams ++ sortByParams
 
-    val url = s"$baseUrl/organisations$queryParameters"
-
-    handleResult(http.get(url"$url").execute[List[Organisation]])
+    handleResult(http.get(url"$baseUrl/organisations?$params").execute[List[Organisation]])
   }
 
   def getOrganisationByOrganisationId(organisationId: OrganisationId)(implicit hc: HeaderCarrier): Future[Either[Throwable, Organisation]] = {
