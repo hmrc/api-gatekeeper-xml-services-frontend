@@ -24,7 +24,7 @@
 
 
 @(form: Form[CreateAndAddTeamMemberForm], organisationId: OrganisationId, email: String)(implicit request:
-Request[_], loggedInUser: LoggedInUser = LoggedInUser(None),
+RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None),
         messages: Messages,
         appConfig: AppConfig)
 
@@ -64,7 +64,7 @@ Request[_], loggedInUser: LoggedInUser = LoggedInUser(None),
                             @if(email.nonEmpty) {
                                 value="@email"
                             } else {
-                                value="@form.data.get("emailAddress")"} />
+                                value="@form.data.get("emailAddress")"} >
 
                     </div>
 

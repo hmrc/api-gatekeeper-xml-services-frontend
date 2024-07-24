@@ -22,7 +22,7 @@
 @this(hmrcHeader: HmrcHeader)
 
 
-@(apiGatekeeperUrl: String, apiGatekeeperApisUrl: String)(implicit request: Request[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages)
+@(apiGatekeeperUrl: String, apiGatekeeperApisUrl: String)(implicit request: RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages)
 
 @navigation = @{
     Seq(

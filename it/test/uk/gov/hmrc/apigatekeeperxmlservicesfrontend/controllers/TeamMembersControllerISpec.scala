@@ -136,7 +136,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
         result.status mustBe INTERNAL_SERVER_ERROR
 
         val document = Jsoup.parse(result.body)
-        document.getElementById("page-heading").text() mustBe "Sorry, we’re experiencing technical difficulties"
+        document.getElementById("page-heading").text() mustBe "Sorry, there is a problem with the service"
 
       }
     }

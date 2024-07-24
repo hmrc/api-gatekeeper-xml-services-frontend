@@ -24,7 +24,7 @@
 
 
 @(form: Form[AddOrganisationForm])(implicit request:
-Request[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages,
+RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages,
 appConfig: AppConfig)
 
 @layout(pageTitle = Some("Manage XML Organisations - HMRC API Gatekeeper")) {

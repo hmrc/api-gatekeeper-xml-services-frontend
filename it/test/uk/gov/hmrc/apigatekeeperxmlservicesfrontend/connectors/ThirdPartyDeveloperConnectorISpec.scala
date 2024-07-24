@@ -24,7 +24,7 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.{UserId, UserResponse}
@@ -102,8 +102,8 @@ class ThirdPartyDeveloperConnectorISpec extends ServerBaseISpec with BeforeAndAf
       val result: Either[Throwable, List[UserResponse]] = await(underTest.getByEmails(emails))
 
       result match {
-        case Left(_: NotFoundException) => succeed
-        case _                          => fail()
+        case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) => succeed
+        case _                                               => fail()
       }
     }
 

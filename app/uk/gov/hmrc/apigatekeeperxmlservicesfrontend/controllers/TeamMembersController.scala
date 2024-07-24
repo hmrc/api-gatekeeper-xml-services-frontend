@@ -101,11 +101,11 @@ class TeamMembersController @Inject() (
   def manageTeamMembers(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
     implicit request =>
       {
-        xmlServicesConnector.getOrganisationByOrganisationId(organisationId).map {
-          case Right(org: Organisation) => Ok(manageTeamMembersView(org))
+        xmlServicesConnector.getOrganisationByOrganisationId(organisationId).flatMap {
+          case Right(org: Organisation) => successful(Ok(manageTeamMembersView(org)))
           case Left(error: Throwable)   =>
             logger.info(s"manageTeamMembers failed getting organisation for ${organisationId.value}", error)
-            InternalServerError(errorHandler.internalServerErrorTemplate)
+            errorHandler.internalServerErrorTemplate.map(InternalServerError(_))
         }
       }
   }
@@ -124,7 +124,7 @@ class TeamMembersController @Inject() (
             addOrCreateTeamMember(organisationId, users.head.email, users.head.firstName, users.head.lastName)
           case Left(error: Throwable)           =>
             logger.info(s"addTeamMemberAction failed for ${organisationId.value}", error)
-            successful(InternalServerError(errorHandler.internalServerErrorTemplate))
+            errorHandler.internalServerErrorTemplate.map(InternalServerError(_))
         }
       }
 
@@ -165,12 +165,12 @@ class TeamMembersController @Inject() (
     ): Future[Result] = {
     xmlServicesConnector
       .addTeamMember(organisationId, emailAddress, firstname, lastname)
-      .map {
+      .flatMap {
         case AddCollaboratorSuccess(x: Organisation)  =>
-          Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.TeamMembersController.manageTeamMembers(x.organisationId))
+          successful(Redirect(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.TeamMembersController.manageTeamMembers(x.organisationId)))
         case AddCollaboratorFailure(error: Throwable) =>
           logger.info(s"error in addOrCreateTeamMember attempting to add team member to ${organisationId.value}", error)
-          InternalServerError(errorHandler.internalServerErrorTemplate)
+          errorHandler.internalServerErrorTemplate.map(InternalServerError(_))
       }
   }
 
@@ -182,7 +182,7 @@ class TeamMembersController @Inject() (
             successful(Ok(removeTeamMemberView(RemoveTeamMemberConfirmationForm.form, organisationId, userId, collaborator.email)))
           case _                                =>
             logger.info(s"getCollaboratorByUserIdAndOrganisationId failed for orgId:${organisationId.value} & userId: $userId ")
-            successful(InternalServerError(errorHandler.internalServerErrorTemplate))
+            errorHandler.internalServerErrorTemplate.map(InternalServerError(_))
         }
       }
   }
@@ -193,15 +193,15 @@ class TeamMembersController @Inject() (
         getCollaboratorByUserIdAndOrganisationId(organisationId, userId).flatMap {
           case Some(collaborator: Collaborator) =>
             xmlServicesConnector.removeTeamMember(organisationId, collaborator.email, request.name.getOrElse("Unknown Name"))
-              .map {
-                case RemoveCollaboratorSuccess(_) => Redirect(routes.TeamMembersController.manageTeamMembers(organisationId).url, SEE_OTHER)
+              .flatMap {
+                case RemoveCollaboratorSuccess(_) => successful(Redirect(routes.TeamMembersController.manageTeamMembers(organisationId).url, SEE_OTHER))
                 case _                            =>
                   logger.info(s"removeTeamMemberAction connector failed for  orgId:${organisationId.value} & userId: $userId ")
-                  InternalServerError(errorHandler.internalServerErrorTemplate)
+                  errorHandler.internalServerErrorTemplate.map(InternalServerError(_))
               }
           case _                                =>
             logger.info(s"removeTeamMemberAction: getCollaboratorByUserIdAndOrganisationId failed for  orgId:${organisationId.value} & userId: $userId ")
-            successful(InternalServerError(errorHandler.internalServerErrorTemplate))
+            errorHandler.internalServerErrorTemplate.map(InternalServerError(_))
         }
       }
 

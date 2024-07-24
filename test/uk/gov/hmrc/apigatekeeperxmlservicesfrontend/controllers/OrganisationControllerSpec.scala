@@ -211,8 +211,8 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
-      document.getElementById("page-heading").text() shouldBe "Sorry, we’re experiencing technical difficulties"
-      document.getElementById("page-body").text() shouldBe "Please try again in a few minutes."
+      document.getElementById("page-heading").text() shouldBe "Sorry, there is a problem with the service"
+      document.getElementById("page-body").text() shouldBe "Try again later."
       verifyNoMoreInteractions(mockXmlServiceConnector)
     }
 
@@ -295,8 +295,8 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
-      document.getElementById("page-heading").text() shouldBe "Sorry, we’re experiencing technical difficulties"
-      document.getElementById("page-body").text() shouldBe "Please try again in a few minutes."
+      document.getElementById("page-heading").text() shouldBe "Sorry, there is a problem with the service"
+      document.getElementById("page-body").text() shouldBe "Try again later."
       verifyNoMoreInteractions(mockXmlServiceConnector)
     }
 
@@ -314,8 +314,8 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
-      document.getElementById("page-heading").text() shouldBe "Sorry, we’re experiencing technical difficulties"
-      document.getElementById("page-body").text() shouldBe "Please try again in a few minutes."
+      document.getElementById("page-heading").text() shouldBe "Sorry, there is a problem with the service"
+      document.getElementById("page-body").text() shouldBe "Try again later."
       verifyNoMoreInteractions(mockXmlServiceConnector)
     }
 

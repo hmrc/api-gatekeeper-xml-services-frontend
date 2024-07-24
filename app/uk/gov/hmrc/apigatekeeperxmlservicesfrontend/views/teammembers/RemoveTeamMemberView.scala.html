@@ -23,7 +23,7 @@
 @this(layout: Layout)
 
 
-@(form: Form[RemoveTeamMemberConfirmationForm], organisationId: OrganisationId, userId: String, email: String)(implicit request: Request[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
+@(form: Form[RemoveTeamMemberConfirmationForm], organisationId: OrganisationId, userId: String, email: String)(implicit request: RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
 
 @layout(pageTitle = Some("Remove team member - HMRC API Gatekeeper")) {
 
