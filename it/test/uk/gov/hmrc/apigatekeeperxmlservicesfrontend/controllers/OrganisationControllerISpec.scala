@@ -135,7 +135,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         result.status mustBe OK
 
         val content = Jsoup.parse(result.body)
-        content.getElementById("page-heading").text() mustBe "Search for XML organisations"
+        content.getElementById("page-heading").text() mustBe "Search for XML vendors"
       }
 
       "respond with 403 and render the Forbidden view" in new Setup {
@@ -191,7 +191,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         val result  = callGetEndpoint(s"$url/organisations/search?searchType=organisation-name&searchText=hello")
         result.status mustBe OK
         val content = Jsoup.parse(result.body)
-        content.getElementById("page-heading").text() mustBe "Search for XML organisations"
+        content.getElementById("page-heading").text() mustBe "Search for XML vendors"
         Option(content.getElementById("results-table")).isDefined mustBe true
 
         validateOrganisationRow(0, organisation, content)
@@ -219,7 +219,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         val result  = callGetEndpoint(s"$url/organisations/search?searchType=&searchText=")
         result.status mustBe OK
         val content = Jsoup.parse(result.body)
-        content.getElementById("page-heading").text() mustBe "Search for XML organisations"
+        content.getElementById("page-heading").text() mustBe "Search for XML vendors"
         Option(content.getElementById("results-table")).isDefined mustBe true
       }
 
@@ -232,7 +232,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         val result  = callGetEndpoint(s"$url/organisations/search?searchType=vendor-id&searchText=")
         result.status mustBe OK
         val content = Jsoup.parse(result.body)
-        content.getElementById("page-heading").text() mustBe "Search for XML organisations"
+        content.getElementById("page-heading").text() mustBe "Search for XML vendors"
         Option(content.getElementById("results-table")).isDefined mustBe true
       }
 
@@ -241,7 +241,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         val result  = callGetEndpoint(s"$url/organisations/search?searchType=&searchText=hello")
         result.status mustBe OK
         val content = Jsoup.parse(result.body)
-        content.getElementById("page-heading").text() mustBe "Search for XML organisations"
+        content.getElementById("page-heading").text() mustBe "Search for XML vendors"
         Option(content.getElementById("results-table")).isDefined mustBe true
       }
 
@@ -250,7 +250,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         val result  = callGetEndpoint(s"$url/organisations/search?searchType=vendor-id&searchText=hello")
         result.status mustBe OK
         val content = Jsoup.parse(result.body)
-        content.getElementById("page-heading").text() mustBe "Search for XML organisations"
+        content.getElementById("page-heading").text() mustBe "Search for XML vendors"
         Option(content.getElementById("results-table")).isDefined mustBe true
       }
     }
@@ -264,8 +264,8 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         result.status mustBe OK
 
         val document = Jsoup.parse(result.body)
-        document.getElementById("page-heading").text() mustBe "Add organisation"
-        document.getElementById("organisation-name-label").text() mustBe "Organisation name"
+        document.getElementById("page-heading").text() mustBe "Add vendor"
+        document.getElementById("organisation-name-label").text() mustBe "Vendor name"
         Option(document.getElementById("organisationName")).isDefined mustBe true
         Option(document.getElementById("continue-button")).isDefined mustBe true
       }
@@ -290,7 +290,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
 
         result.status mustBe OK
         val document = Jsoup.parse(result.body)
-        document.getElementById("org-name-heading").text() mustBe "Name"
+        document.getElementById("org-name-heading").text() mustBe "Vendor Name"
         document.getElementById("org-name-value").text() mustBe organisationWithTeamMembers.name
 
         document.getElementById("vendor-id-heading").text() mustBe "Vendor ID"
@@ -343,7 +343,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
         result.status mustBe OK
 
         val document = Jsoup.parse(result.body)
-        document.getElementById("organisation-name-label").text() mustBe "Change organisation name"
+        document.getElementById("organisation-name-label").text() mustBe "Change vendor name"
         Option(document.getElementById("organisationName")).isDefined mustBe true
         Option(document.getElementById("continue-button")).isDefined mustBe true
       }

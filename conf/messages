@@ -1,7 +1,7 @@
 service.name = HMRC API Gatekeeper
 service.text = This is your new service
 
-organisationname.error.required = Enter an organisation name
+organisationname.error.required = Enter a vendor name
 
 emailAddress.error.required.field = Enter an email address
 emailAddress.error.not.valid.field = Provide a valid email address

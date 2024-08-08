@@ -69,7 +69,7 @@ class OrganisationEditViewSpec extends CommonViewSpec with WithCSRFAddToken with
 
       val document: Document = Jsoup.parse(page.body)
       hasBackLink(document) shouldBe true
-      validateFormErrors(document, Some("Enter an organisation name"))
+      validateFormErrors(document, Some("Enter a vendor name"))
       validateUpdateOrganisationDetailsPage(document)
     }
   }

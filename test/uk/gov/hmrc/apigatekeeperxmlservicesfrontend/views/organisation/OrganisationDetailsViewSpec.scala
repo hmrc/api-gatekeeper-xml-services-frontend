@@ -59,7 +59,7 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
       val document: Document = Jsoup.parse(page.body)
 
       hasBackLink(document) shouldBe true
-      document.getElementById("org-name-heading").text() shouldBe "Name"
+      document.getElementById("org-name-heading").text() shouldBe "Vendor Name"
       document.getElementById("org-name-value").text() shouldBe org1.name
 
       document.getElementById("vendor-id-heading").text() shouldBe "Vendor ID"
@@ -91,7 +91,7 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
       val document: Document = Jsoup.parse(page.body)
 
       hasBackLink(document) shouldBe true
-      document.getElementById("org-name-heading").text() shouldBe "Name"
+      document.getElementById("org-name-heading").text() shouldBe "Vendor Name"
       document.getElementById("org-name-value").text() shouldBe org1.name
 
       document.getElementById("vendor-id-heading").text() shouldBe "Vendor ID"
@@ -123,7 +123,7 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
       val document: Document = Jsoup.parse(page.body)
 
       hasBackLink(document) shouldBe true
-      document.getElementById("org-name-heading").text() shouldBe "Name"
+      document.getElementById("org-name-heading").text() shouldBe "Vendor Name"
       document.getElementById("org-name-value").text() shouldBe org1.name
 
       document.getElementById("vendor-id-heading").text() shouldBe "Vendor ID"

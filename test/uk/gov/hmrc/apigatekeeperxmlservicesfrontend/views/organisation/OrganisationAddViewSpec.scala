@@ -56,11 +56,11 @@ class OrganisationAddViewSpec extends CommonViewSpec with WithCSRFAddToken with 
       val page               = organisationAddView.render(form, FakeRequest().withCSRFToken, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
 
-      validateFormErrors(document, Some("Enter an organisation name"))
+      validateFormErrors(document, Some("Enter a vendor name"))
       validateFormErrors(document, Some("Enter an email address"))
       hasBackLink(document) shouldBe true
-      document.getElementById("page-heading").text() shouldBe "Add organisation"
-      document.getElementById("organisation-name-label").text() shouldBe "Organisation name"
+      document.getElementById("page-heading").text() shouldBe "Add vendor"
+      document.getElementById("organisation-name-label").text() shouldBe "Vendor name"
       Option(document.getElementById("organisationName")).isDefined shouldBe true
       Option(document.getElementById("continue-button")).isDefined shouldBe true
     }

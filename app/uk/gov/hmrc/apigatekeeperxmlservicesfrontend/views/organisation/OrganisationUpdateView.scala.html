@@ -27,7 +27,7 @@
 
 @(form: Form[UpdateOrganisationDetailsForm], organisation: Organisation)(implicit request: RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
 
-@layout(pageTitle = Some("Manage XML Organisations - HMRC API Gatekeeper")) {
+@layout(pageTitle = Some("Manage XML Vendors - HMRC API Gatekeeper")) {
 <div class="govuk-form-group">
 
   @errorSummary(form)
@@ -38,7 +38,7 @@
     <div id="form-group" class="govuk-form-group @if(form.errors("organisationName").nonEmpty) {govuk-form-group--error}">
         <h1 class="govuk-label-wrapper">
             <label id="organisation-name-label" class="govuk-label govuk-label--l" for="organisationName">
-                Change organisation name
+                Change vendor name
             </label>
         </h1>
         @FieldError(form.errors, "organisationName")
