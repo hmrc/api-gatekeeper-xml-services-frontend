@@ -77,7 +77,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       status(result) shouldBe Status.OK
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
-      contentAsString(result) contains "Search for XML organisations"
+      contentAsString(result) contains "Search for XML vendors"
     }
 
     def createFakePostRequest(params: (String, String)*): FakeRequest[AnyContentAsFormUrlEncoded] = {
@@ -238,7 +238,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
   "GET /organisations/orgId" should {
 
     def validatePageRender(document: Document, org: Organisation) = {
-      document.getElementById("org-name-heading").text() shouldBe "Name"
+      document.getElementById("org-name-heading").text() shouldBe "Vendor Name"
       document.getElementById("org-name-value").text() shouldBe org.name
 
       document.getElementById("vendor-id-heading").text() shouldBe "Vendor ID"
@@ -406,7 +406,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
 
       status(result) shouldBe BAD_REQUEST
       validateAddOrganisationPage(document)
-      validateFormErrors(document, Some("Enter an organisation name"))
+      validateFormErrors(document, Some("Enter a vendor name"))
       validateFormErrors(document, Some("Provide a valid email address"))
       verifyZeroInteractions(mockXmlServiceConnector)
       verifyZeroInteractions(mockThirdPartDeveloperConnector)
@@ -436,7 +436,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
 
       status(result) shouldBe BAD_REQUEST
       validateAddOrganisationPage(document)
-      validateFormErrors(document, Some("Enter an organisation name"))
+      validateFormErrors(document, Some("Enter a vendor name"))
       validateFormErrors(document, Some("Enter an email address"))
       verifyZeroInteractions(mockXmlServiceConnector)
     }
@@ -578,7 +578,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
 
         status(result) shouldBe BAD_REQUEST
         validateUpdateOrganisationDetailsPage(document)
-        validateFormErrors(document, Some("Enter an organisation name"))
+        validateFormErrors(document, Some("Enter a vendor name"))
       }
 
       "not allow spaces in form" in new Setup {
@@ -590,7 +590,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
 
         status(result) shouldBe BAD_REQUEST
         validateUpdateOrganisationDetailsPage(document)
-        validateFormErrors(document, Some("Enter an organisation name"))
+        validateFormErrors(document, Some("Enter a vendor name"))
       }
 
       "return forbidden view when not authorised" in new Setup {

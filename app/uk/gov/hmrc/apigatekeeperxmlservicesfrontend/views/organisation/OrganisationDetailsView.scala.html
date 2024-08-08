@@ -14,11 +14,9 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationUser
 @import play.twirl.api.HtmlFormat
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{LoggedInUser, Organisation, OrganisationUser}
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
 @import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
 
 @this(layout: Layout)
@@ -32,75 +30,76 @@
     } else ""
 }
 
-
 @buildGatekeeperDeveloperUrl(user: OrganisationUser) = @{
-    appConfig.apiGatekeeperUrl+"/developer?developerId="+user.userId.value
+    appConfig.apiGatekeeperUrl + "/developer?developerId=" + user.userId.value
 }
 
 @combinedXMLPreferencesList() = @{
-       users.flatMap(_.xmlApis).distinct.map(_.name).sorted.mkString("<br>")
+    users.flatMap(_.xmlApis).distinct.map(_.name).sorted.mkString("<br>")
 }
 
-
-@layout(pageTitle = Some("XML Organisation Details - HMRC API Gatekeeper")) {
-
-
-    <h1 class="govuk-heading-l">
-    @organisation.name
-    </h1>
-    <dl class="govuk-summary-list govuk-!-margin-bottom-9">
-        <div class="govuk-summary-list__row">
-            <dt id="org-name-heading" class="govuk-summary-list__key">
-                Name
-            </dt>
-            <dd id="org-name-value" class="govuk-summary-list__value">
-            @organisation.name
-            </dd>
-            <dd class="govuk-summary-list__actions">
-                @if(request.role.isUser) {
-                    <a id="change-org-details-link" href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.updateOrganisationsDetailsPage(organisation.organisationId).url" class="govuk-link--no-visited-state">
-                        Change
-                        <span class="govuk-visually-hidden"> name</span>
-                    </a>
-                }
-            </dd>
-        </div>
-        <div class="govuk-summary-list__row">
-            <dt id="vendor-id-heading" class="govuk-summary-list__key">
-                Vendor ID
-            </dt>
-            <dd id="vendor-id-value" class="govuk-summary-list__value">
-            @organisation.vendorId.value
-            </dd>
-            <dd class="govuk-summary-list__actions">
-            </dd>
-        </div>
-
-        <div class="govuk-summary-list__row">
-            <dt id="xml-preferences-heading" class="govuk-summary-list__key" >
-                XML email preferences
-            </dt>
-            <dd id="xml-preferences-value" class="govuk-summary-list__value">
+@layout(pageTitle = Some("XML Vendor Details - HMRC API Gatekeeper")) {
+    <div class="main">
+        <div class="govuk-grid-column-three-quarters">
+            <h1 class="govuk-heading-l">
+                <span class="govuk-caption-l">XML vendors</span>
+                @organisation.name
+            </h1>
+            <dl class="govuk-summary-list govuk-!-margin-bottom-9">
+                <div class="govuk-summary-list__row">
+                    <dt id="org-name-heading" class="govuk-summary-list__key">
+                        Vendor Name
+                    </dt>
+                    <dd id="org-name-value" class="govuk-summary-list__value">
+                    @organisation.name
+                    </dd>
+                    <dd class="govuk-summary-list__actions">
+                    @if(request.role.isUser) {
+                        <a id="change-org-details-link" href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.updateOrganisationsDetailsPage(organisation.organisationId).url" class="govuk-link--no-visited-state">
+                            Change
+                            <span class="govuk-visually-hidden"> name</span>
+                        </a>
+                    }
+                    </dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                    <dt id="vendor-id-heading" class="govuk-summary-list__key">
+                        Vendor ID
+                    </dt>
+                    <dd id="vendor-id-value" class="govuk-summary-list__value">
+                    @organisation.vendorId.value
+                    </dd>
+                    <dd class="govuk-summary-list__actions">
+                    </dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                    <dt id="xml-preferences-heading" class="govuk-summary-list__key" >
+                        XML email preferences
+                    </dt>
+                    <dd id="xml-preferences-value" class="govuk-summary-list__value">
                     @HtmlFormat.raw(combinedXMLPreferencesList())
-            </dd>
-            <dd class="govuk-summary-list__actions">
-            </dd>
-        </div>
+                    </dd>
+                    <dd class="govuk-summary-list__actions">
+                    </dd>
+                </div>
+            </dl>
 
+        </div>
         <div class="govuk-grid-column-full">
 
             <h2 class="govuk-heading-m govuk-!-margin-bottom-1">Team members</h2>
 
             <p class="govuk-body govuk-!-margin-bottom-3">
-                @if(request.role.isUser) {
-                    <a id="manage-team-members-link" href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.TeamMembersController.manageTeamMembers(organisation.organisationId).url" class="govuk-link--no-visited-state">
-                        Manage<span class="govuk-visually-hidden"> team members</span>
-                    </a>
-                }
+            @if(request.role.isUser) {
+                <a id="manage-team-members-link" href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.TeamMembersController.manageTeamMembers(organisation.organisationId).url" class="govuk-link--no-visited-state">
+                    Manage<span class="govuk-visually-hidden"> team members</span>
+                </a>
+            }
             </p>
 
             <table class="govuk-table govuk-!-margin-bottom-7">
-                <caption id="team-members-heading" class="govuk-table__caption govuk-visually-hidden" hidden="">Team members</caption>
+                <caption id="team-members-heading" class="govuk-table__caption govuk-visually-hidden" hidden="">
+                    Team members</caption>
                 <thead class="govuk-table__head">
                     <tr class="govuk-table__row">
                         <th scope="col" class="govuk-table__header">Email address</th>
@@ -121,24 +120,22 @@
             </table>
 
             @if(request.role.isUser) {
-              <div class="govuk-button-group">
-                  @if(emails.nonEmpty){
-                      <span id="emails-to-copy" class="govuk-visually-hidden" aria-hidden="true">@emails</span>
-                      <button id="copy-emails" class="govuk-button" data-module="govuk-button">
-                          Copy email addresses to clipboard
-                      </button>
-                  }
+                <div class="govuk-button-group">
+                    @if(emails.nonEmpty) {
+                        <span id="emails-to-copy" class="govuk-visually-hidden" aria-hidden="true">@emails</span>
+                        <button id="copy-emails" class="govuk-button" data-module="govuk-button">
+                            Copy email addresses to clipboard
+                        </button>
+                    }
 
-                  <a id="remove-organisation-button" href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.removeOrganisationPage(organisation.organisationId).url" role="button" draggable="false" class="govuk-button govuk-button--warning" data-module="govuk-button">
-                      Remove organisation</a>
-              </div>
+                    <a id="remove-organisation-button" href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.removeOrganisationPage(organisation.organisationId).url" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+                        Remove vendor</a>
+                </div>
             }
         </div>
 
         @views.html.helper.script(args = Symbol("type") -> "module") {
             initCopyTextOnClick("copy-emails", "emails-to-copy")
         }
-    </dl>
-
-
+    </div>
 }

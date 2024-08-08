@@ -52,9 +52,9 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
 
     def testStandardComponents(document: Document) = {
       hasBackLink(document) shouldBe false
-      document.title() shouldBe "Manage XML Organisations - HMRC API Gatekeeper"
-      document.getElementById("page-heading").text() shouldBe "Search for XML organisations"
-      document.getElementById("search-by-hint").text() shouldBe "Choose to search by vendor ID or organisation name."
+      document.title() shouldBe "Manage XML Vendors - HMRC API Gatekeeper"
+      document.getElementById("page-heading").text() shouldBe "Search for XML vendors"
+      document.getElementById("search-by-hint").text() shouldBe "Choose to search by vendor ID or vendor name."
       document.getElementById("vendor-id-label").text() shouldBe "Vendor ID"
     }
   }
@@ -87,7 +87,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
 
     def validateAddOrganisationButtonPresent(document: Document) = {
       validateAddOrganisationButton(true, document)
-      document.getElementById("add-organisation-link").text shouldBe "Add organisation"
+      document.getElementById("add-organisation-link").text shouldBe "Add Vendor"
       document.getElementById("add-organisation-link").attr("href") shouldBe "/api-gatekeeper-xml-services/organisations/add"
     }
 

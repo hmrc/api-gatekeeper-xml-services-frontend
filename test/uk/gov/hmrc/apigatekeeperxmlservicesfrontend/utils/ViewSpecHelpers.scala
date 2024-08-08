@@ -48,15 +48,15 @@ trait ViewSpecHelpers extends Matchers {
 
   def validateAddOrganisationPage(document: Document) = {
 
-    document.getElementById("page-heading").text() shouldBe "Add organisation"
-    document.getElementById("organisation-name-label").text() shouldBe "Organisation name"
+    document.getElementById("page-heading").text() shouldBe "Add vendor"
+    document.getElementById("organisation-name-label").text() shouldBe "Vendor name"
     Option(document.getElementById("organisationName")).isDefined shouldBe true
 
     Option(document.getElementById("team-member-legend")).isDefined shouldBe true
     document.getElementById("team-member-legend").text() shouldBe "Team member"
 
     Option(document.getElementById("team-member-hint")).isDefined shouldBe true
-    document.getElementById("team-member-hint").text shouldBe "Organisations need at least 1 team member. You can add more team members later."
+    document.getElementById("team-member-hint").text shouldBe "Vendors need at least 1 team member. You can add more team members later."
 
     document.getElementById("email-label").text() shouldBe "Email address"
     Option(document.getElementById("emailAddress")).isDefined shouldBe true
@@ -77,7 +77,7 @@ trait ViewSpecHelpers extends Matchers {
 
   def validateUpdateOrganisationDetailsPage(document: Document) = {
 
-    document.getElementById("organisation-name-label").text() shouldBe "Change organisation name"
+    document.getElementById("organisation-name-label").text() shouldBe "Change vendor name"
     Option(document.getElementById("organisationName")).isDefined shouldBe true
     Option(document.getElementById("continue-button")).isDefined shouldBe true
     document.getElementById("logged-in-user").text() shouldBe StrideAuthorisationServiceMockModule.StrideUserName
@@ -95,7 +95,7 @@ trait ViewSpecHelpers extends Matchers {
     Option(document.getElementById("panel-heading")).isDefined shouldBe true
     document.getElementById("panel-heading").text() shouldBe s"You removed $organisationName"
     Option(document.getElementById("back-to-xml-link")).isDefined shouldBe true
-    document.getElementById("back-to-xml-link").text() shouldBe "Back to XML organisations"
+    document.getElementById("back-to-xml-link").text() shouldBe "Back to XML vendors"
     document.getElementById("logged-in-user").text() shouldBe StrideAuthorisationServiceMockModule.StrideUserName
   }
 

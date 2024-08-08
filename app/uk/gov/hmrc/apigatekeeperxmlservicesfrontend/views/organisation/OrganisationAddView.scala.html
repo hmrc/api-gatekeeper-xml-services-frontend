@@ -27,20 +27,20 @@
 RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages,
 appConfig: AppConfig)
 
-@layout(pageTitle = Some("Manage XML Organisations - HMRC API Gatekeeper")) {
+@layout(pageTitle = Some("Manage XML Vendor - HMRC API Gatekeeper")) {
 <div class="govuk-form-group">
 
   @errorSummary(form)
 
     <h1 id="page-heading" class="govuk-heading-l">
-        Add organisation
+        Add vendor
     </h1>
     @helper.form(action =
     uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsAddAction()) {
         @helper.CSRF.formField
       <div id="form-group" class="govuk-form-group @if(form.errors("organisationName").nonEmpty) {govuk-form-group--error}">
         <label id="organisation-name-label" class="govuk-label govuk-label--m" for="organisationName">
-            Organisation name
+            Vendor name
         </label>
         @FieldError(form.errors, "organisationName")
         <input class="govuk-input govuk-input--width-20" id="organisationName" name="organisationName" type="text"
@@ -52,7 +52,7 @@ appConfig: AppConfig)
             Team member
           </legend>
           <div id="team-member-hint" class="govuk-hint">
-            Organisations need at least 1 team member.<br> You can add more team members later.
+            Vendors need at least 1 team member.<br> You can add more team members later.
           </div>
           <div class="govuk-form-group">
             <label id="email-label" class="govuk-label" for="emailAddress">

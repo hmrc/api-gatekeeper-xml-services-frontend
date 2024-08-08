@@ -29,7 +29,7 @@ appConfig: AppConfig)
 uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(org.organisationId).url
 }
 
-@layout(pageTitle = Some("Manage XML Organisations - HMRC API Gatekeeper"), showBacklink = false) {
+@layout(pageTitle = Some("Manage XML Vendors - HMRC API Gatekeeper"), showBacklink = false) {
 
 <div class="govuk-form-group">
 
@@ -38,7 +38,7 @@ uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationCont
         <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
 
             <h1 id="page-heading" class="govuk-fieldset__heading">
-                Search for XML organisations
+                Search for XML vendors
             </h1>
 
         </legend>
@@ -49,7 +49,7 @@ uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationCont
 
 
         <div id="search-by-hint" class="govuk-hint">
-            Choose to search by vendor ID or organisation name.
+            Choose to search by vendor ID or vendor name.
         </div>
         <div class="govuk-radios govuk-radios govuk-radios--small">
             <div class="govuk-radios__item">
@@ -61,7 +61,7 @@ uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationCont
             <div class="govuk-radios__item">
                 <input class="govuk-radios__input" id="organisation-name-input" name="searchType" type="radio" value="organisation-name" @if(!isVendorIdSearch){Checked}>
                 <label id="organisation-name-label" class="govuk-label govuk-radios__label" for="organisation-name-input">
-                    Organisation Name
+                    Vendor
                 </label>
             </div>
 
@@ -87,7 +87,7 @@ uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationCont
         <thead class="govuk-table__head">
             <tr class="govuk-table__row">
                 <th id="vendor-head" scope="col" class="govuk-table__header govuk-!-width-one-quarter">Vendor ID</th>
-                <th id="organisation-head" scope="col" class="govuk-table__header">Organisation</th>
+                <th id="organisation-head" scope="col" class="govuk-table__header">Vendor</th>
             </tr>
         </thead>
         <tbody class="govuk-table__body">
@@ -102,7 +102,7 @@ uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationCont
     </table>
     @if(request.role.isUser) {
         <a id="add-organisation-link" href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsAddPage.url" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
-            Add organisation
+            Add Vendor
         </a>
     }
 }

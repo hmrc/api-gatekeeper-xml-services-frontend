@@ -1,5 +1,5 @@
 #!/bin/bash
 
-sm --start DATASTREAM
+sm2 --start DATASTREAM
 
 sbt "run -Drun.mode=Dev -Dhttp.port=11117 $*"

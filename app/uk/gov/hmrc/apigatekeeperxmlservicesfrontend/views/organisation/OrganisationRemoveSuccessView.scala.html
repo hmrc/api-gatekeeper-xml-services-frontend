@@ -23,7 +23,7 @@
 
 @(organisation: Organisation)(implicit request: RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
 
-@layout(pageTitle = Some("Remove organisation success - HMRC API Gatekeeper"), showBacklink = false) {
+@layout(pageTitle = Some("Remove vendor success - HMRC API Gatekeeper"), showBacklink = false) {
     <div class="govuk-panel govuk-panel--confirmation">
 
         <h1 id="panel-heading" class="govuk-panel__body">
@@ -32,7 +32,7 @@
       </div>
 
       <p id="back-to-xml-link" class="govuk-body"><a href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsPage.url" class="govuk-link govuk-link--no-visited-state">
-        Back to XML organisations</a>
+        Back to XML vendors</a>
       </p>
     
 
