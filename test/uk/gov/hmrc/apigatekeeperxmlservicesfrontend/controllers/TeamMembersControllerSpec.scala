@@ -237,6 +237,32 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       verifyZeroInteractions(mockXmlServiceConnector)
     }
 
+    "return 400 and display the add team member page with errors when the email address is invalid" in new Setup {
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
+
+      val result = controller.addTeamMemberAction(organisationId1)(createFakePostRequest("emailAddress" -> "invalid"))
+
+      status(result) shouldBe Status.BAD_REQUEST
+      val document = Jsoup.parse(contentAsString(result))
+
+      validateFormErrors(document, Some("Provide a valid email address"))
+      validateAddTeamMemberPage(document)
+      verifyZeroInteractions(mockXmlServiceConnector)
+    }
+
+    "return 400 and display the add team member page with errors when the email address is invalid - no TLD" in new Setup {
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
+
+      val result = controller.addTeamMemberAction(organisationId1)(createFakePostRequest("emailAddress" -> "invalid@example"))
+
+      status(result) shouldBe Status.BAD_REQUEST
+      val document = Jsoup.parse(contentAsString(result))
+
+      validateFormErrors(document, Some("Provide a valid email address"))
+      validateAddTeamMemberPage(document)
+      verifyZeroInteractions(mockXmlServiceConnector)
+    }
+
     "return forbidden view when not authorised" in new Setup {
       StrideAuthorisationServiceMock.Auth.sessionRecordNotFound
       val result = controller.addTeamMemberAction(organisationId1)(createFakePostRequest("emailAddress" -> "dontcareAbout@this"))

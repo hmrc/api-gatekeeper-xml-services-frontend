@@ -16,15 +16,17 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
+import org.apache.commons.validator.routines.EmailValidator
+
 import play.api.data.{Forms, Mapping}
-import uk.gov.hmrc.emailaddress.EmailAddress
 
 object FormUtils {
   lazy val DefaultMaxLength: Int = 320
+  val emailValidator             = EmailValidator.getInstance
 
   def emailValidator(maxLength: Int = DefaultMaxLength): Mapping[String] = {
     Forms.text
-      .verifying("emailAddress.error.not.valid.field", email => EmailAddress.isValid(email) || email.isEmpty)
+      .verifying("emailAddress.error.not.valid.field", email => emailValidator.isValid(email) || email.isEmpty)
       .verifying("emailAddress.error.maxLength.field", email => email.length <= maxLength)
       .verifying("emailAddress.error.required.field", email => email.nonEmpty)
   }
