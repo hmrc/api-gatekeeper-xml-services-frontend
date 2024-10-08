@@ -415,6 +415,26 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       verifyZeroInteractions(mockXmlServiceConnector)
     }
 
+    "return 303 when email address is invalid" in new Setup {
+      StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
+      val organisationWithInvalidCollaborator = org1.copy(collaborators = List(collaborator1, collaborator2, collaboratorInvalidEmail))
+
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationWithInvalidCollaborator.organisationId))(*))
+        .thenReturn(Future.successful(Right(organisationWithInvalidCollaborator)))
+
+      when(mockXmlServiceConnector.removeTeamMember(eqTo(organisationWithInvalidCollaborator.organisationId), *, *)(*))
+        .thenReturn(Future.successful(RemoveCollaboratorSuccess(organisationWithInvalidCollaborator)))
+
+      val result = controller.removeTeamMemberAction(organisationWithInvalidCollaborator.organisationId, collaboratorInvalidEmail.userId)(
+        createFakePostRequest("email" -> collaboratorInvalidEmail.email, "confirm" -> "Yes")
+      )
+
+      status(result) shouldBe Status.SEE_OTHER
+      headers(result).getOrElse(LOCATION, "") shouldBe s"/api-gatekeeper-xml-services/organisations/${organisationId1.value.toString}/team-members"
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithInvalidCollaborator.organisationId))(*)
+      verify(mockXmlServiceConnector).removeTeamMember(eqTo(organisationWithInvalidCollaborator.organisationId), eqTo(collaboratorInvalidEmail.email), *)(*)
+    }
+
     "return 400 when form is invalid (email missing),  organisation is retrieved and call to remove team member is successful" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 

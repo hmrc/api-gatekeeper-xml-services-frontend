@@ -71,7 +71,7 @@ object TeamMembersController {
 
     val form: Form[RemoveTeamMemberConfirmationForm] = Form(
       mapping(
-        "email"   -> emailValidator(),
+        "email"   -> text.verifying("emailAddress.error.required.field", x => x.trim.nonEmpty), // Note - don't use the emailValidator here, as we want to allow the deletion of invalid email addresses
         "confirm" -> optional(text).verifying("team.member.error.confirmation.no.choice.field", _.isDefined)
       )(RemoveTeamMemberConfirmationForm.apply)(RemoveTeamMemberConfirmationForm.unapply)
     )
