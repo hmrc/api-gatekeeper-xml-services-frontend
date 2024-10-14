@@ -16,6 +16,7 @@
 
 @import play.twirl.api.HtmlFormat
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{LoggedInUser, Organisation, OrganisationUser}
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
 @import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
 
@@ -30,8 +31,8 @@
     } else ""
 }
 
-@buildGatekeeperDeveloperUrl(user: OrganisationUser) = @{
-    appConfig.apiGatekeeperUrl + "/developer?developerId=" + user.userId.value
+@buildGatekeeperDeveloperUrl(userId: UserId) = @{
+    appConfig.apiGatekeeperUrl + "/developer?developerId=" + userId.value
 }
 
 @combinedXMLPreferencesList() = @{
@@ -110,8 +111,11 @@
                 @for(member <- users.sortBy(_.email).zipWithIndex) {
                     <tr class="govuk-table__row">
                         <td id="user-email-@member._2" scope="row" class="govuk-table__header govuk-!-font-weight-regular">
-                            <a id="user-link-@member._2" href="@buildGatekeeperDeveloperUrl(member._1)" class="govuk-link govuk-link--no-visited-state">
-                            @member._1.email</a>
+                            @if(member._1.userId.isDefined) {
+                              <a id="user-link-@member._2" href="@buildGatekeeperDeveloperUrl(member._1.userId.get)" class="govuk-link govuk-link--no-visited-state">@member._1.email</a>
+                            } else {
+                              @member._1.email
+                            }
                         </td>
                         <td id="user-services-@member._2" class="govuk-table__cell">@HtmlFormat.raw(member._1.xmlApis.map(_.name).sorted.mkString("<br>"))</td>
                     </tr>

@@ -110,7 +110,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       categories = Some(Seq(ApiCategory.CUSTOMS))
     )
 
-    val organisationUsers = List(OrganisationUser(organisationId, UserId(UUID.randomUUID()), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)))
+    val organisationUsers = List(OrganisationUser(organisationId, Some(UserId(UUID.randomUUID())), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)))
 
   }
 
@@ -379,7 +379,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
     "getOrganisationUsersByOrganisationId" should {
       "return Right with list of users when connector receives 200 and list of users " in new Setup {
 
-        val organisationUser = OrganisationUser(organisationId, UserId(UUID.randomUUID()), email, firstName, lastName, List(xmlApi1, xmlApi2))
+        val organisationUser = OrganisationUser(organisationId, Some(UserId(UUID.randomUUID())), email, firstName, lastName, List(xmlApi1, xmlApi2))
         getOrganisationUsersByOrganisationIdReturnsResponse(organisationId, OK, List(organisationUser))
         val result           = await(objInTest.getOrganisationUsersByOrganisationId(organisationId))
 

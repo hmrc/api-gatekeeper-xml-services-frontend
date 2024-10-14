@@ -97,7 +97,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       categories = Some(Seq(ApiCategory.CUSTOMS))
     )
 
-    val organisationUsers = List(OrganisationUser(organisationId, UserId(UUID.randomUUID()), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)))
+    val organisationUsers = List(OrganisationUser(organisationId, Some(UserId(UUID.randomUUID())), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)))
 
     def callGetEndpoint(url: String, headers: List[(String, String)] = List.empty): WSResponse =
       wsClient
