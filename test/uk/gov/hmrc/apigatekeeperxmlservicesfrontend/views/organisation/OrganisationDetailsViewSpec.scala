@@ -20,6 +20,7 @@ import java.util.UUID
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import org.scalatest.OptionValues
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationUser
@@ -76,13 +77,13 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
       document.getElementById("user-email-0").text() shouldBe "a@b.com"
       document.getElementById("user-link-0").attr(
         "href"
-      ) shouldBe s"https://admin.qa.tax.service.gov.uk/api-gatekeeper/developer?developerId=${organisationUsers.head.userId.get.value}"
+      ) shouldBe s"https://admin.qa.tax.service.gov.uk/api-gatekeeper/developer?developerId=${organisationUsers.head.userId.value.value}"
       document.getElementById("user-services-0").text() shouldBe "xml api 1 xml api 2"
 
       document.getElementById("user-email-1").text() shouldBe "a@b.com2"
       document.getElementById("user-link-1").attr(
         "href"
-      ) shouldBe s"https://admin.qa.tax.service.gov.uk/api-gatekeeper/developer?developerId=${organisationUsers.tail.head.userId.get.value}"
+      ) shouldBe s"https://admin.qa.tax.service.gov.uk/api-gatekeeper/developer?developerId=${organisationUsers.tail.head.userId.value.value}"
       document.getElementById("user-services-1").text() shouldBe "xml api 1 xml api 3"
 
       validateActionsAvailable(document)
@@ -112,7 +113,7 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
       document.getElementById("user-email-0").text() shouldBe "a@b.com"
       document.getElementById("user-link-0").attr(
         "href"
-      ) shouldBe s"https://admin.qa.tax.service.gov.uk/api-gatekeeper/developer?developerId=${organisationUsers1NotFound.head.userId.get.value}"
+      ) shouldBe s"https://admin.qa.tax.service.gov.uk/api-gatekeeper/developer?developerId=${organisationUsers1NotFound.head.userId.value.value}"
       document.getElementById("user-services-0").text() shouldBe "xml api 1 xml api 2"
 
       document.getElementById("user-email-1").text() shouldBe "a@b.com2"
@@ -142,13 +143,13 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
       document.getElementById("user-email-0").text() shouldBe "a@b.com"
       document.getElementById("user-link-0").attr(
         "href"
-      ) shouldBe s"https://admin.qa.tax.service.gov.uk/api-gatekeeper/developer?developerId=${organisationUsers.head.userId.get.value}"
+      ) shouldBe s"https://admin.qa.tax.service.gov.uk/api-gatekeeper/developer?developerId=${organisationUsers.head.userId.value.value}"
       document.getElementById("user-services-0").text() shouldBe "xml api 1 xml api 2"
 
       document.getElementById("user-email-1").text() shouldBe "a@b.com2"
       document.getElementById("user-link-1").attr(
         "href"
-      ) shouldBe s"https://admin.qa.tax.service.gov.uk/api-gatekeeper/developer?developerId=${organisationUsers.tail.head.userId.get.value}"
+      ) shouldBe s"https://admin.qa.tax.service.gov.uk/api-gatekeeper/developer?developerId=${organisationUsers.tail.head.userId.value.value}"
       document.getElementById("user-services-1").text() shouldBe "xml api 1 xml api 3"
 
       validateActionsUnavailable(document)
