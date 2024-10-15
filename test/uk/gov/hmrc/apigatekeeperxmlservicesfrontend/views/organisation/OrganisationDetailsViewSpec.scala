@@ -94,7 +94,7 @@ class OrganisationDetailsViewSpec extends CommonViewSpec {
     "render the organisation details correctly and display the team member when one team member not found in TPD" in new Setup with StrideAuth {
       when(mockAppConfig.apiGatekeeperUrl).thenReturn("https://admin.qa.tax.service.gov.uk/api-gatekeeper")
       val organisationUsers1NotFound = List(
-        OrganisationUser(organisationId1, Some(UserId(UUID.randomUUID())), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)),
+        OrganisationUser(organisationId1, Some(UserId.random), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)),
         OrganisationUser(organisationId1, None, emailAddress + 2, firstName + 2, lastName + 2, List.empty)
       )
       val page                       = organisationDetailsView.render(organisationWithCollaborators, organisationUsers1NotFound, loggedInRequest, loggedInUser, messagesProvider.messages, mockAppConfig)

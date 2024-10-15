@@ -16,6 +16,6 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper
 
-case class UserId(value: java.util.UUID) extends AnyVal
+import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId
 
 case class UserResponse(email: String, firstName: String, lastName: String, verified: Boolean = false, userId: UserId)

@@ -65,8 +65,8 @@ trait OrganisationTestData {
   )
 
   val organisationUsers = List(
-    OrganisationUser(organisationId1, Some(UserId(UUID.randomUUID())), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)),
-    OrganisationUser(organisationId1, Some(UserId(UUID.randomUUID())), emailAddress + 2, firstName + 2, lastName + 2, List(xmlApi1, xmlApi3))
+    OrganisationUser(organisationId1, Some(UserId.random), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)),
+    OrganisationUser(organisationId1, Some(UserId.random), emailAddress + 2, firstName + 2, lastName + 2, List(xmlApi1, xmlApi3))
   )
 
   val organisations = List(org1, org2, org3)
