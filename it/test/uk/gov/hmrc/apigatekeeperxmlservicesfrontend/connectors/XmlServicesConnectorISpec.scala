@@ -26,11 +26,11 @@ import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import play.api.test.Helpers._
 import uk.gov.hmrc.apiplatform.modules.apis.domain.models.ApiCategory
+import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
 

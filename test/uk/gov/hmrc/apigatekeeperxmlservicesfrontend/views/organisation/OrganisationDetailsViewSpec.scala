@@ -22,9 +22,10 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.scalatest.OptionValues
 
+import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId
+
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationUser
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.OrganisationTestData
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.CommonViewSpec
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.OrganisationDetailsView

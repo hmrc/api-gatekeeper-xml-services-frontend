@@ -19,9 +19,9 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils
 import java.util.UUID
 
 import uk.gov.hmrc.apiplatform.modules.apis.domain.models.ApiCategory
+import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
 
 trait OrganisationTestData {
   val vendorId        = 9001L

@@ -31,11 +31,11 @@ import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.Helpers.{CONTENT_TYPE, FORBIDDEN, NOT_FOUND, OK}
 import play.filters.csrf.CSRF.TokenProvider
 import uk.gov.hmrc.apiplatform.modules.apis.domain.models.ApiCategory
+import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{ServerBaseISpec, StrideAuthorisationStub}
 

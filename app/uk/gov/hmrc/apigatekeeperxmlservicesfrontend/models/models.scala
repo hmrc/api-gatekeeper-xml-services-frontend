@@ -19,8 +19,7 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models
 import java.{util => ju}
 
 import uk.gov.hmrc.apiplatform.modules.apis.domain.models.ApiCategory
-
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
+import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId
 
 case class OrganisationId(value: ju.UUID) extends AnyVal
 
