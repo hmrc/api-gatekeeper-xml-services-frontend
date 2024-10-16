@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
-import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -26,12 +25,13 @@ import play.api.http.Status
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.ErrorHandler
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{ThirdPartyDeveloperConnector, XmlServicesConnector}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.{UserId, UserResponse}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.{AddTeamMemberView, CreateTeamMemberView, ManageTeamMembersView, RemoveTeamMemberView}
@@ -144,7 +144,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
   "addTeamMemberAction" should {
     "call add user with existing user details when they are not linked to the organisation and they exist in third party developer" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
-      val userId       = UserId(UUID.randomUUID())
+      val userId       = UserId.random
       val userResponse = UserResponse(emailAddress, firstName, lastName, verified = true, userId)
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
@@ -208,7 +208,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
 
     "call add team member via connector, then show Internal server error page when call fails" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
-      val userId       = UserId(UUID.randomUUID())
+      val userId       = UserId.random
       val userResponse = UserResponse(emailAddress, firstName, lastName, verified = true, userId)
 
       when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*))

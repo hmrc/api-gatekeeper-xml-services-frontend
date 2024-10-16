@@ -16,18 +16,17 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors
 
-import java.{util => ju}
-
 import org.apache.pekko.stream.Materializer
 import org.scalatest.BeforeAndAfterEach
 
 import play.api.http.Status._
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
+import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.JsonFormatters._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.{UserId, UserResponse}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.ThirdPartyDeveloperStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
 
@@ -54,7 +53,7 @@ class ThirdPartyDeveloperConnectorISpec extends ServerBaseISpec with BeforeAndAf
     implicit val hc: HeaderCarrier = HeaderCarrier()
 
     val email          = "foo@bar.com"
-    val userId: UserId = UserId(ju.UUID.randomUUID())
+    val userId: UserId = UserId.random
     val firstName      = "Joe"
     val lastName       = "Bloggs"
 
@@ -73,7 +72,7 @@ class ThirdPartyDeveloperConnectorISpec extends ServerBaseISpec with BeforeAndAf
   "getByEmail" should {
     val emails = List("a@b.com", "b@c.com")
 
-    val validResponseString = Json.toJson(List(UserResponse("a@b.com", "firstname", "lastName", verified = true, UserId(ju.UUID.randomUUID)))).toString
+    val validResponseString = Json.toJson(List(UserResponse("a@b.com", "firstname", "lastName", verified = true, UserId.random))).toString
 
     "return Right with users when users are returned" in new Setup {
       stubGetByEmailsReturnsResponse(emails, validResponseString)

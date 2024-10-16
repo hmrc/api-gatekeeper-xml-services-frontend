@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 
-import java.util.UUID
-
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.scalatest.BeforeAndAfterEach
@@ -31,11 +29,11 @@ import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.Helpers.{CONTENT_TYPE, FORBIDDEN, NOT_FOUND, OK}
 import play.filters.csrf.CSRF.TokenProvider
 import uk.gov.hmrc.apiplatform.modules.apis.domain.models.ApiCategory
+import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{ServerBaseISpec, StrideAuthorisationStub}
 
@@ -97,7 +95,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       categories = Some(Seq(ApiCategory.CUSTOMS))
     )
 
-    val organisationUsers = List(OrganisationUser(organisationId, UserId(UUID.randomUUID()), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)))
+    val organisationUsers = List(OrganisationUser(organisationId, Some(UserId.random), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)))
 
     def callGetEndpoint(url: String, headers: List[(String, String)] = List.empty): WSResponse =
       wsClient

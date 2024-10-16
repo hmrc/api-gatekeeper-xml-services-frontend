@@ -19,9 +19,9 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils
 import java.util.UUID
 
 import uk.gov.hmrc.apiplatform.modules.apis.domain.models.ApiCategory
+import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserId
 
 trait OrganisationTestData {
   val vendorId        = 9001L
@@ -65,8 +65,8 @@ trait OrganisationTestData {
   )
 
   val organisationUsers = List(
-    OrganisationUser(organisationId1, UserId(UUID.randomUUID()), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)),
-    OrganisationUser(organisationId1, UserId(UUID.randomUUID()), emailAddress + 2, firstName + 2, lastName + 2, List(xmlApi1, xmlApi3))
+    OrganisationUser(organisationId1, Some(UserId.random), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)),
+    OrganisationUser(organisationId1, Some(UserId.random), emailAddress + 2, firstName + 2, lastName + 2, List(xmlApi1, xmlApi3))
   )
 
   val organisations = List(org1, org2, org3)
