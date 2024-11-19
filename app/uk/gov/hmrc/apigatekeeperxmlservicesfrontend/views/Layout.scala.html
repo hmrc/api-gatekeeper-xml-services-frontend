@@ -37,6 +37,7 @@
 @(pageTitle: Option[String] = None,
   scriptsBlock: Option[Html] = None,
   showBacklink :Boolean = true,
+  beforeContentBlock: Option[Html] = None  
 )(contentBlock: Html)(implicit request: RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages)
 
 @scriptElem = {
@@ -48,14 +49,14 @@
     <div style="display: flex;
         justify-content: space-between;
         align-items: center;">
+        @if(showBacklink) {
         <div>
             <div class="govuk-breadcrumbs">
-                @if(showBacklink) {
                     @govukBackLink(BackLink.mimicsBrowserBackButtonViaJavaScript)
-                }
             </div>
-
         </div>
+        }
+        @beforeContentBlock
         <div id="logged-in-user">
             <p class="govuk-body-s govuk-!-margin-top-4">@loggedInUser.userFullName.getOrElse("")</p>
         </div>

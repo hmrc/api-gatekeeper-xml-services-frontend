@@ -18,6 +18,7 @@
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{LoggedInUser, Organisation, OrganisationUser}
 @import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.organisationBreadcrumb
 @import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
 
 @this(layout: Layout)
@@ -43,7 +44,7 @@
     users.flatMap(_.xmlApis).distinct.map(_.name).sorted.mkString("<br>")
 }
 
-@layout(pageTitle = Some("XML Vendor Details - HMRC API Gatekeeper")) {
+@layout(pageTitle = Some("XML Vendor Details - HMRC API Gatekeeper"), beforeContentBlock = Some(organisationBreadcrumb(None)), showBacklink = false) {
     <div class="main">
         <div class="govuk-grid-column-three-quarters">
             <h1 class="govuk-heading-l">
