@@ -13,6 +13,5 @@ addSbtPlugin("org.scalameta"        % "sbt-scalafmt"           % "2.5.2")
 addSbtPlugin("ch.epfl.scala"        % "sbt-scalafix"           % "0.11.1")
 addSbtPlugin("ch.epfl.scala"        % "sbt-bloop"              % "2.0.3")
 addSbtPlugin("net.ground5hark.sbt"  % "sbt-concat"             % "0.2.0")
-addSbtPlugin("com.typesafe.sbt"     % "sbt-uglify"             % "2.0.0")
 
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
