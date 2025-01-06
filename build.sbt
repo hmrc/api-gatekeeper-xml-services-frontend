@@ -21,14 +21,8 @@ lazy val microservice = Project(appName, file("."))
         (baseDirectory.value / "app" / "assets" / "javascripts") ** "*.js"
       )
     ),
-    uglifyCompressOptions := Seq(
-      "unused=false",
-      "dead_code=true"
-    ),
-    uglify / includeFilter := GlobFilter("apis-*.js"),
     Assets / pipelineStages := Seq(
-      concat,
-      uglify
+      concat
     ),
     routesImport += "uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.binders._",
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
