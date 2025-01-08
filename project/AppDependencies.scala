@@ -10,9 +10,9 @@ object AppDependencies {
     "uk.gov.hmrc"       %% "play-frontend-hmrc-play-30"   % "10.5.0",
     "uk.gov.hmrc"       %% "internal-auth-client-play-30" % "3.0.0",
     "org.typelevel"     %% "cats-core"                    % "2.12.0",
-    "org.apache.commons" % "commons-csv"                  % "1.10.0",
+    "org.apache.commons" % "commons-csv"                  % "1.12.0",
     "commons-validator"  % "commons-validator"            % "1.9.0",
-    "commons-io"         % "commons-io"                   % "2.11.0",
+    "commons-io"         % "commons-io"                   % "2.18.0",
     "uk.gov.hmrc"       %% "api-platform-api-domain"      % apiDomainVersion
   )
 
