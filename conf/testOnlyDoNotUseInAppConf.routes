@@ -9,5 +9,8 @@
 # !!!WARNING!!! Every route defined in this file MUST be prefixed with "/test-only/". This is because NGINX is blocking every uri containing the string "test-only" in production.
 # Failing to follow this rule may result in test routes deployed in production.
 
++ nocsrf
+POST        /api-gatekeeper-xml-services/test-only/organisation/:id/clone   uk.gov.hmrc.apiplatform.modules.test_only.controllers.TestOnlyXmlOrgController.cloneOrganisation(id: uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId)
+
 # Add all the application routes to the prod.routes file
 ->         /                          prod.Routes

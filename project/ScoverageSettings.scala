@@ -12,7 +12,8 @@ object ScoverageSettings {
       """.*\.RoutesPrefix""",
       """Module""",
       """GraphiteStartUp""",
-      """.*\.Reverse[^.]*"""
+      """.*\.Reverse[^.]*""",
+      """uk\.gov\.hmrc\.apiplatform\.modules\.test_only\.*"""
     ).mkString(";"),
     ScoverageKeys.coverageMinimumStmtTotal := 96,
     ScoverageKeys.coverageFailOnMinimum := true,
