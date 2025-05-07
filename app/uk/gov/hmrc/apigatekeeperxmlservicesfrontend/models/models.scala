@@ -21,9 +21,13 @@ import java.{util => ju}
 import uk.gov.hmrc.apiplatform.modules.apis.domain.models.ApiCategory
 import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId
 
-case class OrganisationId(value: ju.UUID) extends AnyVal
+case class OrganisationId(value: ju.UUID) extends AnyVal {
+  override def toString(): String = value.toString
+}
 
-case class VendorId(value: Long) extends AnyVal
+case class VendorId(value: Long) extends AnyVal {
+  override def toString(): String = value.toString
+}
 
 case class Collaborator(userId: String, email: String)
 
