@@ -44,7 +44,7 @@ class SiteHeaderSpec extends CommonViewSpec {
       "Developers"    -> s"$apiGatekeeperUrl/developers",
       "Terms of use"  -> s"$apiGatekeeperUrl/terms-of-use",
       "Email"         -> s"$apiGatekeeperUrl/emails",
-      "API Approvals" -> s"$apiGatekeeperUrl/pending",
+      "API Approvals" -> s"$apiGatekeeperUrl/api-approvals",
       "XML"           -> "/api-gatekeeper-xml-services/organisations"
     )
   }
