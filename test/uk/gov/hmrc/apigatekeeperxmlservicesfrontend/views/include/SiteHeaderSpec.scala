@@ -54,13 +54,16 @@ class SiteHeaderSpec extends CommonViewSpec {
     "render correctly" in new Setup {
       val component  = siteHeader.render(apiGatekeeperUrl, apiGatekeeperApisUrl, FakeRequest(), loggedInUser, messagesProvider.messages)
       val document   = Jsoup.parse(component.body)
-      val navigation = document.getElementById("navigation")
+      val navigation = document.getElementsByClass("govuk-service-navigation__wrapper")
 
       val actualMenuItems = navigation.select("a")
         .asScala
         .map(i => (i.text(), i.attr("href"))).toMap
 
       withClue("navigation items did not match expected") {
+        print(actualMenuItems)
+        print("-----------")
+        print(expectedMenuItems)
         actualMenuItems.equals(expectedMenuItems) shouldBe true
       }
     }
