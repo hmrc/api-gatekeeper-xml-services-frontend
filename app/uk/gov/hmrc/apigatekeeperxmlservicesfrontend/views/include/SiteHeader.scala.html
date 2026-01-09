@@ -14,35 +14,35 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.hmrcfrontend.views.html.components.HmrcHeader
-@import uk.gov.hmrc.hmrcfrontend.views.html.components.Header
-@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.language.En
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcStandardHeader
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.servicenavigation.ServiceNavigationItem
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.servicenavigation.ServiceNavigation
+
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 
-@this(hmrcHeader: HmrcHeader)
+@this(hmrcStandardHeader: HmrcStandardHeader)
 
 
 @(apiGatekeeperUrl: String, apiGatekeeperApisUrl: String)(implicit request: RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages)
 
 @navigation = @{
     Seq(
-        NavigationItem(content = Text("APIs"), href = Some(apiGatekeeperApisUrl)),
-        NavigationItem(content = Text("Applications"), href = Some(s"$apiGatekeeperUrl/applications")),
-        NavigationItem(content = Text("Developers"), href = Some(s"$apiGatekeeperUrl/developers")),
-        NavigationItem(content = Text("Terms of use"), href = Some(s"$apiGatekeeperUrl/terms-of-use")),
-        NavigationItem(content = Text("Email"), href = Some(s"$apiGatekeeperUrl/emails")),
-        NavigationItem(content = Text("API Approvals"), href = Some(s"$apiGatekeeperUrl/api-approvals")),
-        NavigationItem(content = Text("XML"), href = Some(uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsPage.url)),
+        ServiceNavigationItem(content = Text("APIs"), href = apiGatekeeperApisUrl),
+        ServiceNavigationItem(content = Text("Applications"), href = s"$apiGatekeeperUrl/applications"),
+        ServiceNavigationItem(content = Text("Developers"), href = s"$apiGatekeeperUrl/developers"),
+        ServiceNavigationItem(content = Text("Terms of use"), href = s"$apiGatekeeperUrl/terms-of-use"),
+        ServiceNavigationItem(content = Text("Email"), href = s"$apiGatekeeperUrl/emails"),
+        ServiceNavigationItem(content = Text("API Approvals"), href = s"$apiGatekeeperUrl/api-approvals"),
+        ServiceNavigationItem(content = Text("XML"), href = uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsPage.url)
     )
 }
 
-@hmrcHeader(Header(
-    homepageUrl ="https://www.gov.uk",
+@hmrcStandardHeader(
     serviceName = Some(messages("service.name")),
-    navigation = Some(navigation),
-    serviceUrl = "",
+    serviceNavigation = Some(ServiceNavigation(
+        serviceName = Some(messages("service.name")),
+        navigation = navigation
+    )),
     displayHmrcBanner = false,
     containerClasses = "govuk-width-container",
-    signOutHref = None,
-    language = En
-))
+)
