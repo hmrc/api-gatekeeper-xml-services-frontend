@@ -38,7 +38,7 @@ class StrideAuthorisationServiceSpec extends AsyncHmrcSpec with StubMessagesFact
   val msgRequest  = new MessagesRequest(fakeRequest, stubMessagesApi())
 
   trait Setup extends MockitoSugar with ArgumentMatchersSugar with StrideAuthConnectorMockModule {
-    val strideAuthRoles  = StrideAuthRoles(adminRole = "test-admin", superUserRole = "test-superUser", userRole = "test-user")
+    val strideAuthRoles  = StrideAuthRoles(adminRole = "test-admin", superUserRole = "test-superUser", advancedUserRole = "test-advancedUser", userRole = "test-user")
     val strideAuthConfig = StrideAuthConfig(strideLoginUrl = "http:///www.example.com", successUrlBase = "", origin = "", roles = strideAuthRoles)
 
     val underTest = new StrideAuthorisationService(

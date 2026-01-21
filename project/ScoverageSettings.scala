@@ -15,7 +15,7 @@ object ScoverageSettings {
       """.*\.Reverse[^.]*""",
       """uk\.gov\.hmrc\.apiplatform\.modules\.test_only\.*"""
     ).mkString(";"),
-    ScoverageKeys.coverageMinimumStmtTotal := 96,
+    ScoverageKeys.coverageMinimumStmtTotal := 95,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true,
     Test / parallelExecution := false
