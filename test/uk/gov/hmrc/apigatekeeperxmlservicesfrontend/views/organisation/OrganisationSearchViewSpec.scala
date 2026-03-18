@@ -59,7 +59,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
     }
   }
 
-  trait LdapAuth {
+  trait LdapAuthSetup {
     self: Setup =>
 
     val loggedInRequest = new LoggedInRequest(
@@ -69,7 +69,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
     )
   }
 
-  trait StrideAuth {
+  trait StrideAuthSetup {
     self: Setup =>
 
     val loggedInRequest = new LoggedInRequest(
@@ -99,7 +99,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
       document.getElementById(s"manage-org-$rowId-link").attr("href") shouldBe s"/api-gatekeeper-xml-services/organisations/${org.organisationId.value.toString}"
     }
 
-    "render page correctly on initial load when organisations list is empty" in new Setup with StrideAuth {
+    "render page correctly on initial load when organisations list is empty" in new Setup with StrideAuthSetup {
       val page: Html         = organisationSearchView.render(List.empty, showTable = false, isVendorIdSearch = true, loggedInRequest, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       testStandardComponents(document)
@@ -116,7 +116,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
       Option(document.getElementById("add-organisation-link")).isDefined shouldBe false
     }
 
-    "render page correctly when organisations list is populated" in new Setup with StrideAuth {
+    "render page correctly when organisations list is populated" in new Setup with StrideAuthSetup {
       val page: Html         =
         organisationSearchView.render(organisations, showTable = true, isVendorIdSearch = true, loggedInRequest, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
@@ -133,7 +133,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
       validateAddOrganisationButtonPresent(document)
     }
 
-    "render page correctly when organisations list is empty" in new Setup with StrideAuth {
+    "render page correctly when organisations list is empty" in new Setup with StrideAuthSetup {
       val page: Html         = organisationSearchView.render(List.empty, showTable = true, isVendorIdSearch = false, loggedInRequest, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       testStandardComponents(document)
@@ -150,7 +150,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
       validateAddOrganisationButtonPresent(document)
     }
 
-    "render page without add organisation button for LDAP" in new Setup with LdapAuth {
+    "render page without add organisation button for LDAP" in new Setup with LdapAuthSetup {
       val page: Html         = organisationSearchView.render(List.empty, showTable = true, isVendorIdSearch = false, loggedInRequest, loggedInUser, messagesProvider.messages, mockAppConfig)
       val document: Document = Jsoup.parse(page.body)
       testStandardComponents(document)
