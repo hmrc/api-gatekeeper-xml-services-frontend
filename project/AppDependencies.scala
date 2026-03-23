@@ -3,7 +3,7 @@ import sbt._
 object AppDependencies {
 
   val bootstrapVersion     = "10.7.0"
-  val apiDomainVersion     = "0.22.0"
+  val apiDomainVersion     = "1.0.0"
   val playfrontendVersion  = "12.32.0"
   val mockitoScalaVersion  = "2.0.0"
 
