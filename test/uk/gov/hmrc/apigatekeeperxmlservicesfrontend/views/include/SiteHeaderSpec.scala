@@ -39,13 +39,11 @@ class SiteHeaderSpec extends CommonViewSpec {
     val apiGatekeeperApisUrl = "/api-gatekeeper-apis"
 
     val expectedMenuItems = Map(
-      "APIs"          -> apiGatekeeperApisUrl,
-      "Applications"  -> s"$apiGatekeeperUrl/applications",
-      "Developers"    -> s"$apiGatekeeperUrl/developers",
-      "Terms of use"  -> s"$apiGatekeeperUrl/terms-of-use",
-      "Email"         -> s"$apiGatekeeperUrl/emails",
-      "API Approvals" -> s"$apiGatekeeperUrl/api-approvals",
-      "XML"           -> "/api-gatekeeper-xml-services/organisations"
+      "APIs"         -> apiGatekeeperApisUrl,
+      "Applications" -> s"$apiGatekeeperUrl/applications",
+      "Developers"   -> s"$apiGatekeeperUrl/developers",
+      "XML vendors"  -> "/api-gatekeeper-xml-services/organisations",
+      "Email"        -> s"$apiGatekeeperUrl/emails"
     )
   }
 

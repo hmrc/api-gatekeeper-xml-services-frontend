@@ -2,7 +2,7 @@ import sbt._
 
 object AppDependencies {
 
-  lazy val bootstrapVersion = "10.5.0"
+  lazy val bootstrapVersion = "10.7.0"
   val apiDomainVersion      = "0.20.0"
   val playfrontendVersion   = "12.27.0"
 
