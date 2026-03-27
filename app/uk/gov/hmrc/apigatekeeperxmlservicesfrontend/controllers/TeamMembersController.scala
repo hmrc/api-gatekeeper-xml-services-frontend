@@ -25,7 +25,6 @@ import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, text}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.{AppConfig, ErrorHandler}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{ThirdPartyDeveloperConnector, XmlServicesConnector}
@@ -34,7 +33,7 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.TeamMembersContr
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers._
-import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.actions.GatekeeperStrideAuthorisationActions
+import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.GatekeeperBaseController
 import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
 import uk.gov.hmrc.apiplatform.modules.gkauth.services.{LdapAuthorisationService, StrideAuthorisationService}
 
@@ -88,11 +87,11 @@ class TeamMembersController @Inject() (
     errorHandler: ErrorHandler,
     xmlServicesConnector: XmlServicesConnector,
     thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector,
-    ldapAuthorisationService: LdapAuthorisationService,
+    val ldapAuthorisationService: LdapAuthorisationService,
     val strideAuthorisationService: StrideAuthorisationService
-  )(implicit val ec: ExecutionContext,
+  )(implicit ec: ExecutionContext,
     appConfig: AppConfig
-  ) extends FrontendController(mcc) with GatekeeperStrideAuthorisationActions with Logging {
+  ) extends GatekeeperBaseController(mcc) with Logging {
 
   val addTeamMemberForm: Form[AddTeamMemberForm]                   = AddTeamMemberForm.form
   val createAndAddTeamMemberForm: Form[CreateAndAddTeamMemberForm] = CreateAndAddTeamMemberForm.form

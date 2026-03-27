@@ -51,7 +51,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
         "microservice.services.api-platform-xml-services.port" -> wireMockPort
       )
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val emptyHc: HeaderCarrier = HeaderCarrier()
 
   val wsClient: WSClient = app.injector.instanceOf[WSClient]
 
@@ -383,8 +383,8 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
         val result           = await(objInTest.getOrganisationUsersByOrganisationId(organisationId))
 
         result match {
-          case Right(users: List[OrganisationUser]) => users mustBe List(organisationUser)
-          case _                                    => fail()
+          case Right(orgUsers: List[OrganisationUser]) => orgUsers mustBe List(organisationUser)
+          case _                                       => fail()
         }
       }
     }
