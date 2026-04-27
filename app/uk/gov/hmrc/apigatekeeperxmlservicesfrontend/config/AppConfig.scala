@@ -34,6 +34,7 @@ trait AppConfig {
 
   def apiGatekeeperUrl: String
   def apiGatekeeperApisUrl: String
+  def apiGatekeeperOrganisationUrl: String
 }
 
 @Singleton
@@ -43,7 +44,8 @@ class AppConfigImpl @Inject() (config: Configuration) extends ServicesConfig(con
 
   val appName = getString("appName")
 
-  val gatekeeperSuccessUrl = getString("api-gatekeeper-frontend-success-url")
-  val apiGatekeeperUrl     = s"${baseUrl("api-gatekeeper-frontend")}/api-gatekeeper"
-  val apiGatekeeperApisUrl = s"${baseUrl("api-gatekeeper-apis-frontend")}/api-gatekeeper-apis"
+  val gatekeeperSuccessUrl         = getString("api-gatekeeper-frontend-success-url")
+  val apiGatekeeperUrl             = s"${baseUrl("api-gatekeeper-frontend")}/api-gatekeeper"
+  val apiGatekeeperApisUrl         = s"${baseUrl("api-gatekeeper-apis-frontend")}/api-gatekeeper-apis"
+  val apiGatekeeperOrganisationUrl = s"${baseUrl("api-gatekeeper-organisation-frontend")}/api-gatekeeper-organisation"
 }

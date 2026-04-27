@@ -23,7 +23,7 @@
 @this(hmrcStandardHeader: HmrcStandardHeader)
 
 
-@(apiGatekeeperUrl: String, apiGatekeeperApisUrl: String)(implicit request: RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages)
+@(apiGatekeeperUrl: String, apiGatekeeperApisUrl: String, apiGatekeeperOrganisationUrl: String)(implicit request: RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages)
 
 @navigation = @{
     Seq(
@@ -31,7 +31,8 @@
         ServiceNavigationItem(content = Text("Applications"), href = s"$apiGatekeeperUrl/applications"),
         ServiceNavigationItem(content = Text("Developers"), href = s"$apiGatekeeperUrl/developers"),
         ServiceNavigationItem(content = Text("XML vendors"), href = uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsPage.url),
-        ServiceNavigationItem(content = Text("Email"), href = s"$apiGatekeeperUrl/emails")
+        ServiceNavigationItem(content = Text("Email"), href = s"$apiGatekeeperUrl/emails"),
+        ServiceNavigationItem(content = Text("Organisations"), href = s"$apiGatekeeperOrganisationUrl/organisations")
     )
 }
 
