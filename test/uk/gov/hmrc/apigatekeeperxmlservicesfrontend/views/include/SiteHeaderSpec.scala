@@ -35,22 +35,24 @@ class SiteHeaderSpec extends CommonViewSpec {
     val siteHeader    = app.injector.instanceOf[SiteHeader]
     val loggedInUser  = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
 
-    val apiGatekeeperUrl     = "/api-gatekeeper"
-    val apiGatekeeperApisUrl = "/api-gatekeeper-apis"
+    val apiGatekeeperUrl             = "/api-gatekeeper"
+    val apiGatekeeperApisUrl         = "/api-gatekeeper-apis"
+    val apiGatekeeperOrganisationUrl = "/api-gatekeeper-organisation"
 
     val expectedMenuItems = Map(
-      "APIs"         -> apiGatekeeperApisUrl,
-      "Applications" -> s"$apiGatekeeperUrl/applications",
-      "Developers"   -> s"$apiGatekeeperUrl/developers",
-      "XML vendors"  -> "/api-gatekeeper-xml-services/organisations",
-      "Email"        -> s"$apiGatekeeperUrl/emails"
+      "APIs"          -> apiGatekeeperApisUrl,
+      "Applications"  -> s"$apiGatekeeperUrl/applications",
+      "Developers"    -> s"$apiGatekeeperUrl/developers",
+      "XML vendors"   -> "/api-gatekeeper-xml-services/organisations",
+      "Email"         -> s"$apiGatekeeperUrl/emails",
+      "Organisations" -> s"$apiGatekeeperOrganisationUrl/organisations"
     )
   }
 
   "SiteHeader" should {
 
     "render correctly" in new Setup {
-      val component  = siteHeader.render(apiGatekeeperUrl, apiGatekeeperApisUrl, FakeRequest(), loggedInUser, messagesProvider.messages)
+      val component  = siteHeader.render(apiGatekeeperUrl, apiGatekeeperApisUrl, apiGatekeeperOrganisationUrl, FakeRequest(), loggedInUser, messagesProvider.messages)
       val document   = Jsoup.parse(component.body)
       val navigation = document.getElementsByClass("govuk-service-navigation__wrapper")
 
