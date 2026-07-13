@@ -20,7 +20,7 @@
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.TeamMembersController.RemoveTeamMemberConfirmationForm
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 
-@this(layout: Layout)
+@this(layout: Layout, govukButton: GovukButton)
 
 
 @(form: Form[RemoveTeamMemberConfirmationForm], organisationId: OrganisationId, userId: String, email: String)(implicit request: RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
@@ -63,9 +63,11 @@
 
         <div class="form-field">
         <br/>
-            <button id="continue-button" class="govuk-button" data-module="govuk-button">
-                Continue
-            </button>
+            @govukButton(Button(
+                attributes = Map("id" -> "continue-button"),
+                content = Text("Continue"),
+                preventDoubleClick = Some(true)
+            ))
 
         </div>
     }
