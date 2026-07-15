@@ -19,7 +19,7 @@
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.AddOrganisationWithNewUserForm
 
-@this(layout: Layout)
+@this(layout: Layout, govukButton: GovukButton)
 
 
 @(form: Form[AddOrganisationWithNewUserForm], organisationName: Option[String], email: Option[String])(implicit request: RequestHeader,
@@ -76,9 +76,11 @@
 
             </div>
             <div class="govuk-form-group">
-                <button id="continue-button" class="govuk-button" data-module="govuk-button">
-                    Continue
-                </button>
+                @govukButton(Button(
+                    attributes = Map("id" -> "continue-button"),
+                    content = Text("Continue"),
+                    preventDoubleClick = Some(true)
+                ))
             </div>
         }
 

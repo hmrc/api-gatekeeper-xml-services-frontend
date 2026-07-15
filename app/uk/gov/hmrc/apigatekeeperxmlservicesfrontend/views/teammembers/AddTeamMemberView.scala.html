@@ -20,7 +20,7 @@
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include._
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 
-@this(layout: Layout)
+@this(layout: Layout, govukButton: GovukButton)
 
 
 @(form: Form[AddTeamMemberForm], organisationId: OrganisationId)(implicit request:
@@ -46,9 +46,11 @@ appConfig: AppConfig)
         <input class="govuk-input govuk-input--width-20" id="emailAddress" name="emailAddress" type="text" aria-describedby="email-address-label">
     </div>
     <div class="govuk-form-group">
-        <button id="continue-button" class="govuk-button" data-module="govuk-button">
-            Continue
-        </button>
+        @govukButton(Button(
+            attributes = Map("id" -> "continue-button"),
+            content = Text("Continue"),
+            preventDoubleClick = Some(true)
+        ))
     </div>
     }
 

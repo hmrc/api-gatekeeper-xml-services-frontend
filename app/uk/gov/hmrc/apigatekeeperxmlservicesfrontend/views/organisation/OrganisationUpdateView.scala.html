@@ -22,7 +22,7 @@
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 
 
-@this(layout: Layout)
+@this(layout: Layout, govukButton: GovukButton)
 
 
 @(form: Form[UpdateOrganisationDetailsForm], organisation: Organisation)(implicit request: RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
@@ -46,9 +46,11 @@
             aria-describedby="organisationName" value="@{organisation.name}">
     </div>
     <div class="govuk-button-group">
-        <button id="continue-button" class="govuk-button" data-module="govuk-button">
-            Continue
-        </button>
+        @govukButton(Button(
+            attributes = Map("id" -> "continue-button"),
+            content = Text("Continue"),
+            preventDoubleClick = Some(true)
+        ))
         <a href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.viewOrganisationPage(organisation.organisationId).url" class="govuk-link govuk-link--no-visited-state">
             Cancel
         </a>
