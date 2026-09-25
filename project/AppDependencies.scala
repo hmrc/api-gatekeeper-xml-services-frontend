@@ -2,10 +2,11 @@ import sbt._
 
 object AppDependencies {
 
-  val bootstrapVersion     = "10.7.0"
-  val apiDomainVersion     = "1.2.0"
+  val bootstrapVersion     = "10.8.0"
+  val apiDomainVersion     = "1.8.0"
+  val commonDomainVersion    = "1.4.0"
   val playfrontendVersion  = "13.11.0"
-  val mockitoScalaVersion  = "2.0.0"
+  // val mockitoScalaVersion  = "2.0.0"
 
   val compile = Seq(
     "uk.gov.hmrc"       %% "bootstrap-frontend-play-30"   % bootstrapVersion,
@@ -15,12 +16,13 @@ object AppDependencies {
     "org.apache.commons" % "commons-csv"                  % "1.14.1",
     "commons-validator"  % "commons-validator"            % "1.10.1",
     "commons-io"         % "commons-io"                   % "2.21.0",
-    "uk.gov.hmrc"       %% "api-platform-api-domain"      % apiDomainVersion
+    "uk.gov.hmrc"       %% "api-platform-api-domain"      % apiDomainVersion,
+    "uk.gov.hmrc"       %% "api-platform-common-domain"   % commonDomainVersion
   )
 
   val test = Seq(
     "uk.gov.hmrc" %% "bootstrap-test-play-30"  % bootstrapVersion,
-    "org.mockito" %% "mockito-scala-scalatest" % mockitoScalaVersion,
+    // "org.mockito" %% "mockito-scala-scalatest" % mockitoScalaVersion,
     "org.jsoup"    % "jsoup"                   % "1.22.1"
   )
     .map(_ % "test")

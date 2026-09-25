@@ -29,10 +29,10 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.{AppConfig, ErrorHandler}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{ThirdPartyDeveloperConnector, XmlServicesConnector}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.FormUtils.emailValidator
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.TeamMembersController._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.TeamMembersController.*
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.*
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.teammembers.*
 import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.GatekeeperBaseController
 import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
 import uk.gov.hmrc.apiplatform.modules.gkauth.services.{LdapAuthorisationService, StrideAuthorisationService}
@@ -46,7 +46,7 @@ object TeamMembersController {
     val form = Form(
       mapping(
         "emailAddress" -> emailValidator()
-      )(AddTeamMemberForm.apply)(AddTeamMemberForm.unapply)
+      )(AddTeamMemberForm.apply)(f => Some(f.emailAddress))
     )
 
   }
@@ -60,7 +60,7 @@ object TeamMembersController {
         "emailAddress" -> emailValidator(),
         "firstName"    -> text.verifying("firstname.error.required", x => x.trim.nonEmpty),
         "lastName"     -> text.verifying("lastname.error.required", x => x.trim.nonEmpty)
-      )(CreateAndAddTeamMemberForm.apply)(CreateAndAddTeamMemberForm.unapply)
+      )(CreateAndAddTeamMemberForm.apply)(f => Some(f.emailAddress, f.firstName, f.lastName))
     )
   }
 
@@ -72,7 +72,7 @@ object TeamMembersController {
       mapping(
         "email"   -> text.verifying("emailAddress.error.required.field", x => x.trim.nonEmpty), // Note - don't use the emailValidator here, as we want to allow the deletion of invalid email addresses
         "confirm" -> optional(text).verifying("team.member.error.confirmation.no.choice.field", _.isDefined)
-      )(RemoveTeamMemberConfirmationForm.apply)(RemoveTeamMemberConfirmationForm.unapply)
+      )(RemoveTeamMemberConfirmationForm.apply)(f => Some(f.email, f.confirm))
     )
   }
 
@@ -160,7 +160,7 @@ class TeamMembersController @Inject() (
       firstname: String,
       lastname: String
     )(implicit hc: HeaderCarrier,
-      request: LoggedInRequest[_]
+      request: LoggedInRequest[?]
     ): Future[Result] = {
     xmlServicesConnector
       .addTeamMember(organisationId, emailAddress, firstname, lastname)
