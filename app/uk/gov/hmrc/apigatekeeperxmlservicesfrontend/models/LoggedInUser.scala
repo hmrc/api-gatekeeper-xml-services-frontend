@@ -21,5 +21,5 @@ import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
 case class LoggedInUser(userFullName: Option[String])
 
 object LoggedInUser {
-  implicit def fromRequest(implicit request: LoggedInRequest[_]): LoggedInUser = LoggedInUser(request.name)
+  implicit def fromRequest(implicit request: LoggedInRequest[?]): LoggedInUser = LoggedInUser(request.name)
 }

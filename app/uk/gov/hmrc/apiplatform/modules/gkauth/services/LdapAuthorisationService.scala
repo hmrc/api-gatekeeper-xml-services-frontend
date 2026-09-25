@@ -21,15 +21,15 @@ import scala.concurrent.Future.successful
 import scala.concurrent.{ExecutionContext, Future}
 
 import play.api.Logging
-import play.api.mvc._
+import play.api.mvc.*
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, _}
+import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, *}
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.{GatekeeperRoles, LoggedInRequest}
 
 @Singleton
-class LdapAuthorisationService @Inject() (auth: FrontendAuthComponents)(implicit ec: ExecutionContext) extends Logging {
+class LdapAuthorisationService @Inject() (auth: FrontendAuthComponents)(using ec: ExecutionContext) extends Logging {
 
   def refineLdap[A]: (MessagesRequest[A]) => Future[Either[MessagesRequest[A], LoggedInRequest[A]]] = (msgRequest) => {
 
@@ -40,11 +40,11 @@ class LdapAuthorisationService @Inject() (auth: FrontendAuthComponents)(implicit
     hc.authorization.fold({
       logger.debug("No Header Carrier Authoriation")
       successful(notAuthenticatedOrAuthorized)
-    })(authorization => {
+    })(_ => {
       auth.authConnector.authenticate(predicate = None, Retrieval.username ~ Retrieval.hasPredicate(LdapAuthorisationPredicate.gatekeeperReadPermission))
         .map {
           case (name ~ true)  => Right(new LoggedInRequest(Some(name.value), GatekeeperRoles.READ_ONLY, msgRequest))
-          case (name ~ false) =>
+          case (_ ~ false) =>
             logger.debug("No LDAP predicate matched")
             notAuthenticatedOrAuthorized
           case _              =>

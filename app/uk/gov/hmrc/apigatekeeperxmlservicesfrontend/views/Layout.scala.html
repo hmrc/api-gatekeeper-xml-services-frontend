@@ -38,7 +38,7 @@
   scriptsBlock: Option[Html] = None,
   showBacklink :Boolean = true,
   beforeContentBlock: Option[Html] = None  
-)(contentBlock: Html)(implicit request: RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages)
+)(contentBlock: Html)(using request: RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages)
 
 @scriptElem = {
     @hmrcScripts()

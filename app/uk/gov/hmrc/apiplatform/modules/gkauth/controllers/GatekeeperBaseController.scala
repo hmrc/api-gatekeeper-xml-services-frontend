@@ -27,7 +27,7 @@ import uk.gov.hmrc.apiplatform.modules.gkauth.utils.GatekeeperAuthorisationHelpe
 
 abstract class GatekeeperBaseController(
     mcc: MessagesControllerComponents
-  )(implicit val ec: ExecutionContext
+  )(using val ec: ExecutionContext
   ) extends FrontendController(mcc)
     with GatekeeperStrideAuthorisationActions
     with GatekeeperAuthorisationActions

@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.apiplatform.modules.test_only.controllers
 
-import javax.inject._
+import javax.inject.*
 import scala.concurrent.ExecutionContext
 
-import play.api.libs.json._
-import play.api.mvc.{Action, AnyContent, _}
+import play.api.libs.json.*
+import play.api.mvc.{Action, AnyContent, *}
 import uk.gov.hmrc.apiplatform.modules.test_only.connectors.TestOnlyXmlOrgConnector
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
@@ -30,7 +30,8 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{JsonFormatters, Orga
 class TestOnlyXmlOrgController @Inject() (
     connector: TestOnlyXmlOrgConnector,
     mcc: MessagesControllerComponents
-  )(implicit val ec: ExecutionContext
+  )(
+    using val ec: ExecutionContext
   ) extends FrontendController(mcc) {
 
   import JsonFormatters._

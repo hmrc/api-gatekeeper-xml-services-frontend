@@ -16,14 +16,14 @@
 
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include._
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.*
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.RemoveOrganisationConfirmationForm
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 
 @this(layout: Layout, govukButton: GovukButton)
 
 
-@(form: Form[RemoveOrganisationConfirmationForm], organisation: Organisation)(implicit request: RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
+@(form: Form[RemoveOrganisationConfirmationForm], organisation: Organisation)(using request: RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
 
 @layout(pageTitle = Some("Remove vendor - HMRC API Gatekeeper")) {
 

@@ -16,16 +16,14 @@
 
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.Layout
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.AddOrganisationForm
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include._
+@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.include.*
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
 
 
 @this(layout: Layout, govukButton: GovukButton)
 
 
-@(form: Form[AddOrganisationForm])(implicit request:
-RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages,
-appConfig: AppConfig)
+@(form: Form[AddOrganisationForm])(using request: RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
 
 @layout(pageTitle = Some("Manage XML Vendor - HMRC API Gatekeeper")) {
 <div class="govuk-form-group">
