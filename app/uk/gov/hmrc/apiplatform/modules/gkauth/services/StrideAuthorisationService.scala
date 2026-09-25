@@ -37,8 +37,7 @@ class StrideAuthorisationService @Inject() (
     strideAuthConnector: StrideAuthConnector,
     forbiddenHandler: ForbiddenHandler,
     strideAuthConfig: StrideAuthConfig
-  )(
-    using val ec: ExecutionContext
+  )(using val ec: ExecutionContext
   ) {
 
   import strideAuthConfig.roles.*

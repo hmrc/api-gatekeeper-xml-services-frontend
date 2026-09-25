@@ -30,8 +30,7 @@ import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{JsonFormatters, Orga
 class TestOnlyXmlOrgController @Inject() (
     connector: TestOnlyXmlOrgConnector,
     mcc: MessagesControllerComponents
-  )(
-    using val ec: ExecutionContext
+  )(using val ec: ExecutionContext
   ) extends FrontendController(mcc) {
 
   import JsonFormatters._

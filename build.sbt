@@ -24,8 +24,21 @@ lazy val microservice = Project(appName, file("."))
     Assets / pipelineStages := Seq(
       concat
     ),
-    routesImport += "uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.binders._",
-    libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
+    libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test
+  )
+  .settings(
+    routesImport ++= Seq(
+      "uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.binders._",
+    )
+  )
+  .settings(
+    Test / testOptions       += Tests.Argument(TestFrameworks.ScalaTest, "-eT"),
+    Test / unmanagedSourceDirectories += baseDirectory.value / "testcommon",
+    Test / fork              := false,
+    Test / parallelExecution := false
+  )
+  .settings(ScoverageSettings())
+  .settings(
     TwirlKeys.templateImports ++= Seq(
       "views.html.helper.CSPNonce",
       "uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig",
@@ -34,7 +47,6 @@ lazy val microservice = Project(appName, file("."))
       "uk.gov.hmrc.hmrcfrontend.views.html.helpers._"
     )
   )
-  .settings(ScoverageSettings())
   .settings(
     scalacOptions ++= Seq(
       "-Wconf:msg=unused import&src=views/.*:s",
@@ -50,10 +62,10 @@ lazy val microservice = Project(appName, file("."))
 lazy val it = (project in file("it"))
   .enablePlugins(PlayScala)
   .dependsOn(microservice % "test->test")
-  .settings(DefaultBuildSettings.itSettings())
   .settings(
     name := "integration-tests",
     Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-eT"),
+    DefaultBuildSettings.itSettings()
   )
 
 

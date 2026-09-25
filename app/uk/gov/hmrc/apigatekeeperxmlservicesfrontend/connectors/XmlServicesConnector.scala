@@ -23,15 +23,14 @@ import scala.util.control.NonFatal
 import play.api.Logging
 import play.api.http.Status.NO_CONTENT
 import play.api.libs.json.Json
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector.*
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters.*
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.*
-
-import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters.*
 
 @Singleton
 class XmlServicesConnector @Inject() (val http: HttpClientV2, val config: Config)(implicit ec: ExecutionContext) extends Logging {

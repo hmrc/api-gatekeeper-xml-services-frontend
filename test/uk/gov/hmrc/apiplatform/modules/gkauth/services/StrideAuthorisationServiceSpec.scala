@@ -22,12 +22,12 @@ import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import org.scalatest.prop.TableDrivenPropertyChecks
 
 import play.api.http.HeaderNames.LOCATION
-import play.api.http.Status._
-import play.api.mvc.Results._
+import play.api.http.Status.*
+import play.api.mvc.Results.*
 import play.api.mvc.{MessagesRequest, Result}
 import play.api.test.{FakeRequest, StubMessagesFactory}
 
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.AsyncHmrcSpec
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.common.utils.AsyncHmrcSpec
 import uk.gov.hmrc.apiplatform.modules.gkauth.config.{StrideAuthConfig, StrideAuthRoles}
 import uk.gov.hmrc.apiplatform.modules.gkauth.connectors.StrideAuthConnectorMockModule
 import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.actions.ForbiddenHandler
@@ -43,7 +43,7 @@ class StrideAuthorisationServiceSpec extends AsyncHmrcSpec with StubMessagesFact
 
     val underTest = new StrideAuthorisationService(
       strideAuthConnector = StrideAuthConnectorMock.aMock,
-      forbiddenHandler = new ForbiddenHandler { def handle(msgResult: MessagesRequest[_]): Result = Forbidden("No thanks") },
+      forbiddenHandler = new ForbiddenHandler { def handle(msgResult: MessagesRequest[?]): Result = Forbidden("No thanks") },
       strideAuthConfig = strideAuthConfig
     )
   }
@@ -68,7 +68,7 @@ class StrideAuthorisationServiceSpec extends AsyncHmrcSpec with StubMessagesFact
       forAll(cases) { case (requiredRole, userIsOfRole, expected) =>
         StrideAuthConnectorMock.Authorise.returnsFor(userIsOfRole)
 
-        val result: Either[Result, LoggedInRequest[_]] = await(underTest.refineStride(requiredRole)(msgRequest))
+        val result: Either[Result, LoggedInRequest[?]] = await(underTest.refineStride(requiredRole)(msgRequest))
         expected match {
           case Right(role)      => result.value.role shouldBe role
           case Left(statusCode) => result.left.value.header.status shouldBe statusCode
@@ -79,7 +79,7 @@ class StrideAuthorisationServiceSpec extends AsyncHmrcSpec with StubMessagesFact
     "return a redirect when there is no active session" in new Setup {
       StrideAuthConnectorMock.Authorise.failsWithNoActiveSession
 
-      val result: Either[Result, LoggedInRequest[_]] = await(underTest.refineStride(GatekeeperRoles.USER)(msgRequest))
+      val result: Either[Result, LoggedInRequest[?]] = await(underTest.refineStride(GatekeeperRoles.USER)(msgRequest))
 
       result.left.value.header.status shouldBe SEE_OTHER
       result.left.value.header.headers(LOCATION) should startWith(strideAuthConfig.strideLoginUrl)

@@ -43,11 +43,11 @@ class LdapAuthorisationService @Inject() (auth: FrontendAuthComponents)(using ec
     })(_ => {
       auth.authConnector.authenticate(predicate = None, Retrieval.username ~ Retrieval.hasPredicate(LdapAuthorisationPredicate.gatekeeperReadPermission))
         .map {
-          case (name ~ true)  => Right(new LoggedInRequest(Some(name.value), GatekeeperRoles.READ_ONLY, msgRequest))
-          case (_ ~ false) =>
+          case (name ~ true) => Right(new LoggedInRequest(Some(name.value), GatekeeperRoles.READ_ONLY, msgRequest))
+          case (_ ~ false)   =>
             logger.debug("No LDAP predicate matched")
             notAuthenticatedOrAuthorized
-          case _              =>
+          case _             =>
             logger.debug("LDAP Authenticate failed to find user")
             notAuthenticatedOrAuthorized
         }

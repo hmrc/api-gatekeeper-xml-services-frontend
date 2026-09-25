@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 import org.scalatest.Suite
 

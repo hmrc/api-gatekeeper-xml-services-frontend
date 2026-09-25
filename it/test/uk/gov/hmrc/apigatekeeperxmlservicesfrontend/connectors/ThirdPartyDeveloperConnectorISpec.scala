@@ -19,13 +19,13 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors
 import org.apache.pekko.stream.Materializer
 import org.scalatest.BeforeAndAfterEach
 
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.JsonFormatters._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.JsonFormatters.*
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.ThirdPartyDeveloperStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec

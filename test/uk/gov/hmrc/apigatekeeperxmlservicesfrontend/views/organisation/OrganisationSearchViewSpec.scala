@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.organisation
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -40,7 +40,7 @@ class OrganisationSearchViewSpec extends CommonViewSpec {
     val mockAppConfig          = mock[AppConfig]
     val organisationSearchView = app.injector.instanceOf[OrganisationSearchView]
     val loggedInUser           = LoggedInUser(Some(StrideAuthorisationServiceMockModule.StrideUserName))
-    def loggedInRequest: LoggedInRequest[_]
+    def loggedInRequest: LoggedInRequest[?]
 
     def testRadioButton(document: Document, radioButtonId: String, isChecked: Boolean) = {
       withClue(s"radio button $radioButtonId test failed") {

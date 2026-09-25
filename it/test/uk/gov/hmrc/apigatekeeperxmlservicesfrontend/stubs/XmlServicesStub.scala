@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 
 import play.api.libs.json.Json
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{AddCollaboratorRequest, RemoveCollaboratorRequest}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.*
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters.*
 
 trait XmlServicesStub {
 

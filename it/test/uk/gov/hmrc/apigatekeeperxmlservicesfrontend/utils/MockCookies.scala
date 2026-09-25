@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package utils
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils
 
-import org.openqa.selenium.{Cookie => SeleniumCookie}
+import org.openqa.selenium.Cookie as SeleniumCookie
 
 import play.api.Application
 import play.api.libs.ws.WSCookie

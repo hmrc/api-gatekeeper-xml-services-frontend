@@ -21,20 +21,21 @@ import java.util.UUID
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.scalatest.BeforeAndAfterEach
-import utils.MockCookies
 
 import play.api.http.HeaderNames
 import play.api.http.Status.SEE_OTHER
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
+import play.api.libs.ws.DefaultBodyWritables.writeableOf_String
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.Helpers.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, OK}
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters.*
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.{Collaborator, Organisation, OrganisationId, VendorId}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{ServerBaseISpec, StrideAuthorisationStub}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.MockCookies
 
 class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with StrideAuthorisationStub {
 
@@ -76,7 +77,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
     def callGetEndpoint(url: String, headers: List[(String, String)] = List.empty): WSResponse =
       wsClient
         .url(url)
-        .withHttpHeaders(headers: _*)
+        .withHttpHeaders(headers*)
         .withCookies(MockCookies.makeWsCookie(app))
         .withFollowRedirects(false)
         .get()
@@ -85,7 +86,7 @@ class TeamMembersControllerISpec extends ServerBaseISpec with BeforeAndAfterEach
     def callPostEndpoint(url: String, headers: List[(String, String)] = List.empty, request: String): WSResponse =
       wsClient
         .url(url)
-        .withHttpHeaders(headers: _*)
+        .withHttpHeaders(headers*)
         .withCookies(MockCookies.makeWsCookie(app))
         .withFollowRedirects(false)
         .post(request)

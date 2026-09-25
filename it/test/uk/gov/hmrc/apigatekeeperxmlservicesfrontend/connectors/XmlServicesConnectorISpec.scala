@@ -16,20 +16,20 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors
 
-import java.{util => ju}
+import java.util as ju
 
 import org.scalatest.BeforeAndAfterEach
 
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.apiplatform.modules.apis.domain.models.ApiCategory
 import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.*
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters.*
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
 
@@ -98,7 +98,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       serviceName = ServiceName("vat-and-ec-sales-list"),
       context = "/government/collections/vat-and-ec-sales-list-online-support-for-software-developers",
       description = "description",
-      categories = Some(Seq(ApiCategory.CUSTOMS))
+      categories = Some(Seq(ApiCategory.Customs))
     )
 
     val xmlApi2 = XmlApi(
@@ -106,7 +106,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
       serviceName = ServiceName("customs-import"),
       context = "/government/collections/customs-import",
       description = "description",
-      categories = Some(Seq(ApiCategory.CUSTOMS))
+      categories = Some(Seq(ApiCategory.Customs))
     )
 
     val organisationUsers = List(OrganisationUser(organisationId, Some(UserId.random), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)))
@@ -350,7 +350,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
         serviceName = ServiceName("vat-and-ec-sales-list"),
         context = "/government/collections/vat-and-ec-sales-list-online-support-for-software-developers",
         description = "description",
-        categories = Some(Seq(ApiCategory.CUSTOMS))
+        categories = Some(Seq(ApiCategory.Customs))
       )
 
       "return Right when getAllApis call is successful" in new Setup {
