@@ -34,7 +34,7 @@ trait GatekeeperStrideAuthorisationActions {
 
   def strideAuthorisationService: StrideAuthorisationService
 
-  implicit def ec: ExecutionContext
+  def ec: ExecutionContext
 
   def gatekeeperRoleActionRefiner(minimumRoleRequired: GatekeeperStrideRole): ActionRefiner[MessagesRequest, LoggedInRequest] =
     new ActionRefiner[MessagesRequest, LoggedInRequest] {
@@ -73,7 +73,7 @@ trait GatekeeperAuthorisationActions {
 
   val anyAuthenticatedUserRefiner = new ActionRefiner[MessagesRequest, LoggedInRequest] {
 
-    override def executionContext = ec
+    override implicit def executionContext = ec
 
     override protected def refine[A](msgRequest: MessagesRequest[A]): Future[Either[Result, LoggedInRequest[A]]] = {
       type FERLIR = Future[Either[Result, LoggedInRequest[A]]]
@@ -90,7 +90,7 @@ trait GatekeeperAuthorisationActions {
             case NonFatal(_) => Left(Unauthorized(""))
           }
 
-      import cats.implicits._
+      import cats.implicits.*
       import cats.data.EitherT
       EitherT(refineStride).leftFlatMap { strideFailureResult =>
         EitherT(refineLdap).leftMap(_ => strideFailureResult)

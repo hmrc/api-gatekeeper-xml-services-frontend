@@ -43,7 +43,7 @@ class StrideAuthorisationService @Inject() (
   import strideAuthConfig.roles.*
 
   def refineStride[A](strideRoleRequired: GatekeeperStrideRole): (MessagesRequest[A]) => Future[Either[Result, LoggedInRequest[A]]] = (msgRequest) => {
-    implicit val hc = HeaderCarrierConverter.fromRequestAndSession(msgRequest, msgRequest.session)
+    given HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(msgRequest, msgRequest.session)
 
     val successUrl = s"${strideAuthConfig.successUrlBase}${msgRequest.uri}"
 
@@ -79,7 +79,7 @@ class StrideAuthorisationService @Inject() (
     }
   }
 
-  private def authorise(strideRoleRequired: GatekeeperStrideRole)(implicit hc: HeaderCarrier): Future[~[Option[Name], Enrolments]] = {
+  private def authorise(strideRoleRequired: GatekeeperStrideRole)(using hc: HeaderCarrier): Future[~[Option[Name], Enrolments]] = {
     val predicate = StrideAuthorisationPredicateForGatekeeperRole(strideAuthConfig.roles)(strideRoleRequired)
     val retrieval = Retrievals.name and Retrievals.authorisedEnrolments
 

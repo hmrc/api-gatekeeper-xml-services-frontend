@@ -29,7 +29,7 @@ import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.*
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters.*
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters.given
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
 
@@ -51,7 +51,7 @@ class XmlServicesConnectorISpec extends ServerBaseISpec with BeforeAndAfterEach 
         "microservice.services.api-platform-xml-services.port" -> wireMockPort
       )
 
-  implicit val emptyHc: HeaderCarrier = HeaderCarrier()
+  given HeaderCarrier = HeaderCarrier()
 
   val wsClient: WSClient = app.injector.instanceOf[WSClient]
 

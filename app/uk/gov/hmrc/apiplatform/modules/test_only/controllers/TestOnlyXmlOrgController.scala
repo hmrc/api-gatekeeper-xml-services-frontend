@@ -33,7 +33,7 @@ class TestOnlyXmlOrgController @Inject() (
   )(using val ec: ExecutionContext
   ) extends FrontendController(mcc) {
 
-  import JsonFormatters._
+  import JsonFormatters.given
 
   def cloneOrganisation(id: OrganisationId): Action[AnyContent] = Action.async { implicit request =>
     connector.cloneOrganisation(id).map(org => Ok(Json.toJson(org)))

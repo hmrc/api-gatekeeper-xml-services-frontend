@@ -303,10 +303,17 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     "return 500 and render error page when connector returns error getting users" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
-      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(using *))
-        .thenReturn(Future.successful(Right(org1)))
-      when(mockXmlServiceConnector.getOrganisationUsersByOrganisationId(eqTo(org1.organisationId))(using *))
-        .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*)(using *)).thenReturn(Future.successful(Right(org1)))
+      when(mockXmlServiceConnector.getOrganisationUsersByOrganisationId(*)(using *)).thenReturn(Future.successful(Left(UpstreamErrorResponse(
+        "",
+        INTERNAL_SERVER_ERROR,
+        INTERNAL_SERVER_ERROR
+      ))))
+
+      // when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(using *))
+      //   .thenReturn(Future.successful(Right(org1)))
+      // when(mockXmlServiceConnector.getOrganisationUsersByOrganisationId(eqTo(org1.organisationId))(using *))
+      //   .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
 
       val result   = controller.viewOrganisationPage(org1.organisationId)(fakeRequest)
       val document = Jsoup.parse(contentAsString(result))

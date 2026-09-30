@@ -33,7 +33,7 @@ import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.*
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters.*
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters.given
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{ServerBaseISpec, StrideAuthorisationStub}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.MockCookies

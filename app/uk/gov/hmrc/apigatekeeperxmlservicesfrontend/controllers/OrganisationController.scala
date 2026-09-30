@@ -24,12 +24,13 @@ import scala.util.Try
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, text}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.{AppConfig, ErrorHandler}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{ThirdPartyDeveloperConnector, XmlServicesConnector}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.FormUtils.emailValidator
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.*
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.binders.RouteModels.given_Conversion_OrganisationId_SimpleOrganisationId
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.*
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.*
@@ -108,7 +109,7 @@ class OrganisationController @Inject() (
     errorHandler: ErrorHandler,
     xmlServicesConnector: XmlServicesConnector,
     thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector
-  )(implicit ec: ExecutionContext,
+  )(using ec: ExecutionContext,
     appConfig: AppConfig
   ) extends GatekeeperBaseController(mcc)(using ec) {
 
@@ -185,8 +186,7 @@ class OrganisationController @Inject() (
       emailAddress: String,
       firstName: String,
       lastName: String
-    )(implicit hc: HeaderCarrier,
-      loggedInRequest: LoggedInRequest[?]
+    )(using loggedInRequest: LoggedInRequest[?]
     ): Future[Result] = {
     xmlServicesConnector
       .addOrganisation(organisationName, emailAddress, firstName, lastName)
@@ -220,7 +220,7 @@ class OrganisationController @Inject() (
 
   def updateOrganisationsDetailsAction(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
 
-    def handleFormAction(organisation: Organisation)(implicit request: LoggedInRequest[?]): Future[Result] = {
+    def handleFormAction(organisation: Organisation)(using ec: ExecutionContext, request: LoggedInRequest[?]): Future[Result] = {
       updateOrganisationDetailsForm.bindFromRequest().fold(
         formWithErrors => successful(BadRequest(organisationUpdateView(formWithErrors, organisation))),
         formData =>

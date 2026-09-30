@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.binders
 
-import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
+import java.util.UUID
 
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
 
-trait ControllerSetupBase extends MockitoSugar with ArgumentMatchersSugar {
-  given HeaderCarrier = HeaderCarrier()
+object RouteModels {
+
+  case class SimpleOrganisationId(value: UUID) extends AnyVal {
+    override def toString: String = value.toString
+  }
+
+  given Conversion[SimpleOrganisationId, OrganisationId] = oRt => OrganisationId(oRt.value)
+
+  given Conversion[OrganisationId, SimpleOrganisationId] = oId => SimpleOrganisationId(oId.value)
 }

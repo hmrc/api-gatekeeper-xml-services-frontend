@@ -44,13 +44,13 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.ThirdPartyDeveloperConnector.Config
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.JsonFormatters.*
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.JsonFormatters.given
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
 
 @Singleton
-class ThirdPartyDeveloperConnector @Inject() (http: HttpClientV2, config: Config)(implicit val ec: ExecutionContext) extends Logging {
+class ThirdPartyDeveloperConnector @Inject() (http: HttpClientV2, config: Config)(using val ec: ExecutionContext) extends Logging {
 
-  def getByEmails(emails: List[String])(implicit hc: HeaderCarrier): Future[Either[Throwable, List[UserResponse]]] = {
+  def getByEmails(emails: List[String])(using hc: HeaderCarrier): Future[Either[Throwable, List[UserResponse]]] = {
     http.post(url"${config.thirdPartyDeveloperUrl}/developers/get-by-emails")
       .withBody(Json.toJson(emails))
       .execute[List[UserResponse]]

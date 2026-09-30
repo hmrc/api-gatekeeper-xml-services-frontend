@@ -30,17 +30,17 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, Upstream
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector.*
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.*
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters.*
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters.given
 
 @Singleton
-class XmlServicesConnector @Inject() (val http: HttpClientV2, val config: Config)(implicit ec: ExecutionContext) extends Logging {
+class XmlServicesConnector @Inject() (val http: HttpClientV2, val config: Config)(using ec: ExecutionContext) extends Logging {
 
   val baseUrl: String = s"${config.serviceBaseUrl}/api-platform-xml-services"
 
   def findOrganisationsByParams(
       vendorId: Option[VendorId],
       organisationName: Option[String]
-    )(implicit hc: HeaderCarrier
+    )(using hc: HeaderCarrier
     ): Future[Either[Throwable, List[Organisation]]] = {
 
     val vendorIdParams = vendorId.map(v => Seq("vendorId" -> v.value.toString)).getOrElse(Seq.empty)
@@ -56,11 +56,11 @@ class XmlServicesConnector @Inject() (val http: HttpClientV2, val config: Config
     handleResult(http.get(url"$baseUrl/organisations?$params").execute[List[Organisation]])
   }
 
-  def getOrganisationByOrganisationId(organisationId: OrganisationId)(implicit hc: HeaderCarrier): Future[Either[Throwable, Organisation]] = {
+  def getOrganisationByOrganisationId(organisationId: OrganisationId)(using hc: HeaderCarrier): Future[Either[Throwable, Organisation]] = {
     handleResult(http.get(url"$baseUrl/organisations/${organisationId.value}").execute[Organisation])
   }
 
-  def addOrganisation(organisationName: String, email: String, firstName: String, lastName: String)(implicit hc: HeaderCarrier): Future[CreateOrganisationResult] = {
+  def addOrganisation(organisationName: String, email: String, firstName: String, lastName: String)(using hc: HeaderCarrier): Future[CreateOrganisationResult] = {
     val createOrganisationRequest: CreateOrganisationRequest = CreateOrganisationRequest(organisationName, email, firstName, lastName)
 
     http.post(url"$baseUrl/organisations")
@@ -76,7 +76,7 @@ class XmlServicesConnector @Inject() (val http: HttpClientV2, val config: Config
   def updateOrganisationDetails(
       organisationId: OrganisationId,
       organisationName: String
-    )(implicit hc: HeaderCarrier
+    )(using hc: HeaderCarrier
     ): Future[UpdateOrganisationDetailsResult] = {
     val updateOrganisationDetailsRequest: UpdateOrganisationDetailsRequest = UpdateOrganisationDetailsRequest(organisationName)
 
@@ -90,7 +90,7 @@ class XmlServicesConnector @Inject() (val http: HttpClientV2, val config: Config
 
   }
 
-  def removeOrganisation(organisationId: OrganisationId)(implicit hc: HeaderCarrier): Future[Boolean] = {
+  def removeOrganisation(organisationId: OrganisationId)(using hc: HeaderCarrier): Future[Boolean] = {
     http.delete(url"$baseUrl/organisations/${organisationId.value}")
       .execute[HttpResponse]
       .map(_.status == NO_CONTENT)
@@ -106,7 +106,7 @@ class XmlServicesConnector @Inject() (val http: HttpClientV2, val config: Config
       email: String,
       firstname: String,
       lastname: String
-    )(implicit hc: HeaderCarrier
+    )(using hc: HeaderCarrier
     ): Future[AddCollaboratorResult] = {
 
     http.post(url"$baseUrl/organisations/${organisationId.value}/add-collaborator")
@@ -119,7 +119,7 @@ class XmlServicesConnector @Inject() (val http: HttpClientV2, val config: Config
 
   }
 
-  def removeTeamMember(organisationId: OrganisationId, email: String, gateKeeperUserId: String)(implicit hc: HeaderCarrier): Future[RemoveCollaboratorResult] = {
+  def removeTeamMember(organisationId: OrganisationId, email: String, gateKeeperUserId: String)(using hc: HeaderCarrier): Future[RemoveCollaboratorResult] = {
 
     http.post(url"$baseUrl/organisations/${organisationId.value}/remove-collaborator")
       .withBody(Json.toJson(RemoveCollaboratorRequest(email, gateKeeperUserId)))
@@ -131,13 +131,13 @@ class XmlServicesConnector @Inject() (val http: HttpClientV2, val config: Config
 
   }
 
-  def getAllApis(implicit hc: HeaderCarrier): Future[Either[Throwable, Seq[XmlApi]]] = {
+  def getAllApis(using hc: HeaderCarrier): Future[Either[Throwable, Seq[XmlApi]]] = {
     handleResult(http.get(url"$baseUrl/xml/apis").execute[Seq[XmlApi]])
   }
 
   def getOrganisationUsersByOrganisationId(
       organisationId: OrganisationId
-    )(implicit hc: HeaderCarrier
+    )(using hc: HeaderCarrier
     ): Future[Either[Throwable, List[OrganisationUser]]] = {
     handleResult(http.get(url"$baseUrl/organisations/${organisationId.value}/get-users").execute[List[OrganisationUser]])
   }

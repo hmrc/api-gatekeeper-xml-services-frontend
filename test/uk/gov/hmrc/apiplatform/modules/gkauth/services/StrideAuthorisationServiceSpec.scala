@@ -50,7 +50,7 @@ class StrideAuthorisationServiceSpec extends AsyncHmrcSpec with StubMessagesFact
 
   "createStrideRefiner" should {
     "return the appropriate results" in new Setup {
-      import GatekeeperRoles._
+      import GatekeeperRoles.*
 
       val cases = Table(
         ("requiredRole", "user has role", "expected outcome"),

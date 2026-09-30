@@ -89,7 +89,7 @@ class TeamMembersController @Inject() (
     thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector,
     val ldapAuthorisationService: LdapAuthorisationService,
     val strideAuthorisationService: StrideAuthorisationService
-  )(implicit ec: ExecutionContext,
+  )(using ec: ExecutionContext,
     appConfig: AppConfig
   ) extends GatekeeperBaseController(mcc) with Logging {
 
@@ -159,7 +159,7 @@ class TeamMembersController @Inject() (
       emailAddress: String,
       firstname: String,
       lastname: String
-    )(implicit hc: HeaderCarrier,
+    )(using hc: HeaderCarrier,
       request: LoggedInRequest[?]
     ): Future[Result] = {
     xmlServicesConnector
@@ -220,7 +220,7 @@ class TeamMembersController @Inject() (
   private def getCollaboratorByUserIdAndOrganisationId(
       organisationId: OrganisationId,
       userId: String
-    )(implicit hc: HeaderCarrier
+    )(using hc: HeaderCarrier
     ): Future[Option[Collaborator]] = {
 
     xmlServicesConnector.getOrganisationByOrganisationId(organisationId).map {
@@ -235,7 +235,7 @@ class TeamMembersController @Inject() (
   private def getCollaboratorByEmailAddressAndOrganisationId(
       organisationId: OrganisationId,
       emailAddress: String
-    )(implicit hc: HeaderCarrier
+    )(using hc: HeaderCarrier
     ): Future[Option[Collaborator]] = {
 
     xmlServicesConnector.getOrganisationByOrganisationId(organisationId).map {

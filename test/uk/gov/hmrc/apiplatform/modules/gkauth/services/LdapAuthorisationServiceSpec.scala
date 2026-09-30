@@ -30,13 +30,13 @@ import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.{GatekeeperRoles, Lo
 class LdapAuthorisationServiceSpec extends AsyncHmrcSpec with StubControllerComponentsFactory {
   val fakeRequest = FakeRequest()
 
-  val cc: ControllerComponents = stubMessagesControllerComponents()
+  given cc: ControllerComponents = stubMessagesControllerComponents()
 
   val expectedRetrieval = Retrieval.username ~ Retrieval.hasPredicate(LdapAuthorisationPredicate.gatekeeperReadPermission)
 
   trait Setup {
     val mockStubBehaviour = mock[StubBehaviour]
-    val frontendAuth      = FrontendAuthComponentsStub(mockStubBehaviour)(cc, implicitly)
+    val frontendAuth      = FrontendAuthComponentsStub(mockStubBehaviour)
     val underTest         = new LdapAuthorisationService(frontendAuth)
 
     protected def stub(
@@ -54,13 +54,13 @@ class LdapAuthorisationServiceSpec extends AsyncHmrcSpec with StubControllerComp
   }
 
   trait Authorised {
-    self: Setup with SessionPresent =>
+    self: Setup & SessionPresent =>
 
     stub(true)
   }
 
   trait Unauthorised {
-    self: Setup with SessionPresent =>
+    self: Setup & SessionPresent =>
 
     stub(false)
   }

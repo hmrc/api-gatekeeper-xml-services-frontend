@@ -22,7 +22,7 @@ import play.api.libs.json.Json
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{AddCollaboratorRequest, RemoveCollaboratorRequest}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.*
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters.*
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters.given
 
 trait XmlServicesStub {
 

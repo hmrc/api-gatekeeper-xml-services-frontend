@@ -21,24 +21,24 @@ import play.api.libs.json.{Format, Json, OFormat}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{AddCollaboratorRequest, RemoveCollaboratorRequest}
 
 object JsonFormatters {
-  implicit val formatOrganisationId: Format[OrganisationId]     = Json.valueFormat[OrganisationId]
-  implicit val formatOrganisationName: Format[OrganisationName] = Json.valueFormat[OrganisationName]
-  implicit val formatVendorId: Format[VendorId]                 = Json.valueFormat[VendorId]
-  implicit val formatServiceName: Format[ServiceName]           = Json.valueFormat[ServiceName]
-  implicit val formatCollaborator: OFormat[Collaborator]        = Json.format[Collaborator]
-  implicit val formatOrganisation: OFormat[Organisation]        = Json.format[Organisation]
+  given formatOrganisationId: Format[OrganisationId]     = Json.valueFormat[OrganisationId]
+  given formatOrganisationName: Format[OrganisationName] = Json.valueFormat[OrganisationName]
+  given formatVendorId: Format[VendorId]                 = Json.valueFormat[VendorId]
+  given formatServiceName: Format[ServiceName]           = Json.valueFormat[ServiceName]
+  given formatCollaborator: OFormat[Collaborator]        = Json.format[Collaborator]
+  given formatOrganisation: OFormat[Organisation]        = Json.format[Organisation]
 
-  implicit val formatXmlApi: OFormat[XmlApi] = Json.format[XmlApi]
+  given formatXmlApi: OFormat[XmlApi] = Json.format[XmlApi]
 
-  implicit val formatCreateOrganisationRequest: OFormat[CreateOrganisationRequest]               = Json.format[CreateOrganisationRequest]
-  implicit val formatUpdateOrganisationDetailsRequest: OFormat[UpdateOrganisationDetailsRequest] = Json.format[UpdateOrganisationDetailsRequest]
-  implicit val formatAddCollaboratorRequest: OFormat[AddCollaboratorRequest]                     = Json.format[AddCollaboratorRequest]
-  implicit val formatRemoveCollaboratorRequest: OFormat[RemoveCollaboratorRequest]               = Json.format[RemoveCollaboratorRequest]
+  given formatCreateOrganisationRequest: OFormat[CreateOrganisationRequest]               = Json.format[CreateOrganisationRequest]
+  given formatUpdateOrganisationDetailsRequest: OFormat[UpdateOrganisationDetailsRequest] = Json.format[UpdateOrganisationDetailsRequest]
+  given formatAddCollaboratorRequest: OFormat[AddCollaboratorRequest]                     = Json.format[AddCollaboratorRequest]
+  given formatRemoveCollaboratorRequest: OFormat[RemoveCollaboratorRequest]               = Json.format[RemoveCollaboratorRequest]
 
-  implicit val formatOrganisationWithNameAndVendorId: OFormat[OrganisationWithNameAndVendorId] = Json.format[OrganisationWithNameAndVendorId]
-  implicit val formatBulkUploadOrganisationsRequest: OFormat[BulkUploadOrganisationsRequest]   = Json.format[BulkUploadOrganisationsRequest]
-  implicit val formatParsedUserRequest: OFormat[ParsedUser]                                    = Json.format[ParsedUser]
-  implicit val formatBulkAddUsersRequest: OFormat[BulkAddUsersRequest]                         = Json.format[BulkAddUsersRequest]
-  implicit val formatOrganisationUser: OFormat[OrganisationUser]                               = Json.format[OrganisationUser]
+  given formatOrganisationWithNameAndVendorId: OFormat[OrganisationWithNameAndVendorId] = Json.format[OrganisationWithNameAndVendorId]
+  given formatBulkUploadOrganisationsRequest: OFormat[BulkUploadOrganisationsRequest]   = Json.format[BulkUploadOrganisationsRequest]
+  given formatParsedUserRequest: OFormat[ParsedUser]                                    = Json.format[ParsedUser]
+  given formatBulkAddUsersRequest: OFormat[BulkAddUsersRequest]                         = Json.format[BulkAddUsersRequest]
+  given formatOrganisationUser: OFormat[OrganisationUser]                               = Json.format[OrganisationUser]
 
 }
