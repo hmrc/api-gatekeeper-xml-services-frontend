@@ -24,7 +24,7 @@ import play.api.test.{FakeRequest, StubControllerComponentsFactory}
 import uk.gov.hmrc.internalauth.client.Retrieval
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
 
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.common.utils.AsyncHmrcSpec
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.AsyncHmrcSpec
 import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.{GatekeeperRoles, LoggedInRequest}
 
 class LdapAuthorisationServiceSpec extends AsyncHmrcSpec with StubControllerComponentsFactory {

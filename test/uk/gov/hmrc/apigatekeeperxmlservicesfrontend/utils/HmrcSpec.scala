@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.common.utils
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils
+
+import org.mockito.ArgumentMatchersSugar
+import org.mockito.scalatest.MockitoSugar
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.{EitherValues, Inside, OptionValues}
+import org.scalatestplus.play.WsScalaTestClient
 
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
-import uk.gov.hmrc.apiplatform.modules.common.utils.HmrcSpec
+
+abstract class HmrcSpec extends AnyWordSpec with Matchers with OptionValues with EitherValues with Inside with WsScalaTestClient with MockitoSugar with ArgumentMatchersSugar
 
 abstract class AsyncHmrcSpec extends HmrcSpec with DefaultAwaitTimeout with FutureAwaits {}

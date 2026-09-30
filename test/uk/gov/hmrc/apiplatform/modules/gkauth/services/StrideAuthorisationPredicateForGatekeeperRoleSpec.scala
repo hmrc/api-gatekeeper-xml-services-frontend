@@ -18,7 +18,7 @@ package uk.gov.hmrc.apiplatform.modules.gkauth.services
 
 import uk.gov.hmrc.auth.core.Enrolment
 
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.common.utils.AsyncHmrcSpec
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.AsyncHmrcSpec
 import uk.gov.hmrc.apiplatform.modules.gkauth.config.StrideAuthRoles
 import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.GatekeeperRoles
 

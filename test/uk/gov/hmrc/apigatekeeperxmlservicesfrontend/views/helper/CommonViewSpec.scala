@@ -27,9 +27,9 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.{MessagesControllerComponents, MessagesRequest}
 import play.api.test.FakeRequest
 
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.common.utils.AsyncHmrcSpec
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.LoggedInUser
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.AsyncHmrcSpec
 import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.{GatekeeperRoles, LoggedInRequest}
 import uk.gov.hmrc.apiplatform.modules.gkauth.services.{LdapAuthorisationServiceMockModule, StrideAuthorisationServiceMockModule}
 
@@ -49,8 +49,8 @@ trait CommonViewSpec extends AsyncHmrcSpec with GuiceOneAppPerSuite {
   }
 
   trait BaseSetup {
-    def loggedInRequest: LoggedInRequest[_]
-    lazy val loggedInUser: LoggedInUser = LoggedInUser.fromRequest(loggedInRequest)
+    def loggedInRequest: LoggedInRequest[?]
+    lazy val loggedInUser: LoggedInUser = LoggedInUser.fromRequest(using loggedInRequest)
   }
 
   trait LdapAuth {

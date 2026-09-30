@@ -55,7 +55,7 @@ trait StrideAuthConnectorMockModule {
       def returnsAdminEnrolledUserWhenSufficient(name: Name = defaultName) = {
         val retrievalOk: ~[Option[Name], Enrolments] = new ~(Some(name), Enrolments(Set(Enrolment(adminRole))))
 
-        when(aMock.authorise[~[Option[Name], Enrolments]](*, *)(*, *)).thenReturn(Future.successful(retrievalOk))
+        when(aMock.authorise[~[Option[Name], Enrolments]](*, *)(using *, *)).thenReturn(Future.successful(retrievalOk))
       }
 
       def returnsSuperuserEnrolledUserWhenSufficient(name: Name = defaultName) = {

@@ -77,7 +77,7 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
       status(result) shouldBe Status.OK
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
-      contentAsString(result) contains "Search for XML vendors"
+      contentAsString(result).contains("Search for XML vendors") shouldBe true
     }
 
     def createFakePostRequest(params: (String, String)*): FakeRequest[AnyContentAsFormUrlEncoded] = {
@@ -303,8 +303,8 @@ class OrganisationControllerSpec extends ControllerBaseSpec with WithCSRFAddToke
     "return 500 and render error page when connector returns error getting users" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
-      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*)(using *)).thenReturn(Future.successful(Right(org1)))
-      when(mockXmlServiceConnector.getOrganisationUsersByOrganisationId(*)(using *)).thenReturn(Future.successful(Left(UpstreamErrorResponse(
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(org1.organisationId))(using *)).thenReturn(Future.successful(Right(org1)))
+      when(mockXmlServiceConnector.getOrganisationUsersByOrganisationId(eqTo(org1.organisationId))(using *)).thenReturn(Future.successful(Left(UpstreamErrorResponse(
         "",
         INTERNAL_SERVER_ERROR,
         INTERNAL_SERVER_ERROR

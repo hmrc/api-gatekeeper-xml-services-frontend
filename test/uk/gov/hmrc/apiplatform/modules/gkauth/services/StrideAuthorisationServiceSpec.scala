@@ -27,7 +27,7 @@ import play.api.mvc.Results.*
 import play.api.mvc.{MessagesRequest, Result}
 import play.api.test.{FakeRequest, StubMessagesFactory}
 
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.common.utils.AsyncHmrcSpec
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.AsyncHmrcSpec
 import uk.gov.hmrc.apiplatform.modules.gkauth.config.{StrideAuthConfig, StrideAuthRoles}
 import uk.gov.hmrc.apiplatform.modules.gkauth.connectors.StrideAuthConnectorMockModule
 import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.actions.ForbiddenHandler

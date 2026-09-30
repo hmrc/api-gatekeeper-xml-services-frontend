@@ -30,7 +30,7 @@ object LdapAuthorisationServiceMockModule {
 }
 
 trait LdapAuthorisationServiceMockModule {
-  self: MockitoSugar with ArgumentMatchersSugar =>
+  self: MockitoSugar & ArgumentMatchersSugar =>
 
   protected trait BaseLdapAuthorisationServiceMock {
     def aMock: LdapAuthorisationService

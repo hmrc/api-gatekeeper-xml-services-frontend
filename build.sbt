@@ -34,9 +34,8 @@ lazy val microservice = Project(appName, file("."))
   )
   .settings(
     Test / testOptions       += Tests.Argument(TestFrameworks.ScalaTest, "-eT"),
-    Test / unmanagedSourceDirectories += baseDirectory.value / "testcommon",
     Test / fork              := false,
-    Test / parallelExecution := false
+    Test / parallelExecution := false,
   )
   .settings(ScoverageSettings())
   .settings(

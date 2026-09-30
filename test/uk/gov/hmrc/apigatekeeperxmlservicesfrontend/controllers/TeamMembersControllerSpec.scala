@@ -68,7 +68,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       status(result) shouldBe Status.OK
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
-      contentAsString(result) contains "Search for XML organisations"
+      contentAsString(result).contains("Search for XML organisations") shouldBe true
     }
 
     def createFakePostRequest(params: (String, String)*): FakeRequest[AnyContentAsFormUrlEncoded] = {
