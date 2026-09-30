@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.apiplatform.modules.gkauth.connectors
+package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.binders
 
-import javax.inject.{Inject, Singleton}
+import java.util.UUID
 
-import uk.gov.hmrc.auth.core.*
-import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
 
-object StrideAuthConnector {
-  case class Config(baseUrl: String)
-}
+object RouteModels {
 
-@Singleton
-class StrideAuthConnector @Inject() (val httpClientV2: HttpClientV2, config: StrideAuthConnector.Config) extends PlayAuthConnector {
-  override val serviceUrl = config.baseUrl
+  case class SimpleOrganisationId(value: UUID) extends AnyVal {
+    override def toString: String = value.toString
+  }
+
+  given Conversion[SimpleOrganisationId, OrganisationId] = oRt => OrganisationId(oRt.value)
+
+  given Conversion[OrganisationId, SimpleOrganisationId] = oId => SimpleOrganisationId(oId.value)
 }

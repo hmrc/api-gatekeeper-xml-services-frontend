@@ -34,10 +34,10 @@ import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.{GatekeeperRoles, Lo
 import uk.gov.hmrc.apiplatform.modules.gkauth.services.{LdapAuthorisationServiceMockModule, StrideAuthorisationServiceMockModule}
 
 trait CommonViewSpec extends AsyncHmrcSpec with GuiceOneAppPerSuite {
-  val mcc                                         = app.injector.instanceOf[MessagesControllerComponents]
-  val messagesApi                                 = mcc.messagesApi
-  implicit val messagesProvider: MessagesProvider = MessagesImpl(Lang(Locale.ENGLISH), messagesApi)
-  implicit val appConfig: AppConfig               = mock[AppConfig]
+  val mcc                                  = app.injector.instanceOf[MessagesControllerComponents]
+  val messagesApi                          = mcc.messagesApi
+  given messagesProvider: MessagesProvider = MessagesImpl(Lang(Locale.ENGLISH), messagesApi)
+  given AppConfig                          = mock[AppConfig]
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
@@ -49,8 +49,8 @@ trait CommonViewSpec extends AsyncHmrcSpec with GuiceOneAppPerSuite {
   }
 
   trait BaseSetup {
-    def loggedInRequest: LoggedInRequest[_]
-    lazy val loggedInUser: LoggedInUser = LoggedInUser.fromRequest(loggedInRequest)
+    def loggedInRequest: LoggedInRequest[?]
+    lazy val loggedInUser: LoggedInUser = LoggedInUser.fromRequest(using loggedInRequest)
   }
 
   trait LdapAuth {

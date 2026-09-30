@@ -21,7 +21,7 @@
 
 @this(layout: Layout)
 
-@(organisation: Organisation)(implicit request: RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
+@(organisation: Organisation)(using request: RequestHeader, loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
 
 @layout(pageTitle = Some("Manage team members - HMRC API Gatekeeper"), beforeContentBlock = Some(organisationBreadcrumb(Some(organisation))), showBacklink = false) {
 

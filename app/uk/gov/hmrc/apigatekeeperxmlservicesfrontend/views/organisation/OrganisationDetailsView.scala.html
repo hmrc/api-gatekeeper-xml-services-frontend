@@ -24,7 +24,7 @@
 @this(layout: Layout)
 
 
-@(organisation: Organisation, users: List[OrganisationUser])(implicit request: LoggedInRequest[_], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
+@(organisation: Organisation, users: List[OrganisationUser])(using request: LoggedInRequest[?], loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages, appConfig: AppConfig)
 
 @emails = @{
     if(users.nonEmpty) {

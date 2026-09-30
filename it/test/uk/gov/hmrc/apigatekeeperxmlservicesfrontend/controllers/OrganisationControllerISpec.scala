@@ -19,12 +19,12 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.scalatest.BeforeAndAfterEach
-import utils.MockCookies
 
 import play.api.http.HeaderNames
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NO_CONTENT, SEE_OTHER}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
+import play.api.libs.ws.DefaultBodyWritables.writeableOf_String
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.Helpers.{CONTENT_TYPE, FORBIDDEN, NOT_FOUND, OK}
 import play.filters.csrf.CSRF.TokenProvider
@@ -32,10 +32,11 @@ import uk.gov.hmrc.apiplatform.modules.apis.domain.models.ApiCategory
 import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.*
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.JsonFormatters.given
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.XmlServicesStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.{ServerBaseISpec, StrideAuthorisationStub}
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.MockCookies
 
 class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEach with StrideAuthorisationStub {
 
@@ -84,7 +85,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       serviceName = ServiceName("vat-and-ec-sales-list"),
       context = "/government/collections/vat-and-ec-sales-list-online-support-for-software-developers",
       description = "description",
-      categories = Some(Seq(ApiCategory.CUSTOMS))
+      categories = Some(Seq(ApiCategory.Customs))
     )
 
     val xmlApi2 = XmlApi(
@@ -92,7 +93,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
       serviceName = ServiceName("customs-import"),
       context = "/government/collections/customs-import",
       description = "description",
-      categories = Some(Seq(ApiCategory.CUSTOMS))
+      categories = Some(Seq(ApiCategory.Customs))
     )
 
     val organisationUsers = List(OrganisationUser(organisationId, Some(UserId.random), emailAddress, firstName, lastName, List(xmlApi1, xmlApi2)))
@@ -100,7 +101,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
     def callGetEndpoint(url: String, headers: List[(String, String)] = List.empty): WSResponse =
       wsClient
         .url(url)
-        .withHttpHeaders(headers: _*)
+        .withHttpHeaders(headers*)
         .withCookies(MockCookies.makeWsCookie(app))
         .withFollowRedirects(false)
         .get()
@@ -109,7 +110,7 @@ class OrganisationControllerISpec extends ServerBaseISpec with BeforeAndAfterEac
     def callPostEndpoint(url: String, headers: List[(String, String)] = List.empty, request: String): WSResponse =
       wsClient
         .url(url)
-        .withHttpHeaders(headers: _*)
+        .withHttpHeaders(headers*)
         .withCookies(MockCookies.makeWsCookie(app))
         .withFollowRedirects(false)
         .post(request)

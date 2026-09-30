@@ -24,13 +24,13 @@ import org.jsoup.Jsoup
 import play.api.http.Status
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.ErrorHandler
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{ThirdPartyDeveloperConnector, XmlServicesConnector}
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.*
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.utils.{OrganisationTestData, ViewSpecHelpers}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.helper.WithCSRFAddToken
@@ -68,12 +68,12 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       status(result) shouldBe Status.OK
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
-      contentAsString(result) contains "Search for XML organisations"
+      contentAsString(result).contains("Search for XML organisations") shouldBe true
     }
 
     def createFakePostRequest(params: (String, String)*): FakeRequest[AnyContentAsFormUrlEncoded] = {
       FakeRequest().withMethod(POST)
-        .withCSRFToken.withFormUrlEncodedBody(params: _*)
+        .withCSRFToken.withFormUrlEncodedBody(params*)
     }
   }
 
@@ -82,7 +82,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     "return 200 and render the manage team member view when organisation exists" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
-      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(using *))
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
 
       val result = controller.manageTeamMembers(
@@ -94,13 +94,13 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
 
       document.getElementById("org-name-caption").text() shouldBe org1.name
       document.getElementById("team-member-heading").text() shouldBe "Manage team members"
-      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(using *)
     }
 
     "return 500 and render the error page when organisation doesn't exist" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
-      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(using *))
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
 
       val result = controller.manageTeamMembers(
@@ -108,7 +108,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       )(createFakePostRequest("organisationname" -> org1.name))
 
       status(result) shouldBe INTERNAL_SERVER_ERROR
-      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(using *)
     }
 
     "return forbidden view when not authorised" in new Setup {
@@ -147,26 +147,26 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       val userId       = UserId.random
       val userResponse = UserResponse(emailAddress, firstName, lastName, verified = true, userId)
 
-      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(using *))
         .thenReturn(Future.successful(Right(org1)))
-      when(mockThirdPartyDeveloperConnector.getByEmails(eqTo(List(emailAddress)))(*))
+      when(mockThirdPartyDeveloperConnector.getByEmails(eqTo(List(emailAddress)))(using *))
         .thenReturn(Future.successful(Right(List(userResponse))))
-      when(mockXmlServiceConnector.addTeamMember(eqTo(organisationId1), eqTo(emailAddress), eqTo(firstName), eqTo(lastName))(*[HeaderCarrier]))
+      when(mockXmlServiceConnector.addTeamMember(eqTo(organisationId1), eqTo(emailAddress), eqTo(firstName), eqTo(lastName))(using *[HeaderCarrier]))
         .thenReturn(Future.successful(AddCollaboratorSuccess(org1)))
 
       val result = controller.addTeamMemberAction(organisationId1)(createFakePostRequest("emailAddress" -> emailAddress))
 
       status(result) shouldBe Status.SEE_OTHER
       headers(result).getOrElse(LOCATION, "") shouldBe s"/api-gatekeeper-xml-services/organisations/${organisationId1.value.toString}/team-members"
-      verify(mockXmlServiceConnector).addTeamMember(eqTo(organisationId1), eqTo(emailAddress), *, *)(*[HeaderCarrier])
+      verify(mockXmlServiceConnector).addTeamMember(eqTo(organisationId1), eqTo(emailAddress), *, *)(using *[HeaderCarrier])
     }
 
     "display the createTeamMemberView when the user does not exist in third party developer" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
-      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(using *))
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
-      when(mockThirdPartyDeveloperConnector.getByEmails(eqTo(List(emailAddress)))(*)).thenReturn(Future.successful(Right(List.empty)))
+      when(mockThirdPartyDeveloperConnector.getByEmails(eqTo(List(emailAddress)))(using *)).thenReturn(Future.successful(Right(List.empty)))
 
       val result = controller.addTeamMemberAction(organisationId1)(createFakePostRequest("emailAddress" -> emailAddress))
 
@@ -179,7 +179,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     "return 400 and display the add team member page with errors when the collaborator already exists against the organisation" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
-      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*))
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(using *))
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
 
       val result = controller.addTeamMemberAction(organisationId1)(createFakePostRequest("emailAddress" -> collaborator1.email))
@@ -190,16 +190,16 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       validateFormErrors(document, Some("This user is already a team member on this organisation"))
       validateAddTeamMemberPage(document)
 
-      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationId1))(*)
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationId1))(using *)
       verifyZeroInteractions(mockThirdPartyDeveloperConnector)
     }
 
     "display internal server error page when third party developer returns error" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
-      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*))
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(using *))
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
-      when(mockThirdPartyDeveloperConnector.getByEmails(eqTo(List(emailAddress)))(*)).thenReturn(Future.successful(Left(UpstreamErrorResponse("", NOT_FOUND, NOT_FOUND))))
+      when(mockThirdPartyDeveloperConnector.getByEmails(eqTo(List(emailAddress)))(using *)).thenReturn(Future.successful(Left(UpstreamErrorResponse("", NOT_FOUND, NOT_FOUND))))
 
       val result = controller.addTeamMemberAction(organisationId1)(createFakePostRequest("emailAddress" -> emailAddress))
 
@@ -211,17 +211,17 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       val userId       = UserId.random
       val userResponse = UserResponse(emailAddress, firstName, lastName, verified = true, userId)
 
-      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(*))
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationId1))(using *))
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
-      when(mockThirdPartyDeveloperConnector.getByEmails(eqTo(List(emailAddress)))(*))
+      when(mockThirdPartyDeveloperConnector.getByEmails(eqTo(List(emailAddress)))(using *))
         .thenReturn(Future.successful(Right(List(userResponse))))
-      when(mockXmlServiceConnector.addTeamMember(eqTo(organisationId1), eqTo(emailAddress), *, *)(*[HeaderCarrier]))
+      when(mockXmlServiceConnector.addTeamMember(eqTo(organisationId1), eqTo(emailAddress), *, *)(using *[HeaderCarrier]))
         .thenReturn(Future.successful(AddCollaboratorFailure(UpstreamErrorResponse("", NOT_FOUND, NOT_FOUND))))
 
       val result = controller.addTeamMemberAction(organisationId1)(createFakePostRequest("emailAddress" -> emailAddress))
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-      verify(mockXmlServiceConnector).addTeamMember(eqTo(organisationId1), eqTo(emailAddress), *, *)(*[HeaderCarrier])
+      verify(mockXmlServiceConnector).addTeamMember(eqTo(organisationId1), eqTo(emailAddress), *, *)(using *[HeaderCarrier])
     }
 
     "return 400 and display the add team member page with errors when the form is invalid" in new Setup {
@@ -276,14 +276,14 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     "call add teamMember and redirect to the organisation page when form is valid and call is successful" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
-      when(mockXmlServiceConnector.addTeamMember(eqTo(organisationId1), eqTo(emailAddress), eqTo(firstName), eqTo(lastName))(*[HeaderCarrier]))
+      when(mockXmlServiceConnector.addTeamMember(eqTo(organisationId1), eqTo(emailAddress), eqTo(firstName), eqTo(lastName))(using *[HeaderCarrier]))
         .thenReturn(Future.successful(AddCollaboratorSuccess(org1)))
 
       val result = controller.createTeamMemberAction(organisationId1)(createFakePostRequest("emailAddress" -> emailAddress, "firstName" -> firstName, "lastName" -> lastName))
 
       status(result) shouldBe Status.SEE_OTHER
       headers(result).getOrElse(LOCATION, "") shouldBe s"/api-gatekeeper-xml-services/organisations/${organisationId1.value.toString}/team-members"
-      verify(mockXmlServiceConnector).addTeamMember(eqTo(organisationId1), eqTo(emailAddress), eqTo(firstName), eqTo(lastName))(*[HeaderCarrier])
+      verify(mockXmlServiceConnector).addTeamMember(eqTo(organisationId1), eqTo(emailAddress), eqTo(firstName), eqTo(lastName))(using *[HeaderCarrier])
     }
 
     "return 400 and display the create team member page with errors when the form is invalid" in new Setup {
@@ -303,7 +303,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     "return 500 when call to add team member fails" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
-      when(mockXmlServiceConnector.addTeamMember(eqTo(organisationId1), eqTo(emailAddress), eqTo(firstName), eqTo(lastName))(*[HeaderCarrier]))
+      when(mockXmlServiceConnector.addTeamMember(eqTo(organisationId1), eqTo(emailAddress), eqTo(firstName), eqTo(lastName))(using *[HeaderCarrier]))
         .thenReturn(Future.successful(AddCollaboratorFailure(UpstreamErrorResponse("", NOT_FOUND, NOT_FOUND))))
 
       val result = controller.createTeamMemberAction(organisationId1)(
@@ -311,7 +311,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       )
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-      verify(mockXmlServiceConnector).addTeamMember(eqTo(organisationId1), eqTo(emailAddress), eqTo(firstName), eqTo(lastName))(*[HeaderCarrier])
+      verify(mockXmlServiceConnector).addTeamMember(eqTo(organisationId1), eqTo(emailAddress), eqTo(firstName), eqTo(lastName))(using *[HeaderCarrier])
     }
 
     "return forbidden page when not authorised" in new Setup {
@@ -329,7 +329,7 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     "return 200 and display the confirmation page when organisation is retrieved and call to remove team member is successful" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
-      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(using *))
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
 
       val collaborator = organisationWithCollaborators.collaborators.head
@@ -342,13 +342,13 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
 
       validateRemoveTeamMemberPage(document)
       validateFormErrors(document)
-      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(using *)
     }
 
     "return 500 when organisation is retrieved but userId does not match any collaborator" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
-      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(using *))
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
 
       val result = controller.removeTeamMember(organisationWithCollaborators.organisationId, "unmacthedUserId")(
@@ -356,14 +356,14 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       )
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
-      verify(mockXmlServiceConnector, times(0)).removeTeamMember(*[OrganisationId], *, *)(*)
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(using *)
+      verify(mockXmlServiceConnector, times(0)).removeTeamMember(*[OrganisationId], *, *)(using *)
     }
 
     "return 500 when connector returns 500" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
-      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(using *))
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
 
       val result = controller.removeTeamMember(organisationWithCollaborators.organisationId, "unmacthedUserId")(
@@ -371,8 +371,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       )
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
-      verify(mockXmlServiceConnector, times(0)).removeTeamMember(*[OrganisationId], *, *)(*)
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(using *)
+      verify(mockXmlServiceConnector, times(0)).removeTeamMember(*[OrganisationId], *, *)(using *)
     }
 
     "return forbidden view when not authorised" in new Setup {
@@ -387,10 +387,10 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     "return 303 when form is valid, confirm is yes, organisation is retrieved and call to remove team member is successful" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
-      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*))
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(using *))
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
 
-      when(mockXmlServiceConnector.removeTeamMember(eqTo(organisationWithCollaborators.organisationId), *, *)(*))
+      when(mockXmlServiceConnector.removeTeamMember(eqTo(organisationWithCollaborators.organisationId), *, *)(using *))
         .thenReturn(Future.successful(RemoveCollaboratorSuccess(organisationWithCollaborators)))
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
@@ -399,8 +399,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
 
       status(result) shouldBe Status.SEE_OTHER
       headers(result).getOrElse(LOCATION, "") shouldBe s"/api-gatekeeper-xml-services/organisations/${organisationId1.value.toString}/team-members"
-      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
-      verify(mockXmlServiceConnector).removeTeamMember(eqTo(organisationWithCollaborators.organisationId), eqTo(collaborator1.email), *)(*)
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(using *)
+      verify(mockXmlServiceConnector).removeTeamMember(eqTo(organisationWithCollaborators.organisationId), eqTo(collaborator1.email), *)(using *)
     }
 
     "return 303 when form is valid, confirm is no, organisation is retrieved and call to remove team member is successful" in new Setup {
@@ -419,10 +419,10 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
       val organisationWithInvalidCollaborator = org1.copy(collaborators = List(collaborator1, collaborator2, collaboratorInvalidEmail))
 
-      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationWithInvalidCollaborator.organisationId))(*))
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(eqTo(organisationWithInvalidCollaborator.organisationId))(using *))
         .thenReturn(Future.successful(Right(organisationWithInvalidCollaborator)))
 
-      when(mockXmlServiceConnector.removeTeamMember(eqTo(organisationWithInvalidCollaborator.organisationId), *, *)(*))
+      when(mockXmlServiceConnector.removeTeamMember(eqTo(organisationWithInvalidCollaborator.organisationId), *, *)(using *))
         .thenReturn(Future.successful(RemoveCollaboratorSuccess(organisationWithInvalidCollaborator)))
 
       val result = controller.removeTeamMemberAction(organisationWithInvalidCollaborator.organisationId, collaboratorInvalidEmail.userId)(
@@ -431,8 +431,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
 
       status(result) shouldBe Status.SEE_OTHER
       headers(result).getOrElse(LOCATION, "") shouldBe s"/api-gatekeeper-xml-services/organisations/${organisationId1.value.toString}/team-members"
-      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithInvalidCollaborator.organisationId))(*)
-      verify(mockXmlServiceConnector).removeTeamMember(eqTo(organisationWithInvalidCollaborator.organisationId), eqTo(collaboratorInvalidEmail.email), *)(*)
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithInvalidCollaborator.organisationId))(using *)
+      verify(mockXmlServiceConnector).removeTeamMember(eqTo(organisationWithInvalidCollaborator.organisationId), eqTo(collaboratorInvalidEmail.email), *)(using *)
     }
 
     "return 400 when form is invalid (email missing),  organisation is retrieved and call to remove team member is successful" in new Setup {
@@ -471,10 +471,10 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
     "return 500 when organisation is retrieved and call to remove team member fails" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
-      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(using *))
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
 
-      when(mockXmlServiceConnector.removeTeamMember(*[OrganisationId], *, *)(*))
+      when(mockXmlServiceConnector.removeTeamMember(*[OrganisationId], *, *)(using *))
         .thenReturn(Future.successful(RemoveCollaboratorFailure(new RuntimeException("some error"))))
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
@@ -482,14 +482,14 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       )
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
-      verify(mockXmlServiceConnector).removeTeamMember(eqTo(organisationWithCollaborators.organisationId), eqTo(collaborator1.email), *)(*)
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(using *)
+      verify(mockXmlServiceConnector).removeTeamMember(eqTo(organisationWithCollaborators.organisationId), eqTo(collaborator1.email), *)(using *)
     }
 
     "return 500 when organisation is retrieved but userId does not match any collaborator" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
-      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(using *))
         .thenReturn(Future.successful(Right(organisationWithCollaborators)))
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, "someOtherUserId")(
@@ -497,14 +497,14 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       )
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
-      verify(mockXmlServiceConnector, times(0)).removeTeamMember(*[OrganisationId], *, *)(*)
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(using *)
+      verify(mockXmlServiceConnector, times(0)).removeTeamMember(*[OrganisationId], *, *)(using *)
     }
 
     "return 500 when connector returns 500" in new Setup {
       StrideAuthorisationServiceMock.Auth.succeeds(GatekeeperRoles.USER)
 
-      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(*))
+      when(mockXmlServiceConnector.getOrganisationByOrganisationId(*[OrganisationId])(using *))
         .thenReturn(Future.successful(Left(UpstreamErrorResponse("", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR))))
 
       val result = controller.removeTeamMemberAction(organisationWithCollaborators.organisationId, collaborator1.userId)(
@@ -512,8 +512,8 @@ class TeamMembersControllerSpec extends ControllerBaseSpec with WithCSRFAddToken
       )
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(*)
-      verify(mockXmlServiceConnector, times(0)).removeTeamMember(*[OrganisationId], *, *)(*)
+      verify(mockXmlServiceConnector).getOrganisationByOrganisationId(eqTo(organisationWithCollaborators.organisationId))(using *)
+      verify(mockXmlServiceConnector, times(0)).removeTeamMember(*[OrganisationId], *, *)(using *)
     }
 
     "return forbidden view when not authorised" in new Setup {

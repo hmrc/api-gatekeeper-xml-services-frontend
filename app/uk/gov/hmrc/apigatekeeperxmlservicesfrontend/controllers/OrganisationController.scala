@@ -24,15 +24,16 @@ import scala.util.Try
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, text}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.{AppConfig, ErrorHandler}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.{ThirdPartyDeveloperConnector, XmlServicesConnector}
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.FormUtils.emailValidator
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController._
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.OrganisationController.*
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.binders.RouteModels.given_Conversion_OrganisationId_SimpleOrganisationId
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.*
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.views.html.organisation.*
 import uk.gov.hmrc.apiplatform.modules.gkauth.controllers.GatekeeperBaseController
 import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.LoggedInRequest
 import uk.gov.hmrc.apiplatform.modules.gkauth.services.{LdapAuthorisationService, StrideAuthorisationService}
@@ -49,7 +50,7 @@ object OrganisationController {
       mapping(
         "organisationName" -> text.verifying(error = "organisationname.error.required", x => x.trim.nonEmpty),
         "emailAddress"     -> emailValidator()
-      )(AddOrganisationForm.apply)(AddOrganisationForm.unapply)
+      )(AddOrganisationForm.apply)(f => Some(f.organisationName, f.emailAddress))
     )
 
   }
@@ -64,7 +65,7 @@ object OrganisationController {
         "emailAddress"     -> emailValidator(),
         "firstName"        -> text.verifying("firstname.error.required", x => x.trim.nonEmpty),
         "lastName"         -> text.verifying("lastname.error.required", x => x.trim.nonEmpty)
-      )(AddOrganisationWithNewUserForm.apply)(AddOrganisationWithNewUserForm.unapply)
+      )(AddOrganisationWithNewUserForm.apply)(f => Some(f.organisationName, f.emailAddress, f.firstName, f.lastName))
     )
 
   }
@@ -76,7 +77,7 @@ object OrganisationController {
     val form = Form(
       mapping(
         "organisationName" -> text.verifying("organisationname.error.required", x => x.trim.nonEmpty)
-      )(UpdateOrganisationDetailsForm.apply)(UpdateOrganisationDetailsForm.unapply)
+      )(UpdateOrganisationDetailsForm.apply)(f => Some(f.organisationName))
     )
   }
 
@@ -87,7 +88,7 @@ object OrganisationController {
     val form: Form[RemoveOrganisationConfirmationForm] = Form(
       mapping(
         "confirm" -> optional(text).verifying("organisation.error.confirmation.no.choice.field", _.isDefined)
-      )(RemoveOrganisationConfirmationForm.apply)(RemoveOrganisationConfirmationForm.unapply)
+      )(RemoveOrganisationConfirmationForm.apply)(f => Some(f.confirm))
     )
   }
 
@@ -108,9 +109,9 @@ class OrganisationController @Inject() (
     errorHandler: ErrorHandler,
     xmlServicesConnector: XmlServicesConnector,
     thirdPartyDeveloperConnector: ThirdPartyDeveloperConnector
-  )(implicit ec: ExecutionContext,
+  )(using ec: ExecutionContext,
     appConfig: AppConfig
-  ) extends GatekeeperBaseController(mcc)(ec) {
+  ) extends GatekeeperBaseController(mcc)(using ec) {
 
   val addOrganisationForm: Form[AddOrganisationForm]                               = AddOrganisationForm.form
   val addOrganisationWithNewUserForm: Form[AddOrganisationWithNewUserForm]         = AddOrganisationWithNewUserForm.form
@@ -125,7 +126,7 @@ class OrganisationController @Inject() (
   def organisationsSearchAction(searchType: String, searchText: Option[String]): Action[AnyContent] = anyAuthenticatedUserAction {
     implicit request =>
       def toVendorIdOrNone(txtVal: Option[String]): Option[VendorId] = {
-        txtVal.flatMap(x => Try(x.toLong).toOption.map(VendorId))
+        txtVal.flatMap(x => Try(x.toLong).toOption.map(VendorId.apply))
       }
 
       def isValidVendorId(txtVal: Option[String]): Boolean = {
@@ -185,8 +186,7 @@ class OrganisationController @Inject() (
       emailAddress: String,
       firstName: String,
       lastName: String
-    )(implicit hc: HeaderCarrier,
-      loggedInRequest: LoggedInRequest[_]
+    )(using loggedInRequest: LoggedInRequest[?]
     ): Future[Result] = {
     xmlServicesConnector
       .addOrganisation(organisationName, emailAddress, firstName, lastName)
@@ -220,7 +220,7 @@ class OrganisationController @Inject() (
 
   def updateOrganisationsDetailsAction(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
 
-    def handleFormAction(organisation: Organisation)(implicit request: LoggedInRequest[_]): Future[Result] = {
+    def handleFormAction(organisation: Organisation)(using ec: ExecutionContext, request: LoggedInRequest[?]): Future[Result] = {
       updateOrganisationDetailsForm.bindFromRequest().fold(
         formWithErrors => successful(BadRequest(organisationUpdateView(formWithErrors, organisation))),
         formData =>

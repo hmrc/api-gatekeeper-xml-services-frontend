@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models
 
-import java.{util => ju}
+import java.util as ju
 
 import uk.gov.hmrc.apiplatform.modules.apis.domain.models.ApiCategory
 import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId

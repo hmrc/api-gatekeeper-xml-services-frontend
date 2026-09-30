@@ -19,13 +19,13 @@ package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors
 import org.apache.pekko.stream.Materializer
 import org.scalatest.BeforeAndAfterEach
 
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.JsonFormatters._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.JsonFormatters.given
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.thirdpartydeveloper.UserResponse
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.stubs.ThirdPartyDeveloperStub
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.support.ServerBaseISpec
@@ -36,7 +36,7 @@ class ThirdPartyDeveloperConnectorISpec extends ServerBaseISpec with BeforeAndAf
     super.beforeEach()
   }
 
-  implicit def mat: Materializer = app.injector.instanceOf[Materializer]
+  given mat: Materializer = app.injector.instanceOf[Materializer]
 
   protected override def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
@@ -50,7 +50,7 @@ class ThirdPartyDeveloperConnectorISpec extends ServerBaseISpec with BeforeAndAf
       )
 
   trait Setup {
-    implicit val hc: HeaderCarrier = HeaderCarrier()
+    given HeaderCarrier = HeaderCarrier()
 
     val email          = "foo@bar.com"
     val userId: UserId = UserId.random

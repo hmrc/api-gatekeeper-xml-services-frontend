@@ -23,10 +23,10 @@ import play.api.mvc.{Action, ActionRefiner, AnyContent, MessagesRequest, Result}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.{GatekeeperRoles, GatekeeperStrideRole, LoggedInRequest}
-import uk.gov.hmrc.apiplatform.modules.gkauth.services._
+import uk.gov.hmrc.apiplatform.modules.gkauth.services.*
 
 trait ForbiddenHandler {
-  def handle(msgResult: MessagesRequest[_]): Result
+  def handle(msgResult: MessagesRequest[?]): Result
 }
 
 trait GatekeeperStrideAuthorisationActions {
@@ -34,7 +34,7 @@ trait GatekeeperStrideAuthorisationActions {
 
   def strideAuthorisationService: StrideAuthorisationService
 
-  implicit def ec: ExecutionContext
+  def ec: ExecutionContext
 
   def gatekeeperRoleActionRefiner(minimumRoleRequired: GatekeeperStrideRole): ActionRefiner[MessagesRequest, LoggedInRequest] =
     new ActionRefiner[MessagesRequest, LoggedInRequest] {
@@ -45,21 +45,21 @@ trait GatekeeperStrideAuthorisationActions {
       }
     }
 
-  private def gatekeeperRoleAction(minimumRoleRequired: GatekeeperStrideRole)(block: LoggedInRequest[_] => Future[Result]): Action[AnyContent] =
+  private def gatekeeperRoleAction(minimumRoleRequired: GatekeeperStrideRole)(block: LoggedInRequest[?] => Future[Result]): Action[AnyContent] =
     Action.async { implicit request =>
       gatekeeperRoleActionRefiner(minimumRoleRequired).invokeBlock(request, block)
     }
 
-  def anyStrideUserAction(block: LoggedInRequest[_] => Future[Result]): Action[AnyContent] =
+  def anyStrideUserAction(block: LoggedInRequest[?] => Future[Result]): Action[AnyContent] =
     gatekeeperRoleAction(GatekeeperRoles.USER)(block)
 
   // $COVERAGE-OFF$
-  def atLeastSuperUserAction(block: LoggedInRequest[_] => Future[Result]): Action[AnyContent] =
+  def atLeastSuperUserAction(block: LoggedInRequest[?] => Future[Result]): Action[AnyContent] =
     gatekeeperRoleAction(GatekeeperRoles.SUPERUSER)(block)
   // $COVERAGE-ON$
 
   // $COVERAGE-OFF$
-  def adminOnlyAction(block: LoggedInRequest[_] => Future[Result]): Action[AnyContent] =
+  def adminOnlyAction(block: LoggedInRequest[?] => Future[Result]): Action[AnyContent] =
     gatekeeperRoleAction(GatekeeperRoles.ADMIN)(block)
   // $COVERAGE-ON$
 
@@ -67,13 +67,13 @@ trait GatekeeperStrideAuthorisationActions {
 
 // $COVERAGE-OFF$
 trait GatekeeperAuthorisationActions {
-  self: FrontendBaseController with GatekeeperStrideAuthorisationActions =>
+  self: FrontendBaseController & GatekeeperStrideAuthorisationActions =>
 
   def ldapAuthorisationService: LdapAuthorisationService
 
   val anyAuthenticatedUserRefiner = new ActionRefiner[MessagesRequest, LoggedInRequest] {
 
-    override def executionContext = ec
+    override implicit def executionContext = ec
 
     override protected def refine[A](msgRequest: MessagesRequest[A]): Future[Either[Result, LoggedInRequest[A]]] = {
       type FERLIR = Future[Either[Result, LoggedInRequest[A]]]
@@ -90,7 +90,7 @@ trait GatekeeperAuthorisationActions {
             case NonFatal(_) => Left(Unauthorized(""))
           }
 
-      import cats.implicits._
+      import cats.implicits.*
       import cats.data.EitherT
       EitherT(refineStride).leftFlatMap { strideFailureResult =>
         EitherT(refineLdap).leftMap(_ => strideFailureResult)
@@ -99,7 +99,7 @@ trait GatekeeperAuthorisationActions {
     }
   }
 
-  def anyAuthenticatedUserAction(block: LoggedInRequest[_] => Future[Result]): Action[AnyContent] = {
+  def anyAuthenticatedUserAction(block: LoggedInRequest[?] => Future[Result]): Action[AnyContent] = {
     Action.async { implicit request =>
       (
         anyAuthenticatedUserRefiner

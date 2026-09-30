@@ -20,20 +20,21 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 import play.api.Logging
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 
 import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.connectors.XmlServicesConnector
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.*
 
 @Singleton
-class TestOnlyXmlOrgConnector @Inject() (val http: HttpClientV2, val config: XmlServicesConnector.Config)(implicit ec: ExecutionContext) extends Logging {
+class TestOnlyXmlOrgConnector @Inject() (val http: HttpClientV2, val config: XmlServicesConnector.Config)(using ec: ExecutionContext) extends Logging {
 
-  import JsonFormatters._
+  import JsonFormatters.given
+
   val baseUrl: String = config.serviceBaseUrl
 
-  def cloneOrganisation(orgId: OrganisationId)(implicit hc: HeaderCarrier): Future[Organisation] = {
+  def cloneOrganisation(orgId: OrganisationId)(using hc: HeaderCarrier): Future[Organisation] = {
     http.post(url"$baseUrl/test-only/organisation/$orgId/clone")
       .execute[Organisation]
   }

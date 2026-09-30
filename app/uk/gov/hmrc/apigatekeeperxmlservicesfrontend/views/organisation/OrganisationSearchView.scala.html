@@ -22,7 +22,7 @@
 @this(layout: Layout)
 
 
-@(organisations: List[Organisation], showTable: Boolean = true, isVendorIdSearch: Boolean = true)(implicit request: LoggedInRequest[_],  loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages,
+@(organisations: List[Organisation], showTable: Boolean = true, isVendorIdSearch: Boolean = true)(using request: LoggedInRequest[?],  loggedInUser: LoggedInUser = LoggedInUser(None), messages: Messages,
 appConfig: AppConfig)
 
 @buildManageOrgPath(org: Organisation) = @{

@@ -9,8 +9,8 @@ addSbtPlugin("com.github.sbt"     % "sbt-gzip"              % "2.0.0")
 addSbtPlugin("uk.gov.hmrc"        % "sbt-sass-compiler"     % "0.13.0")
 addSbtPlugin("org.scoverage"      % "sbt-scoverage"         % "2.4.4")
 addSbtPlugin("org.scalameta"      % "sbt-scalafmt"          % "2.5.6")
-addSbtPlugin("ch.epfl.scala"      % "sbt-scalafix"          % "0.14.4")
-addSbtPlugin("ch.epfl.scala"      % "sbt-bloop"             % "2.0.19")
+addSbtPlugin("ch.epfl.scala"      % "sbt-scalafix"          % "0.14.6")
+addSbtPlugin("ch.epfl.scala"      % "sbt-bloop"             % "2.1.1")
 addSbtPlugin("com.github.sbt"     % "sbt-concat"            % "1.0.0")
 
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always

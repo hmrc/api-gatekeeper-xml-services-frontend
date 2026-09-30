@@ -21,7 +21,7 @@ import java.util.UUID
 import uk.gov.hmrc.apiplatform.modules.apis.domain.models.ApiCategory
 import uk.gov.hmrc.apiplatform.modules.common.domain.models.UserId
 
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models._
+import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.*
 
 trait OrganisationTestData {
   val vendorId        = 9001L
@@ -45,7 +45,7 @@ trait OrganisationTestData {
     serviceName = ServiceName("vat-and-ec-sales-list"),
     context = "/government/collections/vat-and-ec-sales-list-online-support-for-software-developers",
     description = "description",
-    categories = Some(Seq(ApiCategory.CUSTOMS))
+    categories = Some(Seq(ApiCategory.Customs))
   )
 
   val xmlApi2 = XmlApi(
@@ -53,7 +53,7 @@ trait OrganisationTestData {
     serviceName = ServiceName("customs-import"),
     context = "/government/collections/customs-import",
     description = "description",
-    categories = Some(Seq(ApiCategory.CUSTOMS))
+    categories = Some(Seq(ApiCategory.Customs))
   )
 
   val xmlApi3 = XmlApi(
@@ -61,7 +61,7 @@ trait OrganisationTestData {
     serviceName = ServiceName("paye-online"),
     context = "/government/collections/paye-online",
     description = "description",
-    categories = Some(Seq(ApiCategory.PAYE))
+    categories = Some(Seq(ApiCategory.Paye))
   )
 
   val organisationUsers = List(

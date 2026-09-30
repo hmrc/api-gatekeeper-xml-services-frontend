@@ -21,7 +21,7 @@ import java.net.URL
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration._
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration.*
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 
 case class WireMockBaseUrl(value: URL)
@@ -37,11 +37,11 @@ trait WireMockSupport extends BeforeAndAfterAll with BeforeAndAfterEach {
   me: Suite =>
 
   def commonStubs(): Unit
-  val wireMockPort: Int                                           = WireMockSupport.wireMockPort
-  val wireMockHost                                                = "localhost"
-  val wireMockBaseUrlAsString                                     = s"http://$wireMockHost:$wireMockPort"
-  val wireMockBaseUrl                                             = new URL(wireMockBaseUrlAsString)
-  protected implicit val implicitWireMockBaseUrl: WireMockBaseUrl = WireMockBaseUrl(wireMockBaseUrl)
+  val wireMockPort: Int       = WireMockSupport.wireMockPort
+  val wireMockHost            = "localhost"
+  val wireMockBaseUrlAsString = s"http://$wireMockHost:$wireMockPort"
+  val wireMockBaseUrl         = new URL(wireMockBaseUrlAsString)
+  given WireMockBaseUrl       = WireMockBaseUrl(wireMockBaseUrl)
 
   protected def basicWireMockConfig(): WireMockConfiguration = wireMockConfig()
 

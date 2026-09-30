@@ -5,7 +5,7 @@ val appName = "api-gatekeeper-xml-services-frontend"
 Global / bloopAggregateSourceDependencies := true
 Global / bloopExportJarClassifiers := Some(Set("sources"))
 
-ThisBuild / scalaVersion := "2.13.18"
+ThisBuild / scalaVersion := "3.7.4"
 ThisBuild / majorVersion := 0
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
 ThisBuild / semanticdbEnabled := true
@@ -24,23 +24,37 @@ lazy val microservice = Project(appName, file("."))
     Assets / pipelineStages := Seq(
       concat
     ),
-    routesImport += "uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.binders._",
-    libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
-    TwirlKeys.templateImports ++= Seq(
-      "views.html.helper.CSPNonce",
-      "uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig",
-      "uk.gov.hmrc.govukfrontend.views.html.components._",
-      "uk.gov.hmrc.hmrcfrontend.views.html.components._",
-      "uk.gov.hmrc.hmrcfrontend.views.html.helpers._"
+    libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test
+  )
+  .settings(
+    routesImport ++= Seq(
+      "uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.binders.RouteModels.*",
+      "uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.binders.RouteModels.given",
     )
+  )
+  .settings(
+    Test / testOptions       += Tests.Argument(TestFrameworks.ScalaTest, "-eT"),
+    Test / fork              := false,
+    Test / parallelExecution := false,
   )
   .settings(ScoverageSettings())
   .settings(
+    TwirlKeys.templateImports ++= Seq(
+      "views.html.helper.CSPNonce",
+      "uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig",
+      "uk.gov.hmrc.govukfrontend.views.html.components.*",
+      "uk.gov.hmrc.hmrcfrontend.views.html.components.*",
+      "uk.gov.hmrc.hmrcfrontend.views.html.helpers.*"
+    )
+  )
+  .settings(
     scalacOptions ++= Seq(
-      "-Wconf:cat=unused&src=views/.*\\.scala:s",
-      // https://www.scala-lang.org/2021/01/12/configuring-and-suppressing-warnings.html
-      // suppress warnings in generated routes files
-      "-Wconf:src=routes/.*:s"
+      "-Wconf:msg=unused import&src=views/.*:s",
+      "-Wconf:msg=unused implicit parameter&src=views/.*:s",
+      "-Wconf:msg=unused explicit parameter&src=views/.*:s",
+      "-Wconf:msg=unused import&src=routes/.*:s",
+      "-Wconf:msg=unused pattern variable&src=routes/.*:s",
+      "-Wconf:msg=unused private member&src=routes/.*:s",
     )
   )
 
@@ -48,10 +62,10 @@ lazy val microservice = Project(appName, file("."))
 lazy val it = (project in file("it"))
   .enablePlugins(PlayScala)
   .dependsOn(microservice % "test->test")
-  .settings(DefaultBuildSettings.itSettings())
   .settings(
     name := "integration-tests",
     Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-eT"),
+    DefaultBuildSettings.itSettings()
   )
 
 

@@ -14,12 +14,9 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcLayout
-@import views.html.helper.CSPNonce
 @import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.Organisation
-@import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.config.AppConfig
 
-@(organisation: Option[Organisation])(implicit messages: Messages)
+@(organisation: Option[Organisation])(using messages: Messages)
   <div class="govuk-breadcrumbs">
     <ol class="govuk-breadcrumbs__list">
       <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="@uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.routes.OrganisationController.organisationsPage.url" id="org-breadcrumb-home">XML</a></li>

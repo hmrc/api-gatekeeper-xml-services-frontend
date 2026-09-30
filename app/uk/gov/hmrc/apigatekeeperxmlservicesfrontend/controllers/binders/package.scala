@@ -14,33 +14,35 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers
+// Awaiting Play to support Opaque Types
 
-import java.util.UUID
-import scala.util.Try
+// package uk.gov.hmrc.apigatekeeperxmlservicesfrontend.controllers.binders
 
-import play.api.mvc.PathBindable
+// import java.util.UUID
+// import scala.util.Try
 
-import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
+// import play.api.mvc.PathBindable
 
-package object binders {
+// import uk.gov.hmrc.apigatekeeperxmlservicesfrontend.models.OrganisationId
 
-  private def organisationIdFromString(text: String): Either[String, OrganisationId] = {
-    Try(UUID.fromString(text))
-      .toOption
-      .toRight(s"Cannot accept $text as OrganisationId")
-      .map(OrganisationId(_))
-  }
+// package object binders {
 
-  implicit def organisationIdPathBinder(implicit textBinder: PathBindable[String]): PathBindable[OrganisationId] = new PathBindable[OrganisationId] {
+//   private def organisationIdFromString(text: String): Either[String, OrganisationId] = {
+//     Try(UUID.fromString(text))
+//       .toOption
+//       .toRight(s"Cannot accept $text as OrganisationId")
+//       .map(OrganisationId(_))
+//   }
 
-    override def bind(key: String, value: String): Either[String, OrganisationId] = {
-      textBinder.bind(key, value).flatMap(organisationIdFromString)
-    }
+//   implicit def organisationIdPathBinder(implicit textBinder: PathBindable[String]): PathBindable[OrganisationId] = new PathBindable[OrganisationId] {
 
-    override def unbind(key: String, organisationId: OrganisationId): String = {
-      textBinder.unbind(key, organisationId.value.toString)
-    }
-  }
+//     override def bind(key: String, value: String): Either[String, OrganisationId] = {
+//       textBinder.bind(key, value).flatMap(organisationIdFromString)
+//     }
 
-}
+//     override def unbind(key: String, organisationId: OrganisationId): String = {
+//       textBinder.unbind(key, organisationId.value.toString)
+//     }
+//   }
+
+// }

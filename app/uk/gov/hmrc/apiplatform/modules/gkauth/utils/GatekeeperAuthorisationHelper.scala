@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.apiplatform.modules.gkauth.utils
 
-import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models._
+import uk.gov.hmrc.apiplatform.modules.gkauth.domain.models.*
 
 // $COVERAGE-OFF$
 trait GatekeeperAuthorisationHelper {
-  implicit def loggedIn(implicit request: LoggedInRequest[_]): LoggedInUser = LoggedInUser(request.name)
+  implicit def loggedIn(implicit request: LoggedInRequest[?]): LoggedInUser = LoggedInUser(request.name)
 }
 // $COVERAGE-ON$

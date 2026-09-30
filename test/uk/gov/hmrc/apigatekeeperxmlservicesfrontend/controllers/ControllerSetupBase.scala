@@ -21,5 +21,5 @@ import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import uk.gov.hmrc.http.HeaderCarrier
 
 trait ControllerSetupBase extends MockitoSugar with ArgumentMatchersSugar {
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  given HeaderCarrier = HeaderCarrier()
 }
