@@ -3,7 +3,7 @@ import sbt.*
 object AppDependencies {
 
   val bootstrapVersion     = "10.8.0"
-  val playfrontendVersion  = "13.11.0"
+  val playfrontendVersion  = "13.16.0"
   val apiDomainVersion     = "1.8.0"
   val commonDomainVersion  = "1.4.0"
 
