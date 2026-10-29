@@ -54,6 +54,11 @@ trait GatekeeperStrideAuthorisationActions {
     gatekeeperRoleAction(GatekeeperRoles.USER)(block)
 
   // $COVERAGE-OFF$
+  def atLeastAdvancedUserAction(block: LoggedInRequest[?] => Future[Result]): Action[AnyContent] =
+    gatekeeperRoleAction(GatekeeperRoles.ADVANCEDUSER)(block)
+  // $COVERAGE-ON$
+
+  // $COVERAGE-OFF$
   def atLeastSuperUserAction(block: LoggedInRequest[?] => Future[Result]): Action[AnyContent] =
     gatekeeperRoleAction(GatekeeperRoles.SUPERUSER)(block)
   // $COVERAGE-ON$
