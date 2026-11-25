@@ -151,11 +151,11 @@ class OrganisationController @Inject() (
       }
   }
 
-  val organisationsAddPage: Action[AnyContent] = anyStrideUserAction {
+  val organisationsAddPage: Action[AnyContent] = atLeastAdvancedUserAction {
     implicit request => successful(Ok(organisationAddView(addOrganisationForm)))
   }
 
-  def organisationsAddAction(): Action[AnyContent] = anyStrideUserAction {
+  def organisationsAddAction(): Action[AnyContent] = atLeastAdvancedUserAction {
     implicit request =>
       addOrganisationForm.bindFromRequest().fold(
         formWithErrors => successful(BadRequest(organisationAddView(formWithErrors))),
@@ -173,7 +173,7 @@ class OrganisationController @Inject() (
       )
   }
 
-  def organisationsAddWithNewUserAction(): Action[AnyContent] = anyStrideUserAction {
+  def organisationsAddWithNewUserAction(): Action[AnyContent] = atLeastAdvancedUserAction {
     implicit request =>
       addOrganisationWithNewUserForm.bindFromRequest().fold(
         formWithErrors => successful(BadRequest(organisationAddNewUserView(formWithErrors, None, None))),
@@ -197,7 +197,7 @@ class OrganisationController @Inject() (
       }
   }
 
-  def viewOrganisationPage(organisationId: OrganisationId): Action[AnyContent] = anyAuthenticatedUserAction {
+  def viewOrganisationPage(organisationId: OrganisationId): Action[AnyContent] = atLeastAdvancedUserAction {
     implicit request =>
       (for {
         getOrganisationResult <- xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
@@ -209,7 +209,7 @@ class OrganisationController @Inject() (
       }
   }
 
-  def updateOrganisationsDetailsPage(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
+  def updateOrganisationsDetailsPage(organisationId: OrganisationId): Action[AnyContent] = atLeastAdvancedUserAction {
     implicit request =>
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
         .flatMap {
@@ -218,7 +218,7 @@ class OrganisationController @Inject() (
         }
   }
 
-  def updateOrganisationsDetailsAction(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
+  def updateOrganisationsDetailsAction(organisationId: OrganisationId): Action[AnyContent] = atLeastAdvancedUserAction {
 
     def handleFormAction(organisation: Organisation)(using ec: ExecutionContext, request: LoggedInRequest[?]): Future[Result] = {
       updateOrganisationDetailsForm.bindFromRequest().fold(
@@ -242,7 +242,7 @@ class OrganisationController @Inject() (
 
   }
 
-  def removeOrganisationPage(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
+  def removeOrganisationPage(organisationId: OrganisationId): Action[AnyContent] = atLeastAdvancedUserAction {
     implicit request =>
       xmlServicesConnector.getOrganisationByOrganisationId(organisationId)
         .flatMap {
@@ -251,7 +251,7 @@ class OrganisationController @Inject() (
         }
   }
 
-  def removeOrganisationAction(organisationId: OrganisationId): Action[AnyContent] = anyStrideUserAction {
+  def removeOrganisationAction(organisationId: OrganisationId): Action[AnyContent] = atLeastAdvancedUserAction {
     implicit request =>
       def handleRemoveOrganisation(organisation: Organisation): Future[Result] = {
         xmlServicesConnector.removeOrganisation(organisation.organisationId).flatMap {
